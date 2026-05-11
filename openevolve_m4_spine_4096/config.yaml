@@ -1,0 +1,101 @@
+max_iterations: 200
+checkpoint_interval: 20
+log_level: "INFO"
+
+llm:
+  # Claude 4.6/4.7 via Anthropic-OpenAI-compat endpoint. Swap primary_model
+  # to claude-opus-4-7 if you want to burn more budget on stronger mutations
+  # and keep sonnet-4-6 as the cheaper explorer.
+  primary_model: "claude-sonnet-4-6"
+  primary_model_weight: 0.75
+  secondary_model: "claude-opus-4-7"
+  secondary_model_weight: 0.25
+  api_base: "https://api.anthropic.com/v1/"
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 16000
+  timeout: 300
+
+prompt:
+  system_message: |
+    You are optimizing a compile-time n=4096 specialization of a quaternary
+    interpolation search over 4096 sorted uint16_t values, for Apple M4 Max
+    and M1 Pro P-cores (shared "simd_quad_m4.c" Apple-silicon variant).
+
+    Hardware facts that should shape your mutations:
+      - 128-byte cache line. gap=64 means one block = one line.
+      - 128 KB L1D per P-core, 3 load AGUs, very wide OoO window, strong HW
+        streamer. Data-dependent stride-1 access usually does NOT engage the
+        stream prefetcher for this small a working set.
+      - No AVX-512 analog; NEON is 128b. Intrinsics you may freely use:
+        vdupq_n_u16, vld1q_u16, vld1q_u16_x2, vld1q_u16_x4, vceqq_u16,
+        vorrq_u16, vmaxvq_u16, __builtin_prefetch (optionally with rw/locality
+        arguments), and standard C.
+      - The spine for n=4096 is exactly 64 u16 = 128 B = 1 cache line.
+
+    The current function is ~16% FASTER warm than the general-n baseline
+    simd_quad_m4_spine but ~188-194% SLOWER cold. The structural hypothesis
+    is that issuing all three tier probes in a straight-line block denies
+    the OoO window the ability to overlap the final block-load miss with
+    tier misses, and the 1-line spine starves the HW streamer. Your job is
+    to recover cold without giving up warm. Successful ideas worth trying:
+      - Hoist the block load (or its address computation) earlier so the
+        miss starts overlapping with tier probes.
+      - Extra __builtin_prefetch hints for the block address once lo is
+        partially known (e.g. after iter 1 or iter 2), with rw=0 locality=0
+        to avoid pinning the line.
+      - Reshape the descent (e.g. 2 quaternary + 2 binary, or a Shar-style
+        branchless cmov chain over the 64 keys) to shorten the critical
+        path of dependent loads.
+      - Use vld1q_u16_x4 on the spine to prefetch it into vector regs up
+        front and then compute branchlessly.
+      - Speculatively issue block loads for multiple possible lo values.
+
+    Hard constraints that MUST hold:
+      - Signature: bool simd_quad_m4_spine_4096(const uint16_t *carr,
+                                                const uint16_t *spine,
+                                                uint16_t pos)
+      - Assume cardinality=4096, num_blocks=64, gap=64.
+      - Must return true iff pos is in carr[0..4096). The evaluator runs a
+        correctness suite and scores 0 on any mismatch.
+      - AArch64/NEON only. No SVE, no assembly.
+      - No writes to carr or spine.
+      - Keep the function self-contained inside the EVOLVE-BLOCK markers.
+
+    The evaluator reports warm_ns and cold_ns (ns/query, median of 5 runs
+    of ./bench 4000 5000) plus warm_ratio and cold_ratio vs the general-n
+    baseline simd_quad_m4_spine. The scalar combined_score = 0.3*warm_ratio
+    + 0.7*cold_ratio, halved if warm samples are noisy (>15% stddev).
+    Target: cold_ratio >= 1.0 (beat cold 6.47 ns) and warm_ratio >= 0.9
+    (stay within 10% of warm 4.34 ns).
+  num_top_programs: 3
+  num_diverse_programs: 3
+
+database:
+  db_path: "./openevolve_output/m4_spine_4096"
+  population_size: 40
+  archive_size: 20
+  num_islands: 4
+  elite_selection_ratio: 0.3
+  exploitation_ratio: 0.65
+  exploration_ratio: 0.35
+  # MAP-Elites feature dimensions. These are binned by the evaluator's
+  # emitted metric values.
+  feature_dimensions:
+    - name: "prefetch_count"
+      bins: [0, 1, 2, 3, 6]         # 0, 1, 2, 3, 4-5, 6+
+    - name: "vld1_count"
+      bins: [1, 2, 4, 8, 16]        # block-load style proxy
+    - name: "block_load_hoisted"
+      bins: [0, 1]                  # heuristic: block load before spine probes
+    - name: "cold_ns"
+      bins: [0, 4, 7, 10, 15, 25]   # coarse cold-perf bins
+
+evaluator:
+  timeout: 300
+  parallel_evaluations: 1           # bench timing assumes no contention
+  cascade_evaluation: false         # single evaluate() already does cascade internally
+
+diff_based_evolution: true
+allow_full_rewrites: false
+max_code_length: 8000

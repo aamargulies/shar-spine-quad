@@ -1,0 +1,26 @@
+# Build artifacts
+bench
+bench_twolevel
+*.o
+*.obj
+
+# Editor swap files
+*.swp
+*.swo
+.*.swp
+.*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local Claude settings
+.claude/
+CLAUDE.md

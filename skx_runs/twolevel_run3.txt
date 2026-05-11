@@ -1,0 +1,24 @@
+two-level spine micro-bench
+num_sets=200 warm_reps=200 num_containers=512 inner_n=4096
+per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
+correctness: ok
+
+var   description                                                warm ns/q   cold ns/q
+----  --------------------------------------------------------  ----------  ----------
+A     bsearch outer + general-n spine inner                         231.92      122.33
+B     two-level spine + general-n spine inner                       201.76       49.85
+C     bsearch outer + compile-time n=4096 inner                     121.79       67.19
+D     two-level spine + compile-time n=4096 inner                    91.72       34.16
+E     Shar branchless outer + general-n spine inner                  87.65       26.83
+F     Shar branchless outer + compile-time n=4096 inner              84.10       27.04
+
+deltas vs A:
+  outer spine   (B vs A):    warm -13.0%  cold -59.2%
+  inner 4096    (C vs A):    warm -47.5%  cold -45.1%
+  both spines   (D vs A):    warm -60.5%  cold -72.1%
+  Shar outer    (E vs A):    warm -62.2%  cold -78.1%
+  Shar + inner  (F vs A):    warm -63.7%  cold -77.9%
+
+deltas vs D (current best stacked):
+  Shar outer    (E vs D):    warm -4.4%  cold -21.5%
+  Shar + inner  (F vs D):    warm -8.3%  cold -20.9%

@@ -1,0 +1,14 @@
+
+=== baseline (no prefetch) vs prefetch-kept: delta% of prefetch vs baseline ===
+     (negative = prefetch faster; positive = prefetch slower, remove is correct)
+    n    gv4 warm    gv4 cold   gv4s warm   gv4s cold
+    8        0.0%        0.0%        3.6%        0.0%
+   16        0.0%        0.0%       -3.4%        3.6%
+   32        0.0%        0.0%        5.3%        2.5%
+   64        0.0%        0.0%       -4.8%       -2.2%
+  128        5.9%        3.2%       -2.2%        3.4%
+  256        2.0%        5.6%        0.0%        0.0%
+  512        8.9%        1.8%       -1.6%        0.0%
+ 1024        1.9%        4.1%        0.0%        1.7%
+ 2048       10.8%       -2.5%        0.0%        8.3%
+ 4096        4.0%        0.7%       -0.6%       -1.1%

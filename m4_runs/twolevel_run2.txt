@@ -1,0 +1,16 @@
+two-level spine micro-bench
+num_sets=200 warm_reps=200 num_containers=512 inner_n=4096
+per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
+correctness: ok
+
+var   description                                                warm ns/q   cold ns/q
+----  --------------------------------------------------------  ----------  ----------
+A     bsearch outer + general-n spine inner                         179.28       32.70
+B     two-level spine + general-n spine inner                        34.49       29.17
+C     bsearch outer + compile-time n=4096 inner                      18.51       14.79
+D     two-level spine + compile-time n=4096 inner                    24.13       26.45
+
+deltas vs A:
+  outer spine (B vs A):      warm -80.8%  cold -10.8%
+  inner 4096 (C vs A):       warm -89.7%  cold -54.8%
+  both      (D vs A):        warm -86.5%  cold -19.1%
