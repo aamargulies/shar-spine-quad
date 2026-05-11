@@ -87,6 +87,15 @@ Then `./bench 4000 5000` for the canonical intensity.
 
 ## Results at a glance
 
+Each host's best tuned variant plotted against Lemire's reference SIMD
+Quad across `n = 8..4096`, warm and cold cache. Log-log; lower is
+better. The per-uarch tuning buys the most at larger `n`, and the
+cold-cache gap is where the spine does most of its work.
+
+![warm-cache: best strategy per host vs Lemire SIMD reference](bench_best_warm.png)
+
+![cold-cache: best strategy per host vs Lemire SIMD reference](bench_best_cold.png)
+
 ### Single-lookup on a sorted n=4096 array (ns/op, medians of 5)
 
 | host | warm | cold |
