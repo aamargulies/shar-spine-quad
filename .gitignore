@@ -24,3 +24,6 @@ Thumbs.db
 # Local Claude settings
 .claude/
 CLAUDE.md
+
+# Private task brief
+requirements.text
