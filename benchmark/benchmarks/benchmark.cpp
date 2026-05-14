@@ -308,12 +308,10 @@ static bool verify_at_size(size_t array_size,
       check_one("simd_quad_intel",
                 simd_quad_intel(arr.data(), (int32_t)arr.size(), k),
                 expected, arr.size(), k);
-      if (array_size >= (size_t)INTEL_GAP) {
-        check_one("simd_quad_intel_spine",
-                  simd_quad_intel_spine(arr.data(), spines_intel[a].data(),
-                                        (int32_t)arr.size(), k),
-                  expected, arr.size(), k);
-      }
+      check_one("simd_quad_intel_spine",
+                simd_quad_intel_spine(arr.data(), spines_intel[a].data(),
+                                      (int32_t)arr.size(), k),
+                expected, arr.size(), k);
       if (array_size == 4096) {
         check_one("simd_quad_intel_spine_4096",
                   simd_quad_intel_spine_4096(arr.data(), spines_intel[a].data(), k),
@@ -482,13 +480,11 @@ void collect_benchmark_results(size_t array_size, size_t number_arrays,
     const auto &a = arrays[i];
     return simd_quad_intel(a.data(), (int32_t)a.size(), k);
   });
-  if (array_size >= (size_t)INTEL_GAP) {
-    bench_one("simd_quad_intel_spine", [&](size_t i, uint16_t k) {
-      const auto &a = arrays[i];
-      return simd_quad_intel_spine(a.data(), spines_intel[i].data(),
-                                   (int32_t)a.size(), k);
-    });
-  }
+  bench_one("simd_quad_intel_spine", [&](size_t i, uint16_t k) {
+    const auto &a = arrays[i];
+    return simd_quad_intel_spine(a.data(), spines_intel[i].data(),
+                                 (int32_t)a.size(), k);
+  });
   if (array_size == 4096) {
     bench_one("simd_quad_intel_spine_4096", [&](size_t i, uint16_t k) {
       const auto &a = arrays[i];
