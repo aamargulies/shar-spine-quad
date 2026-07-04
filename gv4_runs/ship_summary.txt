@@ -1,0 +1,31 @@
+Final shipping API 5-run medians on GV4 r8g, 2026-05-12.
+Raw: ship_run{1..5}.txt.
+
+Shipping specializations in simd_quad_graviton.c:
+  - simd_quad_graviton_spine_256   (hybrid: unroll + 2-probe finish)
+  - simd_quad_graviton_spine_512   (unroll, low-foot)
+  - simd_quad_graviton_spine_1024  (hybrid)
+  - simd_quad_graviton_spine_2048  (unroll, low-foot)
+  - simd_quad_graviton_spine_4096  (hybrid; replaces the former unroll)
+
+Medians of 5 runs of ./bench 4000 5000:
+
+n=256:  warm  8.64 ->  3.55  (-59%)   cold 11.01 ->  7.70  (-30%)
+n=512:  warm  6.18 ->  4.72  (-24%)   cold 17.56 -> 13.50  (-23%)
+n=1024: warm 13.33 ->  4.94  (-63%)   cold 18.31 -> 14.33  (-22%)
+n=2048: warm  7.90 ->  6.16  (-22%)   cold 23.48 -> 20.00  (-15%)
+n=4096: warm 16.18 ->  6.98  (-57%)   cold 36.36 -> 28.14  (-23%)
+
+Warm variance across 5 runs: <=0.03 ns (bench-stable).
+Cold variance: 3-10 ns range, typical r8g shared-tenant noise; ship median
+stays below base median at every size.
+
+Notes:
+- The earlier spineN_run batch showed a +17% cold regression at n=2048
+  for the unroll-only variant. This ship batch shows -15%. The difference
+  is r8g cold noise (23.56 vs 16.45 for two different runs of the same
+  code); the median across 5 runs is the right summary. Regression is not
+  structural.
+- At n=4096, the hybrid (this ship's _spine_4096) is ~7 ns warm, matching
+  Apple M4's _spine_4096 on the same bench. GV4 now has the lowest warm
+  numbers at n=256 and n=1024 across the project.

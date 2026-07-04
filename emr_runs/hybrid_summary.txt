@@ -1,0 +1,39 @@
+EMR hybrid ship/no-ship decision (2026-05-12)
+==============================================
+
+Host: Intel Xeon Platinum 8559C (Emerald Rapids, AVX-512 + VBMI2)
+Build: g++ -O3 -march=sapphirerapids -std=c++20 bench.cpp simd_quad_intel.c -o bench
+Bench: ./bench 4000 5000, 5 runs (raw: shipN_run{1..5}.txt)
+
+The ship question: at n=4096, does the hybrid (3 quat + branchless
+2-probe finish) beat the existing unroll (3 quat + binary step + final
+lo) as it did on GV4 (-51% warm / -5% cold)?
+
+5-run median A/B at n=4096:
+  intel_spine_4096 (unroll)       : warm 14.38  cold 26.19 ns
+  intel_spine_4096_hybrid         : warm  6.50  cold 23.66 ns
+  delta                           : -54.8% warm  -9.7% cold
+
+Verdict: hybrid wins decisively in both regimes, matching the GV4
+pattern almost exactly (GV4 was -51% / -5%). Same mechanism: at quat
+exit n=2, the branchless 2-probe finish is one load-use round; the
+binary-step + final-lo pair in the prior unroll was two dependent
+rounds. Two wide-OoO / high-AGU cores giving the same sign and ~same
+magnitude makes this structural, not uarch-quirk.
+
+Decision: ship hybrid. Retire the prior unroll. _spine_4096 in
+simd_quad_intel.c now IS the hybrid (no separate _spine_4096_hybrid
+symbol kept, same API callers got before).
+
+Post-promotion 5-run medians (shipped_run{1..5}.txt) with
+intel_spine_4096 = hybrid:
+  n=256  : warm  3.34  cold  7.38   (-67.4% / -42.8% vs general-n spine)
+  n=512  : warm  4.55  cold 10.50   (-29.9% / -34.0%)
+  n=1024 : warm  4.73  cold 12.87   (-67.9% / -46.2%)
+  n=2048 : warm  5.53  cold 20.41   (-39.0% / -36.6%)
+  n=4096 : warm  6.50  cold 24.36   (-63.6% / -34.5%)
+
+Unlike GV4, every EMR specialization wins cold as well as warm — no
+n=2048 cold regression. (GV4 had +17% cold at n=2048; EMR is -36.6%.)
+EMR's wider OoO + HW streamers overlap the final block-load miss behind
+the straight-line descent even at low-foot sizes, which on V2 couldn't.

@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6a1b9a"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2e7d32"/>
+    </marker>
+    <marker id="arr-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e65100"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="480" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a1a1a">Variant F: three layers, three different tricks</text>
+  <text x="480" y="54" text-anchor="middle" font-size="13" fill="#666" font-style="italic">Each layer speaks to a different part of the CPU. Drop one and the bottleneck comes back.</text>
+
+  <!-- Big funnel labels on the right -->
+  <text x="915" y="110" text-anchor="end" font-size="11" fill="#888">~1 KB of keys</text>
+  <text x="915" y="302" text-anchor="end" font-size="11" fill="#888">~256 B spine</text>
+  <text x="915" y="494" text-anchor="end" font-size="11" fill="#888">one 32 B block</text>
+
+  <!-- =================== LAYER 1: OUTER (Shar) =================== -->
+  <g>
+    <rect x="30" y="78" width="900" height="168" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.5" rx="6"/>
+    <text x="50" y="102" font-size="15" font-weight="bold" fill="#4a148c">1. Outer layer: Shar branchless binary search</text>
+    <text x="50" y="120" font-size="12" fill="#4a148c">Picks 1 of 512 Roaring containers. Bottleneck: branch mispredicts on short dependent loads.</text>
+
+    <!-- Row of 512 tiny cells suggested by a long strip with tick marks -->
+    <rect x="50" y="140" width="860" height="28" fill="#ede7f6" stroke="#6a1b9a" stroke-width="1.2"/>
+    <g stroke="#6a1b9a" stroke-width="0.5" opacity="0.45">
+      <line x1="100" y1="140" x2="100" y2="168"/>
+      <line x1="150" y1="140" x2="150" y2="168"/>
+      <line x1="200" y1="140" x2="200" y2="168"/>
+      <line x1="250" y1="140" x2="250" y2="168"/>
+      <line x1="300" y1="140" x2="300" y2="168"/>
+      <line x1="350" y1="140" x2="350" y2="168"/>
+      <line x1="400" y1="140" x2="400" y2="168"/>
+      <line x1="450" y1="140" x2="450" y2="168"/>
+      <line x1="500" y1="140" x2="500" y2="168"/>
+      <line x1="550" y1="140" x2="550" y2="168"/>
+      <line x1="600" y1="140" x2="600" y2="168"/>
+      <line x1="650" y1="140" x2="650" y2="168"/>
+      <line x1="700" y1="140" x2="700" y2="168"/>
+      <line x1="750" y1="140" x2="750" y2="168"/>
+      <line x1="800" y1="140" x2="800" y2="168"/>
+      <line x1="850" y1="140" x2="850" y2="168"/>
+    </g>
+    <text x="60" y="158" font-size="11" fill="#4a148c">key 1</text>
+    <text x="900" y="158" text-anchor="end" font-size="11" fill="#4a148c">key 512</text>
+
+    <!-- Shar's ~9 parallel independent loads, shown as vertical arrows that all land at once -->
+    <g stroke="#6a1b9a" stroke-width="1.3" opacity="0.85">
+      <line x1="180" y1="195" x2="180" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="260" y1="195" x2="260" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="340" y1="195" x2="340" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="420" y1="195" x2="420" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="500" y1="195" x2="500" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="580" y1="195" x2="580" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="660" y1="195" x2="660" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="740" y1="195" x2="740" y2="172" marker-end="url(#arr-purple)"/>
+      <line x1="820" y1="195" x2="820" y2="172" marker-end="url(#arr-purple)"/>
+    </g>
+    <text x="500" y="212" text-anchor="middle" font-size="11" fill="#4a148c" font-style="italic">9 independent loads issued in parallel. No branches. cmov chain selects the winner.</text>
+    <text x="50" y="232" font-size="12" font-weight="bold" fill="#4a148c">Speaks to: branch predictor + load-store unit</text>
+
+    <!-- Highlight the chosen container -->
+    <rect x="576" y="138" width="8" height="32" fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+  </g>
+
+  <!-- Funnel arrow between layers 1 and 2 -->
+  <path d="M 400 248 L 580 268 L 580 268 L 400 268 Z" fill="#ddd" stroke="none" opacity="0.5"/>
+  <line x1="490" y1="250" x2="490" y2="268" stroke="#555" stroke-width="1.8" marker-end="url(#arr-orange)"/>
+  <text x="500" y="262" font-size="10" fill="#555">inside the chosen container</text>
+
+  <!-- =================== LAYER 2: SPINE =================== -->
+  <g>
+    <rect x="30" y="270" width="900" height="168" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" rx="6"/>
+    <text x="50" y="294" font-size="15" font-weight="bold" fill="#1b5e20">2. Inner layer A: spine (sampled index, scanned sequentially)</text>
+    <text x="50" y="312" font-size="12" fill="#1b5e20">Narrows 4,096 elements to 1 block. Bottleneck: 3 dependent DRAM loads on the critical path.</text>
+
+    <!-- Spine as a small packed strip -->
+    <rect x="50" y="332" width="140" height="32" fill="#c8e6c9" stroke="#2e7d32" stroke-width="1.5"/>
+    <g stroke="#2e7d32" stroke-width="0.6" opacity="0.6">
+      <line x1="85" y1="332" x2="85" y2="364"/>
+      <line x1="120" y1="332" x2="120" y2="364"/>
+      <line x1="155" y1="332" x2="155" y2="364"/>
+    </g>
+    <text x="120" y="326" text-anchor="middle" font-size="10" fill="#1b5e20" font-weight="bold">spine (~4 cache lines)</text>
+
+    <!-- Rest of array as a longer faded bar -->
+    <rect x="190" y="332" width="720" height="32" fill="#e3f2fd" stroke="#1976d2" stroke-width="1"/>
+    <text x="550" y="353" text-anchor="middle" font-size="11" fill="#1565c0">full sorted array (same memory, sampled to build the spine)</text>
+
+    <!-- Sequential scan arrow inside spine -->
+    <line x1="55" y1="385" x2="185" y2="385" stroke="#2e7d32" stroke-width="1.6" marker-end="url(#arr-green)"/>
+    <text x="120" y="402" text-anchor="middle" font-size="10" fill="#2e7d32">sequential scan</text>
+
+    <!-- Prefetcher pulling next line -->
+    <line x1="190" y1="385" x2="260" y2="385" stroke="#2e7d32" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-green)"/>
+    <text x="410" y="389" font-size="10" fill="#2e7d32" font-style="italic">stride prefetcher grabs the next line for free</text>
+
+    <!-- Highlight chosen block in the full array -->
+    <rect x="600" y="330" width="22" height="36" fill="none" stroke="#e65100" stroke-width="2.5"/>
+
+    <text x="50" y="425" font-size="12" font-weight="bold" fill="#1b5e20">Speaks to: stride prefetcher</text>
+  </g>
+
+  <!-- Funnel arrow between layers 2 and 3 -->
+  <line x1="611" y1="442" x2="611" y2="462" stroke="#555" stroke-width="1.8" marker-end="url(#arr-orange)"/>
+  <text x="625" y="457" font-size="10" fill="#555">inside the chosen block</text>
+
+  <!-- =================== LAYER 3: SIMD =================== -->
+  <g>
+    <rect x="30" y="464" width="900" height="208" fill="#fff3e0" stroke="#e65100" stroke-width="1.5" rx="6"/>
+    <text x="50" y="488" font-size="15" font-weight="bold" fill="#bf360c">3. Inner layer B: SIMD compare against all 16 elements at once</text>
+    <text x="50" y="506" font-size="12" fill="#bf360c">Finds the target inside one block. Bottleneck: pure compute. The line is already in cache.</text>
+
+    <!-- Target value box -->
+    <rect x="420" y="522" width="120" height="28" fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" rx="4"/>
+    <text x="480" y="541" text-anchor="middle" font-size="12" font-weight="bold" fill="#bf360c">target value</text>
+
+    <!-- Parallel compare arrows fanning out to 16 cells -->
+    <g stroke="#e65100" stroke-width="0.9" opacity="0.6">
+      <line x1="480" y1="550" x2="260" y2="600"/>
+      <line x1="480" y1="550" x2="290" y2="600"/>
+      <line x1="480" y1="550" x2="320" y2="600"/>
+      <line x1="480" y1="550" x2="350" y2="600"/>
+      <line x1="480" y1="550" x2="380" y2="600"/>
+      <line x1="480" y1="550" x2="410" y2="600"/>
+      <line x1="480" y1="550" x2="440" y2="600"/>
+      <line x1="480" y1="550" x2="470" y2="600"/>
+      <line x1="480" y1="550" x2="500" y2="600"/>
+      <line x1="480" y1="550" x2="530" y2="600"/>
+      <line x1="480" y1="550" x2="560" y2="600"/>
+      <line x1="480" y1="550" x2="590" y2="600"/>
+      <line x1="480" y1="550" x2="620" y2="600"/>
+      <line x1="480" y1="550" x2="650" y2="600"/>
+      <line x1="480" y1="550" x2="680" y2="600"/>
+      <line x1="480" y1="550" x2="710" y2="600"/>
+    </g>
+
+    <!-- 16-cell block -->
+    <g transform="translate(245, 602)">
+      <rect x="0" y="0" width="480" height="36" fill="#ffe0b2" stroke="#e65100" stroke-width="1.3"/>
+      <g stroke="#e65100" stroke-width="0.6" opacity="0.55">
+        <line x1="30"  y1="0" x2="30"  y2="36"/>
+        <line x1="60"  y1="0" x2="60"  y2="36"/>
+        <line x1="90"  y1="0" x2="90"  y2="36"/>
+        <line x1="120" y1="0" x2="120" y2="36"/>
+        <line x1="150" y1="0" x2="150" y2="36"/>
+        <line x1="180" y1="0" x2="180" y2="36"/>
+        <line x1="210" y1="0" x2="210" y2="36"/>
+        <line x1="240" y1="0" x2="240" y2="36"/>
+        <line x1="270" y1="0" x2="270" y2="36"/>
+        <line x1="300" y1="0" x2="300" y2="36"/>
+        <line x1="330" y1="0" x2="330" y2="36"/>
+        <line x1="360" y1="0" x2="360" y2="36"/>
+        <line x1="390" y1="0" x2="390" y2="36"/>
+        <line x1="420" y1="0" x2="420" y2="36"/>
+        <line x1="450" y1="0" x2="450" y2="36"/>
+      </g>
+      <text x="240" y="22" text-anchor="middle" font-size="11" fill="#bf360c" font-weight="bold">1 SIMD instruction, 16 compares in parallel</text>
+    </g>
+
+    <text x="50" y="660" font-size="12" font-weight="bold" fill="#bf360c">Speaks to: vector ALUs</text>
+  </g>
+
+</svg>

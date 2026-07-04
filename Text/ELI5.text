@@ -1,0 +1,46 @@
+# Shar's algorithm (ELI5)
+
+Regular binary search asks "is my number bigger or smaller than the middle?" and then branches left or right. Branches are slow when the CPU can't guess which way you'll go, because it has to wait for the answer before starting the next step.
+
+**Shar's trick: don't branch. Always walk the same path, just shift where you're pointing.**
+
+Imagine you have a sorted list of 512 numbers and you're looking for one.
+
+1. Start a pointer at the beginning of the list.
+2. Pick a step size that's a power of two (here, 256).
+3. Look at `pointer[step]`. If that value is still ≤ your target, slide the pointer forward by `step`. Otherwise, leave it.
+4. Halve the step (256 → 128 → 64 → ... → 1), and repeat.
+
+After ~9 halvings, your pointer lands on the answer.
+
+**Why it's fast:**
+- The "slide or don't slide" decision is a `cmov` (conditional move) — no branch, no misprediction penalty.
+- Each step's *load* (`pointer[step]`) doesn't depend on the previous step's comparison result, so the CPU can issue all ~9 loads back-to-back and let out-of-order execution overlap them.
+- For non-power-of-two sizes, you start the pointer at `len - bit_floor(len)` instead of 0, so the first step lands inside the array.
+
+**Why it wins here:** our outer key array is only 512 × 2 bytes = 1 KB. That's too small for the CPU's stride prefetcher to help a traditional pointer-chasing spine descent. Shar turns the whole search into ~9 independent loads + cmovs, which every modern wide-OoO CPU eats for breakfast — hence F (Shar outer + compile-time n=4096 inner) winning on all six hosts.
+
+Note: Shar's algorithm is still a binary search, so the input array must be sorted. It just replaces the `if (x < mid) go left else go right` branch with a branchless "slide the pointer or don't" step. The sortedness requirement is identical to regular binary search; only the control flow changes. In our case that's fine because the outer key array (the 512 container keys in a Roaring set) is already maintained in sorted order by construction — same invariant `std::lower_bound` / `bsearch` rely on.
+
+
+# Spine descent (ELI5)
+
+**The problem:** searching a big sorted array means jumping around in memory. Each jump is a load. If the array is cold in cache, each load waits ~hundreds of cycles for DRAM. A normal binary search does ~12 of these dependent jumps for n=4096 — each one has to finish before you know where to jump next.
+
+**The idea:** build a tiny side-table ("the spine") that summarizes the big array, and search *that* first to narrow down where to look.
+
+Concretely, for a sorted array of 4096 `uint16_t`s with gap=32:
+
+1. **Pre-build the spine once:** copy every 32nd element into a small side-array. 4096 / 32 = 128 entries = 256 bytes (4 cache lines on Intel/Pi 5/GV4, or 1 line on M4 with gap=64).
+2. **To search:** walk the spine to find which 32-element block your target falls into. Then do a SIMD block-compare on those 32 elements in the original array.
+
+**Why "descent":** you don't binary-search the spine either — you do a **quaternary** descent (split into 4 at each step instead of 2). Three 4-way splits gets you through 128 entries (4³ = 64, close enough — a final binary step or block-load finishes it). Each tier picks one of 4 candidate positions using SIMD compares.
+
+**Why it's so much faster cold:**
+- The spine is 256 bytes and sequential. The CPU's stride prefetcher sees "oh, they're reading memory in order" and pulls the next lines into cache before you ask. Free.
+- You've reduced ~12 cold dependent DRAM loads to ~3 spine loads (mostly prefetched) + 1 block load in the original array.
+- The spine is so small it often stays hot in L1 even when the main array is cold.
+
+**Why it's the biggest win in the project:** on Pi 5, cold n=4096 goes from ~138 ns to ~70 ns (~2×). On M4, ~18 → ~6 (~3×). The main array doesn't change at all — you just added a 256-byte cheat sheet.
+
+**The M4 gotcha:** on M4's 128-byte cache lines with gap=64, the spine shrinks to 128 bytes = *one* line. The streamer has nothing to latch onto (it needs to see ≥2 sequential lines to kick in), so the speedup mechanism partly breaks — which is why `simd_quad_m4_spine_4096` has that weird cold regression.

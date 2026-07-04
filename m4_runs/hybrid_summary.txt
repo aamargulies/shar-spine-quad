@@ -1,0 +1,12 @@
+Apple M4 Max hybrid-vs-unroll A/B, 2026-05-12.
+./bench 4000 5000 x 5 runs (m4_runs/hybrid_run{1..5}.txt).
+
+    unroll: warm 3.81  cold 22.44
+    hybrid: warm 3.71  cold 21.94
+    delta : warm -2.6%  cold -2.2%
+    warm hybrid < unroll on 5/5 runs
+    cold hybrid < unroll on 3/5 runs
+    per-run unroll warms: 3.81 3.76 3.81 3.75 4.09
+    per-run hybrid warms: 3.69 3.75 3.71 3.71 4.06
+    per-run unroll colds: 21.27 25.77 22.44 18.51 25.84
+    per-run hybrid colds: 21.98 20.33 21.94 20.16 23.91

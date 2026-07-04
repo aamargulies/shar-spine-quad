@@ -1,0 +1,750 @@
+The SIMD Quad journey
+=====================
+
+The story of the research, porting, benchmarking, and arguing with
+hardware across six very different machines. This is the high-level
+story: what problem I was trying to solve, what tricks I found
+along the way, and why the same algorithm behaves so differently
+on different CPUs. There is a separate, much denser technical
+write-up to come; this document deliberately stays above that
+level. Glossary provided.
+
+
+Where this started: Lemire's article
+-------------------------------------
+
+Daniel Lemire, a computer science researcher who writes often about
+practical performance work, published a short blog post titled
+"You can beat the binary search". The claim is exactly what it
+sounds like: for sorted arrays of 16-bit integers in the size
+range that shows up in a very common real-world data structure,
+you can beat the standard C++ std::binary_search by a comfortable
+margin if you are willing to think carefully about what the
+hardware actually does.
+
+His algorithm, which he calls SIMD Quad, combines two ideas:
+
+  1. Modern CPUs can compare many values at once using SIMD
+     ("single instruction, multiple data") registers. Instead of
+     comparing a single element at a time, it is often free to
+     compare 8 or 16 elements in one shot.
+
+  2. Modern CPUs are good at overlapping memory accesses. This
+     means that a classic binary search — which splits the array
+     in half, then half again — is leaving performance on the
+     table, because while the CPU is waiting on one memory read
+     there is capacity to issue others. Splitting into quarters
+     instead of halves lets the hardware launch three independent
+     loads in parallel.
+
+SIMD Quad threads these two ideas together. It divides the array
+into small fixed-size blocks, uses interpolation to quickly narrow
+down which block contains the target, and then uses SIMD to check
+every element of that block in one shot.
+
+Lemire benchmarked it on an Apple M4 and an Intel Emerald Rapids
+server and showed it comfortably beats std::binary_search.
+
+That is where I started. The question I wanted to answer was:
+what does this algorithm look like on machines Lemire did not
+test, and what do I have to change to make it sing on each one?
+
+
+Why this matters: Roaring Bitmaps, and where the time goes
+-----------------------------------------------------------
+
+SIMD Quad is not an interesting algorithm in a vacuum — it is
+interesting because of where it gets used. The main consumer is
+Roaring Bitmaps, a compressed set data structure for 32-bit
+integers that has become the standard choice in databases,
+search engines, analytics platforms, and graph libraries over
+the last ten years. If you have ever run a query in Elasticsearch,
+Druid, ClickHouse, Pinot, or one of dozens of other systems,
+there is a very good chance a Roaring Bitmap was involved in
+answering it.
+
+The basic idea of Roaring Bitmaps is elegant. To store a set of
+32-bit integers, split each integer into its upper 16 bits (the
+"key") and its lower 16 bits (the "payload"). Group all the
+payloads that share a key into a "container". The container can
+be stored in whatever format is most efficient for its contents:
+a sorted array of 16-bit integers (if it is sparse), a bitmap
+(if it is dense), or a run-length encoding (if it has long runs
+of consecutive integers). A Roaring Bitmap is then just a sorted
+list of (key, container) pairs.
+
+Checking whether a 32-bit integer is in the set becomes a two-step
+lookup:
+
+  1. Find the container whose key matches the upper 16 bits of
+     the query value.
+  2. Ask that container whether it contains the lower 16 bits.
+
+Step 2 is the thing SIMD Quad accelerates. For sparse containers —
+the ones stored as sorted arrays of 16-bit integers — the
+container size is bounded at 4096 elements, and a membership
+check is a search through a sorted 16-bit array. That is exactly
+the shape of the problem Lemire's algorithm attacks.
+
+Why does making this faster matter? Three reasons, roughly in
+increasing order of how much people care:
+
+  * Volume. A typical analytical query in a system like Pinot
+    or Druid can issue tens to hundreds of millions of membership
+    checks against Roaring Bitmaps. Shaving 20 nanoseconds off
+    each check compounds into whole seconds of query latency.
+
+  * Electricity. Every membership check that finishes faster is
+    electricity you did not burn. At datacenter scale, the
+    efficiency difference between a 10 ns check and a 30 ns
+    check shows up on the power bill.
+
+  * Opportunity cost. When the bitmap library is the bottleneck,
+    no amount of work on the rest of the query engine helps.
+    Speeding it up unblocks everyone downstream.
+
+Roaring Bitmaps have been tuned and re-tuned many times already.
+The existing SIMD Quad work ships inside the CRoaring library,
+which is what most of the systems above link against. Getting
+another 2-3x on top of what is already a heavily optimized
+implementation is the kind of work that ends up touching a lot
+of production traffic.
+
+
+The first trick: the spine
+---------------------------
+
+The first real improvement I found had nothing to do with SIMD.
+It had to do with cache behavior.
+
+When you search a 4096-element array using SIMD Quad, the
+algorithm does not actually read all 4096 elements. It reads one
+"interpolation key" per block — the last element of each block —
+to figure out which block contains the target, and then it SIMD-
+compares all 32 elements of that one block. At most it touches
+a few dozen of the 4096 elements.
+
+But here is the catch: those dozen-or-so interpolation keys are
+scattered across the array at stride-32 intervals. On a machine
+with 64-byte cache lines, the hardware prefetcher (the part of
+the CPU that tries to guess which memory you will read next)
+cannot easily predict this access pattern. And on a cold cache —
+meaning the array is not already sitting in L1 — every one of
+those scattered reads is a potential cache miss.
+
+The fix, which I call the "spine", is embarrassingly simple.
+Before the search starts, copy the interpolation keys into a
+small, dense side array. Now the keys you actually need to read
+during interpolation live in a contiguous region: two or four
+cache lines at most, depending on the machine. The hardware
+prefetcher loves this pattern — it is a simple sequential scan —
+and the whole interpolation phase effectively costs the latency
+of reading a single cache line from memory, even cold.
+
+The spine is the single largest performance improvement in the
+entire project. On every machine I tested, for large cold-cache
+searches, the spine version is roughly 2x to 3x faster than the
+no-spine version. It is also the most "boring" optimization in
+the project: no SIMD, no branchless tricks, no architecture-
+specific intrinsics. Just: put the data the CPU is going to read
+next to the data the CPU is reading now.
+
+Once I had the spine working, I wondered whether I could
+take the idea a level higher. Roaring Bitmap lookups are
+two-level — first find the container, then check the container.
+Could I put a spine over the outer lookup too?
+
+This is where the story starts to get complicated.
+
+
+The two-level experiment
+------------------------
+
+The outer lookup in a Roaring Bitmap is a search through a
+sorted array of 16-bit keys (one per container). That is the
+same shape as the inner lookup, just on a much smaller array —
+typically a few hundred to a few thousand keys, because most
+real bitmaps do not have anywhere near the full 65536 possible
+containers.
+
+I built a benchmark that tested six combinations:
+
+  A. Standard binary search for the outer, standard spine for
+     the inner (our baseline).
+  B. Spine over the outer, standard spine for the inner.
+  C. Standard binary search for the outer, a compile-time-
+     specialized spine for the inner at the max size.
+  D. Spine over the outer, compile-time-specialized inner.
+  E. A branchless binary search (called Shar's algorithm, more
+     on this below) for the outer, standard spine for the inner.
+  F. Shar's for the outer, compile-time-specialized inner.
+
+Our hypothesis was that D would win everywhere. The outer spine
+had worked so well for the inner that I assumed it would
+generalize. On the Intel servers in particular — with their
+aggressive hardware prefetchers and their good cache-line
+streaming — I expected the outer spine to carry the cold-cache
+case by a wide margin.
+
+I was wrong. F won on every single machine, by a comfortable
+margin.
+
+The reason why is a story I will tell in a moment, but first
+we need to introduce Shar.
+
+
+The second trick: Shar's algorithm
+-----------------------------------
+
+Leonard Shar published a tiny paper in 1971 describing a
+branchless binary search. Like most things Dijkstra-era
+computer science rediscovered, it was promptly forgotten,
+and then re-popularized in 2023 by a blog post from Malte
+Skarupke.
+
+The idea is that a normal binary search has a branch at every
+iteration: "is the target less than the midpoint? go left;
+else, go right." Branches are pricey when they are unpredictable,
+which is always true in the middle of a search, because the
+direction you go on iteration k is effectively a coin flip.
+Modern CPUs mispredict unpredictable branches about half the
+time, and a misprediction costs 15-20 cycles.
+
+Shar's trick is to rewrite the "go left or go right" decision
+as a conditional move — an instruction that picks one of two
+values without branching at all. The result is a loop that does
+no branching at all during the descent, only a single compare-
+and-move per iteration.
+
+On modern CPUs, the cmov form wins for an unexpected reason.
+Because every iteration is a predictable pair of loads (the
+current position and the next-step position), and because the
+CPU can see all of them as independent dependency chains, it
+can issue them back-to-back without waiting for each to complete.
+What used to be a serial chain of compare-branch-compare-branch
+becomes a pipelined chain of independent loads, which is exactly
+what modern out-of-order execution engines are best at.
+
+For our two-level experiment, the outer search is over a few
+hundred keys. That is exactly the regime where Shar's wins: too
+few keys for the hardware prefetcher to do meaningful streaming
+work on, so the "outer spine" idea buys very little, but enough
+keys that the branchless-vs-branching difference shows up clearly.
+
+
+Why the same algorithm behaves differently on different CPUs
+-------------------------------------------------------------
+
+The deep answer to "why does this take so much per-machine
+tuning" is that modern CPUs are wildly different from one
+another, in ways that matter for code like this. Three axes
+capture most of it:
+
+Cache line size. The Raspberry Pi 5, the Intel servers, and the
+AWS Graviton 4 all have 64-byte cache lines. The Apple M1 Pro
+and M4 Max have 128-byte lines. This sounds like a minor detail
+but it changes what the "right" block size is: on the Apple
+chips, a block of 64 elements is one cache line, so one block
+check reads one line. On the other machines, a block of 32
+elements is one cache line. Getting this wrong costs you a
+factor of 2x in memory traffic.
+
+Out-of-order execution window and load ports. The Pi 5 has a
+relatively narrow out-of-order window and only 2 load units.
+The Apple chips have 3 load units and a very wide window. The
+Graviton 4 has 4 load units. This determines how much benefit
+you get from loading ahead: on a wide machine, inserting a
+"please prefetch this" hint is pure waste — the machine was
+already going to issue that load early, on its own. On a narrow
+machine, the hint can be worth 20% cold-cache performance.
+
+Frequency license. Intel's AVX-512 instructions, which do
+512-bit-wide SIMD on 32 16-bit integers at once, triggered a
+frequency downclock on older Intel server chips: using any
+AVX-512 instruction at all would slow the entire core down
+by 5-15% until the instruction budget cooled off. On Skylake-SP
+this means the "obvious" AVX-512 port of the algorithm ran
+slower than the non-AVX-512 fallback, because the frequency
+penalty outweighed the SIMD width advantage. On Emerald Rapids
+Intel fixed the downclock problem, so AVX-512 is free again.
+
+The net effect is that the same source file needs different
+tuning decisions on different machines:
+
+  * The Raspberry Pi 5 (Cortex-A76) wants block size 32,
+    paired loads, and a speculative prefetch hint in the
+    interpolation loop.
+
+  * The Apple M4 Max and M1 Pro (Firestorm / P-core) want
+    block size 64, 4-way parallel loads, and no prefetch hint.
+    The M1 Pro slots in literally without changing a single
+    line of code — it shares the M4 Max source file, because
+    their cache line size, vector width, and execution
+    philosophy are all the same.
+
+  * The Intel Skylake-SP wants the AVX-512 path to stay off,
+    keeping the speculative prefetch. The Emerald Rapids wants
+    the AVX-512 path on, with the prefetch dropped. They
+    share a source file but pick different paths at compile
+    time using preprocessor guards.
+
+  * The AWS Graviton 4 (Neoverse V2) behaves like the Apple
+    chips — wide out-of-order window, prefetch hint wastes
+    issue slots — but has 64-byte lines, so it wants block
+    size 32 like Intel.
+
+This is what I mean when I say the algorithm needed to be
+tuned per machine. It is not that the algorithm changed: the
+shape of SIMD Quad is identical on every machine. It is that
+the right block size, the right load width, and the right
+prefetch strategy are all different, and picking the wrong
+combination can lose you 20-40% performance.
+
+
+The final picture
+-----------------
+
+After all the tuning, here is roughly where each machine ends
+up at the 4096-element, cold-cache problem size (the hardest
+case):
+
+  * Apple M4 Max:          ~7 nanoseconds per lookup
+  * AWS Graviton 4:        ~15 nanoseconds per lookup
+  * Apple M1 Pro:          ~11 nanoseconds per lookup
+  * Intel Emerald Rapids:  ~17 nanoseconds per lookup
+  * Intel Skylake-SP:      ~130 nanoseconds per lookup (noisy)
+  * Raspberry Pi 5:        ~140 nanoseconds per lookup
+
+The Apple and ARM server machines land in an impressively narrow
+band — 7 to 17 nanoseconds per lookup, cold — while the Pi 5 and
+the older Skylake trail. The Pi 5 number is mostly memory
+latency: it has the smallest L2, the slowest DRAM, and the
+longest round-trip. The Skylake number is dominated by
+shared-tenancy noise on the EC2 instance I rented.
+
+For the full two-level lookup — outer container search + inner
+element check — Shar's algorithm plus the compile-time-unrolled
+inner check (variant F in our benchmark) wins on every machine,
+with warm-cache numbers around 13 to 90 nanoseconds and
+cold-cache numbers around 10 to 30 nanoseconds. That is the
+shape of the code I recommend shipping into the CRoaring
+library.
+
+
+A note on the process
+---------------------
+
+What made this project unusual, from a process standpoint, was
+the amount of testing and re-testing. A typical "small
+performance improvement" PR in an open-source project gets
+benchmarked once, on the author's machine, and then merged.
+I did that initially — on one machine — and then slowly
+realized that every new machine I tested either exposed a
+flaw in our reasoning or forced us to rethink something.
+
+Almost every design decision I started with was wrong on at
+least one of the six machines. The block size that worked on
+the Pi 5 was too small on the M4. The prefetch hint that helped
+on the Pi 5 hurt on the Emerald Rapids. The AVX-512 port that
+was obviously right on Emerald Rapids was obviously wrong on
+Skylake-SP. The "outer spine" that had to be the answer
+turned out to lose to Shar's everywhere. The compile-time-
+specialized inner loop that helped on four machines caused a
+cold-cache regression on the fifth. When I tested the sixth
+machine (the M1 Pro), the same regression reproduced — which
+turned the weird outlier into confirmed structural evidence
+that the regression was about the cache hierarchy, not
+execution-engine quirks.
+
+Each of those surprises became a paragraph in the findings
+section of the technical write-up. None of them were predictable
+from the first machine alone. The lesson, I think, is that if
+you are going to claim "this is faster", you really want to
+run it on at least three different machines from three different
+CPU families before you believe yourself. Six is better.
+
+
+Glossary
+========
+
+A word about the glossary: many of these terms are used loosely
+in industry writing. The definitions below are the meanings we
+used in this project, which are accurate for our purposes but
+sometimes simplified.
+
+AArch64
+  The 64-bit execution mode of the ARM architecture. All modern
+  ARM CPUs run in AArch64 mode most of the time. "ARM64" is a
+  synonym, more common in Apple and Microsoft documentation.
+
+AGU (Address Generation Unit)
+  The part of a CPU that calculates memory addresses for load
+  and store instructions. A CPU with more AGUs can issue more
+  concurrent loads, which is what actually determines how much
+  overlapping memory traffic you can get.
+
+Apple clang
+  Apple's branded build of the clang C/C++ compiler, shipped
+  with Xcode. Used on the M1 Pro and M4 Max in this project.
+
+AVX2
+  An extension to the x86 instruction set that adds 256-bit
+  SIMD registers. Supported on every Intel chip since around
+  2013 and on AMD Zen 2 and later.
+
+AVX-512
+  An extension to the x86 instruction set that adds 512-bit
+  SIMD registers. Supported on Intel server chips from Skylake
+  onward and on AMD Zen 4 and later.
+
+AVX-512 frequency license
+  A behavior of older Intel Xeon chips (Skylake-SP through Ice
+  Lake-SP) where executing any AVX-512 instruction causes the
+  CPU to downclock the entire core to stay within its thermal
+  budget. On chips like Emerald Rapids this behavior has been
+  fixed and AVX-512 is free again.
+
+Binary search
+  A textbook algorithm for finding a value in a sorted array.
+  It works by comparing the target to the middle element of
+  the array, discarding the half that cannot contain the target,
+  and repeating. Runs in O(log n) time.
+
+Block
+  A small fixed-size chunk of the array that SIMD Quad SIMD-
+  compares in one shot. 32 elements on Intel/ARM with 64-byte
+  lines; 64 elements on Apple silicon (128-byte lines).
+
+Branchless
+  Adjective describing code that avoids conditional branches,
+  usually by using conditional-move instructions or arithmetic
+  tricks. Valuable when branches are unpredictable (e.g. in the
+  middle of a binary search).
+
+Cache line
+  The unit in which a CPU fetches data from memory. When the
+  CPU needs a single byte it actually pulls in the whole
+  surrounding cache line — typically 64 bytes, but 128 bytes
+  on Apple silicon. Aligning data structures to cache lines is
+  often the single most important performance concern.
+
+clang
+  A popular C/C++ compiler, part of the LLVM project. Produces
+  very competitive code and has excellent diagnostic messages.
+
+cmov (conditional move)
+  An x86 instruction (and equivalents on ARM) that conditionally
+  moves a value from one register to another without a branch.
+  The key ingredient in Shar's algorithm.
+
+Cold cache
+  The state where the data you are about to access is not
+  already in the CPU's caches. The CPU has to fetch it from
+  a slower tier of memory — L2, L3, or main memory — which
+  takes much longer. Cold-cache benchmarks are meant to
+  simulate the first access to a data structure.
+
+CRoaring
+  The canonical C implementation of Roaring Bitmaps. Used by
+  most systems that talk about "Roaring Bitmaps" in their
+  documentation.
+
+Cortex-A76
+  The high-performance CPU core in the Raspberry Pi 5. A
+  middleweight ARM core with a relatively narrow out-of-order
+  window by modern standards.
+
+EC2
+  Amazon's rentable virtual-machine service, where you can
+  grab a Linux instance on essentially any x86 or ARM CPU
+  Amazon has in their fleet. Used in this project to get
+  access to the Intel Skylake-SP, Emerald Rapids, and Graviton 4.
+
+Emerald Rapids
+  An Intel Xeon server chip, released 2023. Fourth-generation
+  server core, fixes the AVX-512 frequency license problem.
+  Specifically: Xeon Platinum 8559C.
+
+Firestorm
+  The codename for the P-core (performance core) in the Apple
+  M1 family. Same lineage as the M4 Max P-core but older.
+
+gcc
+  GNU's C/C++ compiler. Older and more mature than clang, with
+  slightly different optimization behavior. Used on the Pi 5
+  and the EC2 Intel/Graviton hosts.
+
+Graviton 4
+  AWS's latest ARM server chip, based on the ARM Neoverse V2
+  core. Available through the EC2 r8g instance family.
+
+Hardware prefetcher
+  A circuit inside the CPU that watches the pattern of memory
+  addresses your code is reading and tries to guess what you
+  will read next, then fetches it proactively. Works very well
+  on sequential scans, poorly on random access.
+
+Ice Lake-SP
+  A generation of Intel Xeon server chips, released 2021. The
+  first Intel server generation where the AVX-512 frequency
+  license penalty was largely eliminated.
+
+Interpolation search
+  A refinement of binary search that estimates where in the
+  array the target value probably is, based on its numerical
+  value relative to the endpoints, rather than always picking
+  the midpoint. Faster for uniformly distributed data; worst
+  case is worse.
+
+L1D / L1 / L2 / L3
+  The CPU's cache hierarchy. L1D is the smallest and fastest
+  (32-128 KB), L2 the middle tier (512 KB - 4 MB), L3 the
+  largest and slowest (often 10+ MB). Every access that misses
+  L1 probes L2, every L2 miss probes L3, every L3 miss hits
+  main memory.
+
+Lemire, Daniel
+  A computer science professor at Université du Québec who
+  writes frequently about practical performance. Author of the
+  original SIMD Quad algorithm this project builds on.
+
+Linear search
+  The textbook algorithm for finding a value in an array: walk
+  from the start until you find it or run off the end. In C++
+  this is std::find. Surprisingly hard to beat for very small
+  arrays.
+
+M1 Pro
+  The laptop P-core Apple silicon chip from 2021. In this project,
+  uses the same source file as the M4 Max because the
+  cache-line size and execution philosophy are the same.
+
+M4 Max
+  Apple's highest-end laptop chip from 2024. Very wide out-of-
+  order window, aggressive hardware prefetcher, 128-byte cache
+  lines.
+
+Memory-level parallelism (MLP)
+  The degree to which a CPU can have multiple outstanding memory
+  requests in flight at once. Modern CPUs can typically have
+  10-20 loads outstanding simultaneously. MLP is what makes
+  "quaternary" better than "binary" here: you issue three
+  loads in parallel instead of one after another.
+
+NEON
+  The SIMD instruction set for 64-bit ARM. 128 bits wide. Every
+  modern ARM CPU supports it.
+
+Neoverse V2
+  ARM's current-generation server CPU core. The heart of the
+  Graviton 4.
+
+Out-of-order execution
+  The CPU's ability to execute instructions in a different order
+  than they appear in the program, in order to keep all its
+  execution units busy. The "out-of-order window" is how many
+  instructions ahead the CPU is allowed to look.
+
+Quaternary search
+  Like binary search, but splitting into four pieces instead of
+  two. Takes three comparisons per iteration instead of one but
+  completes in half the iterations, which is a net win on CPUs
+  with good memory-level parallelism.
+
+Raspberry Pi 5
+  The fifth-generation single-board computer from the Raspberry
+  Pi Foundation. 4× Cortex-A76 at 2.4 GHz, 8 GB LPDDR4X.
+
+Roaring Bitmap
+  A compressed set data structure for 32-bit integers, organized
+  as a sorted list of (16-bit key, container) pairs where each
+  container holds the lower-16-bit values sharing that key.
+  Ubiquitous in analytical databases and search engines.
+
+Shar's algorithm
+  A branchless binary search described by Leonard Shar in 1971,
+  rediscovered by Malte Skarupke ("probablydance") in 2023.
+  Uses conditional-move instructions to eliminate branches from
+  the inner search loop.
+
+SIMD (Single Instruction, Multiple Data)
+  A class of CPU instructions that operate on multiple values
+  in parallel. A 128-bit SIMD instruction operating on 16-bit
+  values processes 8 of them per instruction; at 512 bits it
+  processes 32. SIMD is the "S" in "SIMD Quad".
+
+SIMD Quad
+  Daniel Lemire's algorithm, the starting point of this project.
+  Combines quaternary interpolation search over block-end keys
+  with a SIMD block check.
+
+Skylake-SP
+  A 2017-generation Intel Xeon server chip. Has AVX-512 but
+  with the frequency-downclock penalty; the canonical example
+  of "AVX-512 capable but not actually useful for light usage".
+
+Spine
+  Our term for the small dense side array of interpolation
+  keys, packed next to each other so that the hardware
+  prefetcher can stream them. The single biggest optimization
+  in the project.
+
+SSE2
+  A venerable x86 SIMD extension. 128 bits wide. The fallback
+  for the reference algorithm on x86 hosts that do not have
+  AVX2 or AVX-512. Not used in this project's tuned code but
+  still present in the reference implementation.
+
+SVE / SVE2
+  Scalable Vector Extension(s). A newer ARM SIMD instruction
+  set meant to eventually supplant NEON. On the machines in
+  this project, SVE is either absent (Apple silicon, Cortex-A76)
+  or present but implemented at the same 128-bit width as
+  NEON (Neoverse V2), so I did not end up using it.
+
+u16
+  Short for uint16_t, a 16-bit unsigned integer. What Roaring
+  Bitmap containers store and what SIMD Quad searches.
+
+Warm cache
+  The state where the data you are about to access is already
+  in the CPU's caches. Fast. The benchmark distinguishes warm
+  and cold because real Roaring Bitmap workloads hit both
+  regimes depending on how recently the container was used.
+
+Xeon
+  Intel's server-CPU product line. The specific chips in this
+  project are the Xeon Platinum 8175M (Skylake-SP) and the
+  Xeon Platinum 8559C (Emerald Rapids).
+
+zmm
+  The 512-bit AVX-512 register. Operating on 32 16-bit integers
+  at once. The intended fast path on Intel server chips, though
+  as noted above the Skylake-SP generation has frequency-license
+  reasons to prefer the narrower 256-bit alternative.
+
+
+Works Cited
+===========
+
+Bentley, Jon Louis. Writing Efficient Programs. Prentice-Hall,
+     1982.
+
+Chambi, Samy, et al. "Better bitmap performance with Roaring
+     bitmaps." Software: Practice and Experience, vol. 46,
+     no. 5, May 2016, pp. 709-719.
+
+"Binary Search." Algorithmica,
+     en.algorithmica.org/hpc/data-structures/binary-search/.
+     Accessed 2 May 2026.
+
+"Eytzinger Binary Search." Algorithmica,
+     algorithmica.org/en/eytzinger. Accessed 1 May 2026.
+
+Fog, Agner. The Microarchitecture of Intel, AMD, and VIA CPUs:
+     An Optimization Guide for Assembly Programmers and Compiler
+     Makers. Technical University of Denmark, 2023.
+
+Hennessy, John L., and David A. Patterson. Computer Architecture:
+     A Quantitative Approach. 6th ed., Morgan Kaufmann, 2019.
+
+Knuth, Donald E. The Art of Computer Programming, Volume 3:
+     Sorting and Searching. 2nd ed., Addison-Wesley, 1998.
+
+Lemire, Daniel. "You can beat the binary search." Daniel
+     Lemire's Blog, 27 Apr. 2026,
+     lemire.me/blog/2026/04/27/you-can-beat-the-binary-search/.
+     Accessed 30 Apr. 2026.
+
+Lemire, Daniel, et al. CRoaring: Roaring bitmaps in C (and
+     C++). GitHub, github.com/RoaringBitmap/CRoaring.
+
+Muscar, Alex. "Beautiful Binary Search in D." muscar.eu,
+     muscar.eu/shar-binary-search-meta.html. Accessed 2 May
+     2026.
+
+Peters, Orson. "Bitwise Binary Search: Elegant and Fast."
+     orlp.net, orlp.net/blog/bitwise-binary-search/. Accessed
+     1 May 2026.
+
+"Roaring Bitmap Format Specification." GitHub, RoaringBitmap
+     organization, github.com/RoaringBitmap/RoaringFormatSpec.
+     Accessed 1 May 2026.
+
+Shar, Leonard Eric. "Almost uniform search." 1971. Personal
+     communication, attributed inline in Knuth, The Art of
+     Computer Programming, Volume 3: Sorting and Searching,
+     2nd ed., p. 416 ("Another modification of binary search,
+     suggested in 1971 by L. E. Shar"), with exercises on
+     p. 423 and answers on p. 706. Reproduced (with worked
+     implementation) in Bentley, Writing Efficient Programs
+     (1982), p. 128. No known formal publication by Shar
+     himself.
+
+Skarupke, Malte. "Beautiful Branchless Binary Search."
+     probablydance, 27 Apr. 2023,
+     probablydance.com/2023/04/27/beautiful-branchless-binary-search/.
+     Accessed 2 May 2026.
+
+Skarupke, Malte. branchless_binary_search. GitHub,
+     github.com/skarupke/branchless_binary_search.
+
+
+Notes on citations
+------------------
+
+The Shar entry is unusual. Skarupke's 2023 blog post credits
+Leonard E. Shar, 1971, and says the original work is
+"impossible to google." An earlier version of this
+bibliography listed "Four-Way Search Trees, PhD dissertation,
+Stanford University, 1971" as the title and venue, which I
+fabricated from plausible-sounding guesses. That entry has
+been corrected.
+
+Direct inspection of Knuth's Art of Computer Programming,
+Volume 3: Sorting and Searching (2nd ed.), pp. 416, 423, and
+706, reveals that Knuth's attribution is purely inline — the
+exact wording on p. 416 is "Another modification of binary
+search, suggested in 1971 by L. E. Shar, will be still faster
+on some computers, because it is uniform after the first
+step" — and there is no bibliography entry, no footnote, and
+no reference number. Pages 423 and 706 use "Shar's method" as
+exercise material. This pattern is characteristic of TAoCP for
+ideas Knuth picked up by personal communication from Stanford
+colleagues and students. Shar was a Stanford PhD student in
+computer science from 1969 to 1972 (see the HP Journal
+biographical corroboration below), overlapping directly with
+Knuth's Stanford tenure. The "1971" date in Knuth most likely
+refers to the year Shar communicated the algorithm to him,
+not to a published paper.
+
+The provenance chain that reaches the present-day C++
+implementations appears to be: Shar → Knuth (TAoCP Vol. 3,
+1973 1st ed., 1998 2nd ed., inline attribution, no bibliography
+entry) → Bentley (Writing Efficient Programs, 1982, p. 128,
+with a worked implementation) → Muscar (D-language blog post,
+date unknown) → Skarupke (probablydance, 2023, C++ blog post
+with reference implementation). Skarupke attributes via
+Bentley via Muscar; the Bentley citation is where the
+algorithm first appears in a formally published book, which
+explains why it is traceable at all despite Shar never
+publishing it himself.
+
+Biographical corroboration comes from the Hewlett-Packard
+Journal, December 1974, which contains an author biography
+for Leonard E. Shar (co-author of "A Supersystem for BASIC
+Timesharing" in that issue). The biography states verbatim:
+"Len Shar received his BSc degree in electrical engineering
+from the University of the Witwatersrand in 1968. He came to
+the U.S.A. in 1969 to study computer science at Stanford
+University and received his MS and PhD degrees in 1970 and
+1972." That places his PhD at Stanford in 1972, not 1971, in
+computer science. His middle name "Eric" is taken from the
+Knuth Volume 3 index entry ("Shar, Leonard Eric, pp. 416,
+423, 706"); the HP Journal bio uses only his initial.
+
+The CRoaring entry is the software project itself; MLA has no
+clean "cite a library" template, so I have used the GitHub
+repository form that MLA applies to online reference works.
+The same pattern applies to the Roaring Format Specification
+and branchless_binary_search entries.

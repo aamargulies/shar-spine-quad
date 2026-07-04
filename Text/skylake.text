@@ -1,0 +1,41 @@
+How did Skylake do in comparison with Graviton and EMR?
+
+At n=4096, tuned+spine (the shipped path on each host):
+
+                      warm ns   cold ns   SKX ratio warm   SKX ratio cold
+  SKX  (Xeon 8175M)      27.5     131.1       1.00x            1.00x
+  EMR  (Xeon 8559C)      17.9      46.2       0.65x            0.35x
+  GV4  (Neoverse V2)     16.2      36.4       0.59x            0.28x
+
+SKX is slowest across the board: ~1.5x EMR and ~1.7x GV4 warm, ~2.8x EMR
+and ~3.6x GV4 cold at n=4096. The cold gap is much larger than the warm
+gap, which is exactly what you'd expect -- SKX (a) runs the scalar
+interpolation loop downclocked under the AVX-512 license (even though the
+zmm path is gated off, the surrounding AVX-512 state still taxes it),
+(b) sits on a shared-tenant EC2 LLC with noisier neighbors, and (c) has a
+narrower OoO window to hide DRAM round-trips. EMR and GV4 are in roughly
+the same ballpark as each other (EMR slightly slower warm, slightly slower
+cold -- but within the noise floor of a single EC2 session).
+
+Relative wins from the optimizations track cleanly across hosts, with one
+SKX exception:
+
+                 compile-time n=4096 unroll       two-level spine D vs A
+                 (warm / cold delta vs general-n) (warm / cold delta)
+  SKX            -1.5%  / noise                   -41%  / -74%
+  EMR            -22%   / -30%                    -40%  / -71%
+  GV4            -10%   / noise                   (not yet ported)
+
+The two-level spine structure is basically uarch-agnostic on x86: SKX's
+A->D deltas (-41% warm, -74% cold) are within a hair of EMR's (-40%,
+-71%). SKX's absolute numbers are much worse (237 -> 139 ns vs EMR 142
+-> 85 ns warm), but the fraction of the baseline you get back is the
+same. That's the real headline from this session -- the optimization is
+buying back an architecture-agnostic structural cost, not a SKX-specific
+mitigation.
+
+The compile-time-n=4096 unroll is the lone exception: ~0 on SKX, ~-10%
+on GV4, ~-22% on EMR. Prior prediction was "biggest win on SKX" (narrow
+OoO + downclock -> branch control should hurt more). Wrong -- SKX cold
+is dominated by memory, not branch overhead, so removing interpolation-
+loop branches has nothing to buy back.

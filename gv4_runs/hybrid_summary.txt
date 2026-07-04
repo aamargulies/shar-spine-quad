@@ -1,0 +1,36 @@
+5-run medians of ./bench 4000 5000 on GV4 r8g, 2026-05-12.
+Raw outputs: hybrid_run{1..5}.txt.
+
+Hybrid spine_{256,1024,4096}h = straight-line quaternary descent
+(like _spine_N unroll) + branchless 2-probe finish at n=2 (like _pad
+but with no sentinels because num_blocks is known at compile time):
+
+    lo = base + (spine[base] < pos) + (spine[base+1] < pos);
+
+This captures both sawtooth mechanisms at once.
+
+n=256:
+  warm: base 8.84  pad 4.86  hybrid 3.57  (-26% vs pad, -60% vs base)
+  cold: base 10.71 pad 9.69  hybrid 7.01  (-28% vs pad, -35% vs base)
+
+n=1024:
+  warm: base 13.32 pad 6.59  hybrid 4.94  (-25% vs pad, -63% vs base)
+  cold: base 18.92 pad 20.16 hybrid 13.08 (-35% vs pad, -31% vs base)
+
+n=4096:
+  warm: base 16.22 pad 8.51  unroll 14.20 hybrid 7.00  (-18% vs pad, -51% vs unroll, -57% vs base)
+  cold: base 35.86 pad 37.95 unroll 32.07 hybrid 30.62 (-19% vs pad, -5% vs unroll, -15% vs base)
+
+Warm variance across 5 runs: <=0.01 ns.
+Cold variance: 5-10 ns range, standard r8g shared-tenant noise;
+hybrid median is below pad median at every size.
+
+Hybrid is the winner at every high-foot size in both regimes, against
+every existing variant. Ship recommendation: ship hybrid at
+n ∈ {256, 1024, 4096} for narrow-API callers; retire _spine_4096 (the
+prior unroll) since hybrid strictly dominates it.
+
+At n=256 the hybrid is 3.57 ns warm -- comparable to the M4's raw
+numbers and under half of the EMR 4096 shipped number (14.02). GV4
+now has the best per-query numbers at 256 and 1024 across the whole
+project at gap=32.

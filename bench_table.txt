@@ -1,162 +1,186 @@
 
 === WARM CACHE (ns/query) ===
-algorithm                         machine       8     16     32     64    128    256    512   1024   2048   4096
-----------------------------------------------------------------------------------------------------------------
-linear (std::find)                Pi 5        7.5   12.4   21.0   38.1   72.2  143.9  282.0  616.4 1125.0 2427.9
-linear (std::find)                M4 Max      1.5    2.7    5.1    9.7   19.2   37.7   81.3  157.1  304.0  593.3
-linear (std::find)                M1 Pro      2.2    3.8    7.1   13.4   26.4   51.5  111.1  211.9  413.8  803.7
-linear (std::find)                SKX        15.6   19.7   16.6   17.8   21.4   25.4   37.1   49.5  106.4  166.9
-linear (std::find)                EMR         2.8    3.9    6.5   12.2   24.4   45.4   86.1  179.1  343.8  655.4
-linear (std::find)                GV4         3.2    5.0    9.3   15.8   31.5   72.8  115.4  236.5  462.7  906.5
+algorithm                         machine       8     11     16     23     32     47     64     89    128    177    256    333    512    617   1001   1024   1234   1777   2048   2999   3967   4096
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+linear (std::find)                Pi 5        8.9    8.5   18.3   21.9   25.2   34.5   37.7   50.3  104.0   96.6  138.3  178.6  272.0  403.9  552.0  546.0  649.9  961.1 1090.8 1558.0 2208.7 2195.8
+linear (std::find)                M4 Max      1.6    2.3    2.8    4.2    5.2    7.9   10.3   14.3   20.3   27.7   39.9   51.7   87.0  102.6  162.8  166.8  198.8  280.9  327.0  462.2  609.1  628.5
+linear (std::find)                M1 Pro      2.3    3.2    3.9    5.6    7.1   10.4   13.6   18.8   26.6   36.5   52.8   77.7  112.9  134.0  211.3  215.4  257.3  368.7  418.9  605.6  791.8  815.7
+linear (std::find)                SKX        16.1   18.0   20.4   23.6   17.4   23.3   18.8   21.8   21.9   25.7   27.4   32.8   39.5   49.1   63.0   64.5   85.2  105.7  116.5  167.4  208.1  214.4
+linear (std::find)                EMR         2.5    3.4    4.0    5.0    6.5    8.5   11.5   15.7   21.5   30.0   42.7   54.5   83.0  114.8  174.4  177.3  210.8  299.0  339.7  489.9  637.2  656.1
+linear (std::find)                GV4         3.1    4.1    5.1    7.2    8.6   11.6   15.8   21.5   30.3   40.8   69.3   75.7  116.9  139.2  233.2  235.4  283.4  410.9  464.4  676.6  889.1  903.9
 
-binary (std::binary_search)       Pi 5       19.2   23.0   27.7   35.6   39.8   46.3   52.9   70.6   64.9   79.0
-binary (std::binary_search)       M4 Max      4.3    4.2    4.6    5.1    5.8    6.6    7.6    8.6    9.9   11.1
-binary (std::binary_search)       M1 Pro      8.0    7.3    7.3    8.1    9.2   10.4   12.3   13.8   15.4   17.4
-binary (std::binary_search)       SKX        24.9   29.5   36.5   44.7   52.6   61.3   64.7   70.2   76.9   82.3
-binary (std::binary_search)       EMR        14.6   18.5   22.9   27.4   32.8   38.9   44.7   49.8   55.0   60.6
-binary (std::binary_search)       GV4        11.7   15.0   18.4   21.9   25.3   29.2   33.4   37.7   42.4   47.1
+binary (std::binary_search)       Pi 5       20.6   25.2   32.1   33.5   33.0   36.5   33.4   35.7   55.6   42.4   45.8   47.8   57.3   53.4   68.6   57.5   59.1   62.1   63.3   66.6   68.5   68.6
+binary (std::binary_search)       M4 Max      4.6    6.7    4.5    8.0    5.0    9.2    5.5   11.5    6.2   13.5    7.1   15.2    8.1   14.9    9.6    9.3   16.1   13.0   10.8   19.2   12.6   12.2
+binary (std::binary_search)       M1 Pro      8.1    9.4    7.3   11.1    7.5   13.0    8.2   16.1    9.3   18.4   10.7   20.9   12.3   20.1   14.3   14.0   22.4   18.8   15.7   26.5   18.4   17.7
+binary (std::binary_search)       SKX        25.1   27.2   29.9   32.3   36.2   38.8   43.9   46.3   51.6   54.6   59.3   60.6   67.0   66.8   71.4   71.3   72.9   77.0   76.7   80.9   82.3   82.6
+binary (std::binary_search)       EMR        14.6   16.3   18.6   20.7   23.0   25.2   27.6   29.7   33.4   35.3   39.4   40.9   45.2   46.2   50.3   50.2   51.6   54.6   55.5   58.7   61.0   61.0
+binary (std::binary_search)       GV4        11.7   13.1   14.9   16.6   18.3   20.1   21.9   23.4   25.6   27.2   29.8   31.0   34.5   35.5   39.0   39.0   39.7   42.8   43.8   45.4   48.2   48.4
 
-simd_quad (reference)             Pi 5        8.5    7.2   10.0   12.2   15.6   18.1   22.1   29.6   27.8   31.6
-simd_quad (reference)             M4 Max      2.0    1.4    1.6    2.1    2.5    3.2    3.7    4.7    5.3    6.3
-simd_quad (reference)             M1 Pro      3.4    2.6    2.6    3.1    3.6    4.6    5.3    6.7    7.7    9.2
-simd_quad (reference)             SKX        16.7   14.9   16.2   18.5   18.9   22.6   23.9   27.0   29.3   33.0
-simd_quad (reference)             EMR         2.8    3.3    3.1    5.0   10.7    7.5   15.1   10.3   18.9   13.8
-simd_quad (reference)             GV4         3.6    3.3    3.2    4.9    9.6    7.8   15.2   11.1   19.9   15.2
+simd_quad (reference)             Pi 5       10.2   16.3   10.7   20.2   12.0   21.5   12.2   17.3   19.4   21.7   17.9   22.6   25.9   28.0   28.2   24.3   27.5   30.6   27.6   31.3   31.3   31.1
+simd_quad (reference)             M4 Max      2.1    2.9    1.4    5.0    1.6    6.6    2.1    4.0    2.5    3.9    3.3    4.6    3.8    5.7    5.6    4.8    5.4    5.9    5.5    6.5    6.6    6.6
+simd_quad (reference)             M1 Pro      3.4    4.4    2.7    7.5    2.7    9.8    3.1    6.2    3.6    5.7    4.7    6.7    5.4    8.1    8.0    6.9    7.8    8.5    7.8    9.4    9.5    9.4
+simd_quad (reference)             SKX        17.8   20.1   15.8   23.2   17.0   26.8   17.2   22.3   18.5   23.8   21.5   24.5   23.6   30.0   29.4   27.0   29.3   32.4   29.6   32.7   33.9   33.2
+simd_quad (reference)             EMR         2.9    3.7    3.2    9.4    3.2   10.3    4.9    7.5   10.8    7.9    7.5   11.2   15.1   11.4   11.3   10.2   13.6   18.5   18.9   13.6   13.7   13.6
+simd_quad (reference)             GV4         3.6    4.7    3.2    8.0    3.2    8.6    4.9    7.1    9.6    8.6    7.8   11.5   15.3   12.3   12.2   11.2   14.5   19.5   19.9   15.1   15.2   15.2
 
-simd_quad_pi5                     Pi 5        5.1    5.2    8.3   11.1   13.5   17.1   20.7   26.1   28.3   32.4
-simd_quad_pi5                     M4 Max      1.4    1.2    1.9    2.0    2.4    2.8    3.8    4.3    5.6    6.2
-simd_quad_pi5                     M1 Pro      2.5    2.4    2.7    2.8    3.7    4.3    5.8    6.7    8.5    9.4
+simd_quad_pi5                     Pi 5        5.4   13.0    7.0   13.5    9.3   16.9   10.4   18.8   19.7   19.3   17.6   21.4   23.8   27.4   27.6   23.4   30.3   27.5   27.1   33.6   33.6   30.1
+simd_quad_pi5                     M4 Max      1.5    3.8    1.3    4.6    2.0    6.4    2.0    7.0    2.4    4.9    2.8    4.7    3.8    5.9    5.9    4.4    6.5    6.0    5.7    7.0    7.1    6.4
+simd_quad_pi5                     M1 Pro      2.5    5.4    2.5    6.5    2.7    9.0    2.9    9.9    3.8    7.2    4.5    7.0    6.0    8.9    8.8    6.8    9.7    8.9    8.7   10.5   10.7    9.5
 
-simd_quad_pi5 + spine             Pi 5        5.0    5.4    7.2   11.4   11.9   13.5   16.0   17.9   20.8   23.8
-simd_quad_pi5 + spine             M4 Max      1.4    1.2    2.4    2.4    2.1    2.3    2.8    3.3    4.0    4.6
-simd_quad_pi5 + spine             M1 Pro      2.5    2.4    3.2    3.1    3.0    3.5    4.1    4.8    5.6    6.4
+simd_quad_pi5 + spine             Pi 5        5.4   10.5    7.0   15.7    8.0   14.4   11.0   19.0   16.6   15.4   13.0   16.6   18.0   20.0   20.1   17.3   22.6   20.0   19.8   24.9   25.1   22.5
+simd_quad_pi5 + spine             M4 Max      1.5    3.8    1.2    4.6    2.5    6.9    2.5    7.4    2.1    4.3    2.3    3.7    2.8    4.3    4.3    3.4    5.0    4.3    4.1    5.3    5.3    4.7
+simd_quad_pi5 + spine             M1 Pro      2.5    5.5    2.5    6.5    3.2    9.4    3.2   10.1    3.1    6.2    3.6    5.3    4.1    6.1    6.0    4.8    6.8    6.0    5.7    7.4    7.4    6.5
 
-simd_quad_m4                      Pi 5        5.6    5.2    6.1   10.0   12.7   15.0   21.7   20.7   24.1   27.6
-simd_quad_m4                      M4 Max      1.6    1.4    1.4    2.1    2.1    2.6    3.0    3.6    4.2    5.0
-simd_quad_m4                      M1 Pro      2.4    2.4    2.4    3.1    3.6    4.0    4.7    5.5    6.4    7.5
+simd_quad_m4                      Pi 5        7.3   14.0    7.2   16.5    6.8   13.3    9.6   17.1   18.2   23.1   14.1   19.1   21.8   23.9   28.4   20.5   26.9   28.0   23.9   27.4   27.6   26.8
+simd_quad_m4                      M4 Max      1.7    4.0    1.5    4.9    1.5    5.7    2.1    6.6    2.2    7.9    2.7    3.8    3.0    5.1    6.0    3.7    5.4    5.7    4.4    5.7    5.6    5.3
+simd_quad_m4                      M1 Pro      2.5    5.6    2.5    6.7    2.5    7.8    3.1    8.8    3.6   11.3    4.1    5.8    4.8    7.7    8.6    5.6    7.9    8.3    6.5    8.2    8.3    7.7
 
-simd_quad_m4 + spine              Pi 5        5.2    5.3    6.2    8.8   12.8   13.4   18.3   17.2   20.1   22.8
-simd_quad_m4 + spine              M4 Max      1.6    1.4    1.2    2.5    2.6    2.3    2.8    3.2    3.7    4.3
-simd_quad_m4 + spine              M1 Pro      2.4    2.4    2.5    3.4    3.7    3.8    4.4    4.9    5.6    6.3
+simd_quad_m4 + spine              Pi 5        7.2   13.5    7.3   16.3    5.7   13.3    8.0   15.6   17.6   23.0   12.6   15.6   21.8   19.7   23.5   16.8   21.9   23.2   19.6   22.4   22.5   21.8
+simd_quad_m4 + spine              M4 Max      1.7    4.0    1.5    4.9    1.3    5.5    2.6    6.8    2.7    8.2    2.4    3.6    2.9    4.6    5.3    3.3    4.8    5.0    3.8    4.9    4.8    4.5
+simd_quad_m4 + spine              M1 Pro      2.6    6.0    2.5    7.2    2.5    8.0    3.7    9.5    3.7   11.5    3.9    5.4    4.4    7.1    7.7    4.9    6.7    7.3    5.7    7.0    7.0    6.4
 
-simd_quad_intel                   SKX        13.1   12.3   14.0   15.1   18.0   19.7   23.1   25.3   29.4   31.6
-simd_quad_intel                   EMR         2.5    2.8    3.1    3.3    4.7   10.3    7.6   15.5   10.1   19.5
+simd_quad_intel                   SKX        12.9   18.0   12.9   21.8   14.7   23.6   15.4   27.8   17.7   23.1   19.1   24.0   22.6   29.6   29.4   25.4   32.3   28.6   29.3   34.4   34.5   31.6
+simd_quad_intel                   EMR         2.5    6.2    2.5    7.7    3.1   10.2    3.2   10.2    4.7    7.5   10.3    8.5    7.6   10.4   10.2   15.2   11.2   10.2    9.9   17.4   19.7   19.4
 
-simd_quad_intel + spine           SKX        12.9   12.9   15.7   16.0   17.5   18.7   20.0   21.4   25.2   26.8
-simd_quad_intel + spine           EMR         2.5    2.5    3.5    3.7    4.4   10.3    6.6   14.7    9.0   18.0
+simd_quad_intel + spine           SKX        12.4   17.8   12.1   20.1   14.8   23.3   15.5   26.0   16.6   20.9   17.3   22.8   19.7   25.3   25.5   22.4   27.7   25.3   25.6   30.5   30.5   27.9
+simd_quad_intel + spine           EMR         2.5    6.3    2.5    7.8    3.9   11.0    4.1   11.1    4.4    7.1   10.2    7.4    6.5    9.4    9.2   14.7    9.7    9.3    9.1   15.9   18.1   17.9
 
-simd_quad_graviton                Pi 5        4.8    5.1    8.3   11.1   13.0   19.3   22.5   22.7   25.9   29.6
-simd_quad_graviton                M4 Max      1.4    1.2    1.9    1.9    2.2    2.6    3.4    3.9    4.9    5.5
-simd_quad_graviton                M1 Pro      2.4    2.4    2.7    2.9    3.4    4.0    5.1    5.9    7.4    8.2
-simd_quad_graviton                GV4         2.9    2.9    3.3    3.5    5.1    9.8    7.9   15.5   11.1   20.0
+simd_quad_graviton                Pi 5        4.7   13.1    7.0   16.0    9.5   15.2   10.6   18.6   15.2   18.4   15.8   19.9   28.1   25.5   25.5   22.4   29.0   25.4   25.3   32.0   32.0   28.6
+simd_quad_graviton                M4 Max      1.5    3.7    1.3    4.7    2.0    6.3    2.0    6.9    2.2    4.6    2.6    4.3    3.4    5.3    5.2    3.9    5.9    5.3    5.0    6.4    6.5    5.6
+simd_quad_graviton                M1 Pro      2.5    5.5    2.5    6.4    2.7    9.0    2.9    9.9    3.4    6.8    4.1    6.3    5.2    7.7    7.7    6.0    8.6    7.8    7.5    9.3    9.5    8.4
+simd_quad_graviton                GV4         2.9    5.4    2.9    6.6    3.3    8.9    3.5    8.8    5.1    7.6    9.8    8.8    7.9   11.4   11.2   15.6   12.2   11.3   11.1   18.2   20.5   20.0
 
-simd_quad_graviton + spine        Pi 5        5.1    5.3    7.4   11.3   12.0   13.7   19.1   18.1   20.3   23.3
-simd_quad_graviton + spine        M4 Max      1.4    1.2    2.4    2.4    2.1    2.3    2.8    3.3    4.0    4.6
-simd_quad_graviton + spine        M1 Pro      2.4    2.4    3.2    3.1    3.1    3.4    4.0    4.8    5.7    6.3
-simd_quad_graviton + spine        GV4         2.8    2.9    3.9    4.1    4.5    8.7    6.2   13.4    7.9   16.2
+simd_quad_graviton + spine        Pi 5        4.5   13.3    6.9   16.1    9.8   14.3   10.6   18.5   13.4   15.6   13.1   16.0   21.1   20.0   19.9   17.2   22.7   20.0   19.8   25.0   25.1   22.5
+simd_quad_graviton + spine        M4 Max      1.5    3.7    1.3    4.6    2.5    6.7    2.5    7.3    2.2    4.3    2.4    3.8    2.8    4.4    4.3    3.3    5.0    4.3    4.1    5.4    5.4    4.8
+simd_quad_graviton + spine        M1 Pro      2.5    5.5    2.4    6.5    3.2    9.4    3.2   10.2    3.1    6.3    3.7    5.4    4.2    6.1    6.0    5.0    7.1    6.1    5.7    7.5    7.5    6.7
+simd_quad_graviton + spine        GV4         2.8    5.5    2.8    6.8    3.8    9.3    4.0    9.5    4.5    6.5    8.6    7.1    6.2    8.2    8.0   13.4    8.6    8.1    7.9   13.3   16.4   16.3
 
 
 === COLD CACHE (ns/query) ===
-algorithm                         machine       8     16     32     64    128    256    512   1024   2048   4096
-----------------------------------------------------------------------------------------------------------------
-linear (std::find)                Pi 5       15.3   25.7   39.2   44.4   82.8  156.4  338.2  610.6  962.1 1730.4
-linear (std::find)                M4 Max      4.5    6.1    7.1   11.6   19.0   33.9   68.2  130.7  240.1  481.1
-linear (std::find)                M1 Pro      6.3    7.8   10.0   15.2   25.5   47.0   87.3  167.2  327.7  648.4
-linear (std::find)                SKX        21.2   23.4   26.6   31.3   41.9   62.0  102.8  177.9  326.5  582.5
-linear (std::find)                EMR         8.2   10.0   12.0   17.0   23.5   42.3   82.0  140.9  298.9  493.6
-linear (std::find)                GV4         6.6    8.6   11.4   17.0   29.4   54.7  102.4  203.9  403.1  835.1
+algorithm                         machine       8     11     16     23     32     47     64     89    128    177    256    333    512    617   1001   1024   1234   1777   2048   2999   3967   4096
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+linear (std::find)                Pi 5       24.1   37.4   41.6   43.0   58.7   43.2   46.7   88.3   84.6  102.0  141.5  175.1  341.7  349.4  598.1  554.7  696.4  811.7  923.5 1341.8 1695.2 1718.0
+linear (std::find)                M4 Max      4.9    5.4    6.1    7.1    7.9    9.1   11.8   14.3   19.6   26.3   34.2   47.1   70.4   83.7  128.2  148.1  155.1  225.0  257.4  373.1  484.8  523.7
+linear (std::find)                M1 Pro      6.7    7.1    7.8    9.0   10.0   13.1   15.9   19.4   24.6   34.5   47.9   62.8   92.1  109.9  168.2  198.4  211.4  303.8  333.6  474.9  641.7  683.2
+linear (std::find)                SKX        23.6   24.4   27.2   30.8   31.9   38.0   36.8   41.6   45.1   53.0   62.6   75.4  106.2  121.6  182.9  185.9  221.2  300.7  333.1  465.1  598.5  599.8
+linear (std::find)                EMR         8.4    9.1    9.9   11.2   12.2   14.4   16.7   19.1   23.4   31.4   40.2   56.2   75.5   94.9  140.2  142.3  169.9  232.7  275.1  377.8  487.7  498.3
+linear (std::find)                GV4         6.5    6.5    8.5    8.9   11.0   13.7   16.8   21.0   29.2   38.0   54.5   69.3  101.2  120.3  197.0  207.7  243.8  352.6  419.6  621.5  798.5  812.9
 
-binary (std::binary_search)       Pi 5       21.9   28.2   36.5   43.4   59.2   88.3  173.5  284.5  289.2  320.0
-binary (std::binary_search)       M4 Max      4.8    4.4    3.9    4.6    5.4    7.1   12.6   22.1   43.2   66.6
-binary (std::binary_search)       M1 Pro      7.3    6.7    6.6    7.1    8.8   11.8   15.9   23.4   83.3  161.0
-binary (std::binary_search)       SKX        30.0   35.1   41.0   50.0   60.6   84.7  117.3  162.3  205.1  276.8
-binary (std::binary_search)       EMR        17.5   22.2   28.1   32.0   36.6   45.5   62.4   77.5   98.7  117.6
-binary (std::binary_search)       GV4        14.4   18.3   22.7   26.8   31.9   37.3   43.3   56.6   78.6  119.8
+binary (std::binary_search)       Pi 5       23.8   42.6   45.5   51.3   56.8   41.3   46.1   74.3   82.5   82.1   87.7  114.0  185.5  196.8  246.2  200.7  235.8  270.0  257.7  323.1  326.1  323.4
+binary (std::binary_search)       M4 Max      4.6    5.6    4.5    7.2    4.3    7.7    4.6   10.2    5.5   12.9    7.9   18.1   13.8   24.6   22.3   33.1   42.5   48.8   44.0   76.7   63.6   81.5
+binary (std::binary_search)       M1 Pro      7.8    8.6    6.8   10.1    6.6   12.5    7.2   15.4    8.4   17.8   11.8   23.8   17.2   26.9   34.4   44.6   69.5  105.5   69.2  122.7  138.3  154.1
+binary (std::binary_search)       SKX        28.4   30.8   33.2   37.9   38.7   42.2   48.0   51.0   60.0   65.4   79.4   89.4  137.6  125.7  159.7  169.2  171.1  198.3  230.5  236.8  268.7  272.0
+binary (std::binary_search)       EMR        17.5   18.9   22.0   22.9   25.8   28.0   31.0   32.3   37.2   38.1   45.3   49.8   61.5   66.6   79.4   79.6   85.2   94.7  108.2  109.4  119.4  119.4
+binary (std::binary_search)       GV4        13.7   15.1   17.2   19.2   21.7   23.5   26.2   27.8   31.4   33.0   36.5   38.2   42.6   45.7   55.1   57.4   61.5   77.1   86.2  105.9  130.7  129.5
 
-simd_quad (reference)             Pi 5       10.4    9.2   17.7   16.7   26.5   68.9  174.5  252.5  252.5  295.3
-simd_quad (reference)             M4 Max      5.4    1.4    1.4    2.1    2.5    4.1    5.7    9.2   16.1   31.5
-simd_quad (reference)             M1 Pro      7.6    2.6    2.6    3.0    3.8    5.6    8.1   15.6   30.1   58.2
-simd_quad (reference)             SKX        19.4   12.9   14.0   16.3   19.0   39.8   63.1   84.6  141.1  171.5
-simd_quad (reference)             EMR         8.2    3.2    3.3    5.0   11.8   16.6   36.8   43.8   56.6   71.0
-simd_quad (reference)             GV4         6.2    3.2    3.4    5.2   10.6   10.8   21.4   33.2   55.9   81.7
+simd_quad (reference)             Pi 5       13.3   22.9   19.6   22.9   22.8   19.9   16.8   29.9   37.2   60.8   68.4  106.1  174.0  226.0  264.5  189.6  240.5  275.4  234.6  301.4  291.7  296.3
+simd_quad (reference)             M4 Max      5.3    6.2    1.5    5.0    1.6    7.0    2.1    4.0    2.6    3.9    4.2    6.3    6.4   10.8   10.1   15.6   18.7   27.6   17.5   41.6   29.6   39.0
+simd_quad (reference)             M1 Pro      8.4    9.1    2.5    7.1    2.6    9.4    3.1    6.3    3.7    5.9    5.6    9.0    9.2   11.9   16.0   24.6   34.5   46.3   26.4   56.9   51.5   62.9
+simd_quad (reference)             SKX        20.0   21.7   14.6   22.0   15.6   24.8   15.8   21.4   20.2   31.3   39.4   44.3   87.4   78.8   95.8   94.3  111.1  164.0  138.3  208.4  232.2  193.1
+simd_quad (reference)             EMR         8.3    9.4    3.4    9.8    3.0   10.6    5.0    7.8   11.9   10.6   15.6   23.4   33.3   40.2   48.2   46.1   51.1   57.5   68.8   69.0   73.5   73.7
+simd_quad (reference)             GV4         6.2    6.8    3.1    7.8    3.3    8.7    5.3    8.0   10.8   11.2   11.3   16.4   22.3   25.3   36.2   36.0   39.7   52.8   58.8   69.6   84.9   97.3
 
-simd_quad_pi5                     Pi 5        5.0    7.3   13.8   15.2   25.4   62.4  165.0  202.9  245.8  304.1
-simd_quad_pi5                     M4 Max      1.2    1.0    1.7    1.9    2.5    3.8    6.0    7.0   10.4   15.2
-simd_quad_pi5                     M1 Pro      2.5    2.5    2.6    2.8    3.9    5.5    7.9   10.2   23.1   33.8
+simd_quad_pi5                     Pi 5        7.1   17.8   12.5   21.2   14.7   17.2   13.8   31.3   32.2   51.4   57.2   89.1  172.7  191.3  211.7  162.9  256.1  210.9  214.5  313.3  304.0  299.0
+simd_quad_pi5                     M4 Max      1.2    5.5    1.1    6.0    1.9    6.9    1.9    6.7    2.7    5.6    4.1    6.8    6.1    9.4    8.7    8.0   20.2   26.6   11.7   17.7   17.1   20.6
+simd_quad_pi5                     M1 Pro      2.6    7.2    2.5    8.3    2.6    9.1    2.9    9.7    3.8    7.6    5.6    9.1    8.3   12.7   12.8   12.8   34.6   42.7   22.0   34.5   28.4   34.9
 
-simd_quad_pi5 + spine             Pi 5        6.3    9.0   12.6   16.1   26.8   61.8  138.0  142.0   99.6  138.4
-simd_quad_pi5 + spine             M4 Max      1.3    1.1    2.2    2.4    2.4    2.6    3.1    5.8    4.1   11.6
-simd_quad_pi5 + spine             M1 Pro      2.5    2.5    3.1    3.1    4.4    4.8    9.3    9.1   12.6   23.2
+simd_quad_pi5 + spine             Pi 5        7.9   18.9   17.4   20.0   17.0   14.9   13.8   32.2   33.8   46.9   41.8   93.9  130.6  132.6   93.3  112.1   92.5  143.7  146.8  182.0  152.4  150.7
+simd_quad_pi5 + spine             M4 Max      1.3    5.6    1.1    5.9    2.4    7.4    2.4    7.4    2.5    5.3    2.7    4.2    3.8    5.0    5.1    4.3    6.2    8.7    6.2    8.4    9.9    6.2
+simd_quad_pi5 + spine             M1 Pro      2.6    7.4    2.5    8.4    3.1    9.4    3.2    9.9    3.6    7.3    4.3    6.4    5.7    7.9    9.8    9.8   10.5   15.1   13.5   26.8   21.6   23.6
 
-simd_quad_m4                      Pi 5        6.4   13.8   16.6   17.1   23.9   64.1  152.8  203.5  221.1  303.7
-simd_quad_m4                      M4 Max      1.4    1.2    1.2    2.1    2.5    4.1    5.1    6.7   10.4   16.8
-simd_quad_m4                      M1 Pro      2.5    2.4    2.5    3.0    4.0    5.4    7.2   10.0   20.3   37.1
+simd_quad_m4                      Pi 5        7.4   18.8   11.0   21.4   15.1   18.5   13.8   29.9   30.3   51.0   48.3   71.8  122.8  165.5  190.7  160.5  198.6  219.4  219.5  364.9  268.0  267.3
+simd_quad_m4                      M4 Max      1.6    5.6    1.3    6.2    1.3    8.0    2.1    6.2    2.6    8.6    4.2    5.7    5.1    7.4    9.9    8.1   21.2   24.8   11.3   34.7   16.2   20.4
+simd_quad_m4                      M1 Pro      2.7    7.4    2.5    8.7    2.5   10.4    3.1    8.9    3.9   11.3    5.6    7.9    7.6   10.8   13.4   13.5   37.5   51.3   22.7   54.7   29.7   38.0
 
-simd_quad_m4 + spine              Pi 5        6.8   13.5   10.5   16.0   24.2   67.1  136.7  134.0   94.4  131.4
-simd_quad_m4 + spine              M4 Max      1.7    1.3    1.2    2.3    2.7    3.3    3.5    6.0    4.2    6.5
-simd_quad_m4 + spine              M1 Pro      2.6    2.5    2.5    3.4    4.1    4.6    5.1    8.5    8.3   11.1
+simd_quad_m4 + spine              Pi 5        6.9   17.6   12.6   21.2   13.5   18.4   15.9   28.7   25.0   41.7   50.8   71.5   85.9  133.0  141.6  106.0  141.3  146.6  136.9  168.1  148.0  147.7
+simd_quad_m4 + spine              M4 Max      1.6    5.2    1.3    6.4    1.4    7.9    2.5    6.5    2.7    8.8    3.3    4.5    3.6    6.0    6.2    4.3    5.7    6.6    5.0    6.8    7.8    7.7
+simd_quad_m4 + spine              M1 Pro      2.7    7.7    2.5    8.8    2.5   10.3    3.3    9.2    4.0   11.4    4.7    6.2    5.2    8.0    9.0    6.0    8.4   10.8    8.7    9.5   10.4   10.3
 
-simd_quad_intel                   SKX        11.5   11.0   12.2   14.1   16.7   25.8   42.1   75.5  127.9  180.9
-simd_quad_intel                   EMR         2.5    2.5    3.1    3.2    5.2   15.4   28.0   38.0   47.2   64.9
+simd_quad_intel                   SKX        11.9   18.3   11.6   23.0   12.7   21.9   13.9   25.3   17.8   23.5   26.8   40.0   64.3   71.9   99.4   79.8  126.3  139.5  128.0  153.1  201.9  179.1
+simd_quad_intel                   EMR         2.5    8.2    2.5   10.5    3.0   10.5    3.2   10.7    5.5    8.9   15.1   19.4   25.6   37.3   45.0   39.5   48.8   48.8   59.5   63.2   69.5   66.9
 
-simd_quad_intel + spine           SKX        11.7   11.5   13.6   17.4   17.7   24.6   42.8   60.5   93.8  132.7
-simd_quad_intel + spine           EMR         2.5    2.5    3.5    3.7    5.1   13.2   16.7   23.4   25.9   37.2
+simd_quad_intel + spine           SKX        11.0   17.3   10.8   20.5   12.5   20.6   13.9   24.6   19.2   25.1   26.6   34.3   48.6   53.9   69.7   63.6   84.0   94.3   98.0  155.9  139.0  131.9
+simd_quad_intel + spine           EMR         2.5    8.2    2.5    9.7    4.2   10.9    3.9   11.4    5.4    8.9   12.9   15.4   15.9   22.3   24.5   23.9   26.1   27.1   32.2   33.9   38.9   37.2
 
-simd_quad_graviton                Pi 5        5.6    7.5   13.1   14.3   23.0   57.5  158.6  196.7  231.6  287.9
-simd_quad_graviton                M4 Max      1.5    1.3    1.7    1.7    2.4    3.7    5.4    5.8    8.7   11.7
-simd_quad_graviton                M1 Pro      2.4    2.4    2.6    2.8    3.6    5.6    7.1    9.7   19.8   27.1
-simd_quad_graviton                GV4         2.6    2.6    3.3    3.9    6.3   12.6   16.2   31.0   43.9   65.0
+simd_quad_graviton                Pi 5        6.4   18.2   12.7   22.0   16.2   17.8   13.4   30.3   24.6   44.7   47.1   70.0  152.0  170.0  202.2  155.3  212.4  199.0  201.7  326.4  282.1  291.9
+simd_quad_graviton                M4 Max      1.3    5.0    1.0    6.4    1.9    7.0    1.9    7.2    2.4    5.3    4.1    6.4    5.3    7.6    7.7    6.4    9.7   13.7    8.7   15.2   13.7   17.4
+simd_quad_graviton                M1 Pro      2.6    7.3    2.5    8.3    2.6    9.1    2.8    9.6    3.5    7.5    5.5    8.6    7.5   11.5   11.9   10.5   20.5   37.1   21.9   36.0   25.9   35.1
+simd_quad_graviton                GV4         2.6    6.6    2.6    8.7    3.5    9.3    4.0    9.6    6.8   10.1   13.4   13.7   16.7   22.2   32.5   32.2   37.5   42.5   43.2   56.4   64.1   62.7
 
-simd_quad_graviton + spine        Pi 5        5.6    8.3   11.1   14.3   24.9   55.9  133.3  123.0  109.7  129.3
-simd_quad_graviton + spine        M4 Max      1.2    1.0    2.3    2.3    2.3    2.3    3.4    3.7    5.1    5.1
-simd_quad_graviton + spine        M1 Pro      2.4    2.4    3.1    3.2    3.5    3.9    4.9    5.8   11.4   15.4
-simd_quad_graviton + spine        GV4         2.6    2.8    3.9    4.4    5.9   10.4   15.4   17.4   22.6   34.6
+simd_quad_graviton + spine        Pi 5        7.2   17.5    9.5   20.9   12.3   14.1   12.9   30.2   27.8   47.0   43.1   64.4  114.4  123.8   79.0   88.7  103.1  138.6  137.4  182.2  151.0  154.7
+simd_quad_graviton + spine        M4 Max      1.5    5.4    1.0    6.5    2.4    7.3    2.4    7.8    2.3    5.1    2.6    4.2    3.1    5.1    4.6    3.7    5.7    5.8    6.2    8.8    9.5   10.2
+simd_quad_graviton + spine        M1 Pro      2.5    7.1    2.5    8.3    3.1    9.5    3.3    9.9    3.4    6.8    3.9    6.0    4.9    7.0    6.8    5.8    8.4   10.6   10.7   14.2   16.4   16.9
+simd_quad_graviton + spine        GV4         2.6    6.6    2.6    8.3    3.9    9.5    4.4   10.0    6.1    9.0   10.6   12.0   16.5   20.2   18.8   19.0   19.8   24.3   23.2   32.0   37.1   37.5
 
 === compile-time n=4096 unroll (ns/query) ===
 host              general-n warm   unroll warm  general-n cold   unroll cold
-Pi 5 (A76)                 23.80         23.78          138.40        142.10
-M4 Max                      4.30          3.65            6.50         18.65
-M1 Pro                      6.30          6.16           11.10         32.70
-Intel Skylake              26.80         27.11          132.70        122.98
-Intel Emerald              18.00         14.02           37.20         25.87
-Graviton 4                 16.20         14.67           34.60         29.15
+Pi 5 (A76)                 22.50         15.98          150.70        111.85
+M4 Max                      4.50          3.71            7.70         21.94
+M1 Pro                      6.40          6.05           10.30         32.12
+Intel Skylake              27.90         18.92          131.90        185.01
+Intel Emerald              17.90          6.50           37.20         24.36
+Graviton 4                 16.30          7.00           37.50         27.24
 
 === two-level spine micro-bench (ns/lookup, 512 containers, inner_n=4096) ===
-host              var       warm      cold  description
-Pi 5 (A76)        A       250.78    426.11  bsearch outer + general-n inner
-Pi 5 (A76)        B       243.37    246.48  two-level spine outer + general-n inner
-Pi 5 (A76)        C       241.34     92.50  bsearch outer + n=4096 inner
-Pi 5 (A76)        D       242.94     85.74  two-level spine outer + n=4096 inner
-Pi 5 (A76)        E       221.45     38.70  Shar branchless outer + general-n inner
-Pi 5 (A76)        F       260.46     33.05  Shar branchless outer + n=4096 inner
-M4 Max            A       161.93     22.30  bsearch outer + general-n inner
-M4 Max            B        30.82     21.46  two-level spine outer + general-n inner
-M4 Max            C        20.82      9.79  bsearch outer + n=4096 inner
-M4 Max            D        22.71     19.38  two-level spine outer + n=4096 inner
-M4 Max            E        17.71      7.50  Shar branchless outer + general-n inner
-M4 Max            F        13.61      7.08  Shar branchless outer + n=4096 inner
-M1 Pro            A       339.55     49.59  bsearch outer + general-n inner
-M1 Pro            B       115.23     27.50  two-level spine outer + general-n inner
-M1 Pro            C        44.63     15.21  bsearch outer + n=4096 inner
-M1 Pro            D        69.35     24.79  two-level spine outer + n=4096 inner
-M1 Pro            E        61.24     11.25  Shar branchless outer + general-n inner
-M1 Pro            F        54.40     11.46  Shar branchless outer + n=4096 inner
-Intel Skylake     A       234.69    122.02  bsearch outer + general-n inner
-Intel Skylake     B       214.60     55.28  two-level spine outer + general-n inner
-Intel Skylake     C       152.00     66.90  bsearch outer + n=4096 inner
-Intel Skylake     D       100.91     34.87  two-level spine outer + n=4096 inner
-Intel Skylake     E        98.24     27.02  Shar branchless outer + general-n inner
-Intel Skylake     F        91.16     26.90  Shar branchless outer + n=4096 inner
-Intel Emerald     A       157.60     95.56  bsearch outer + general-n inner
-Intel Emerald     B       141.76     60.85  two-level spine outer + general-n inner
-Intel Emerald     C        84.10     55.97  bsearch outer + n=4096 inner
-Intel Emerald     D        92.10     28.29  two-level spine outer + n=4096 inner
-Intel Emerald     E        77.29     17.23  Shar branchless outer + general-n inner
-Intel Emerald     F        72.55     16.98  Shar branchless outer + n=4096 inner
-Graviton 4        A       175.83     85.77  bsearch outer + general-n inner
-Graviton 4        B       159.94     58.67  two-level spine outer + general-n inner
-Graviton 4        C       114.42     49.19  bsearch outer + n=4096 inner
-Graviton 4        D       125.12     31.50  two-level spine outer + n=4096 inner
-Graviton 4        E        87.22     15.39  Shar branchless outer + general-n inner
-Graviton 4        F        73.74     14.66  Shar branchless outer + n=4096 inner
+host              var    hot_bat   hot_ser   cold_bat   cold_ser  description
+Pi 5 (A76)        A       238.20    284.13    1650.36    1652.31  bsearch outer + general-n inner
+Pi 5 (A76)        B       231.84    264.09    1436.01    2009.15  two-level spine outer + general-n inner
+Pi 5 (A76)        C       233.78    282.78    1367.12    1471.38  bsearch outer + n=4096 inner
+Pi 5 (A76)        D       240.10    268.82    1233.04    1790.45  two-level spine outer + n=4096 inner
+Pi 5 (A76)        E       256.48    245.58    1931.18    2038.13  Shar branchless outer + general-n inner
+Pi 5 (A76)        F       244.40    328.50    1591.57    1547.03  Shar branchless outer + n=4096 inner
+Pi 5 (A76)        G       432.88    547.26    1739.06    2015.27  Shar outer + Shar inner (no spine)
+Pi 5 (A76)        H       260.82    252.48    2354.24    2635.44  Eytzinger outer + 4-deep PF + general-n inner
+Pi 5 (A76)        I       242.76    254.65    1892.39    2015.35  Eytzinger outer + 4-deep PF + n=4096 inner
+Pi 5 (A76)        Lem     377.30    438.38    2075.36    1859.70  Lemire reference (bsearch + simd_quad)
+M4 Max            A        81.63     30.25     228.33     419.38  bsearch outer + general-n inner
+M4 Max            B        31.26     40.40     186.25     217.71  two-level spine outer + general-n inner
+M4 Max            C        19.12     24.47     160.00     329.38  bsearch outer + n=4096 inner
+M4 Max            D        21.57     38.55     166.66     238.54  two-level spine outer + n=4096 inner
+M4 Max            E        15.12     18.36     158.96     235.62  Shar branchless outer + general-n inner
+M4 Max            F        13.25     16.33     161.88     281.67  Shar branchless outer + n=4096 inner
+M4 Max            G        73.81     87.82     231.66     644.38  Shar outer + Shar inner (no spine)
+M4 Max            H        16.99     24.13     213.96     447.50  Eytzinger outer + 4-deep PF + general-n inner
+M4 Max            I        13.32     18.53     167.50     574.38  Eytzinger outer + 4-deep PF + n=4096 inner
+M4 Max            Lem      85.17     86.28     263.33     546.04  Lemire reference (bsearch + simd_quad)
+M1 Pro            A       394.99     98.62     819.38     613.54  bsearch outer + general-n inner
+M1 Pro            B       112.64    147.04     338.54     677.09  two-level spine outer + general-n inner
+M1 Pro            C        54.85     75.52     263.54     644.38  bsearch outer + n=4096 inner
+M1 Pro            D        75.55    116.76     306.25     706.25  two-level spine outer + n=4096 inner
+M1 Pro            E        55.53     76.05     268.75     630.21  Shar branchless outer + general-n inner
+M1 Pro            F        45.88     79.26     278.54     776.46  Shar branchless outer + n=4096 inner
+M1 Pro            G       158.26    158.17     356.88     888.75  Shar outer + Shar inner (no spine)
+M1 Pro            H        68.93     74.33     385.62     826.66  Eytzinger outer + 4-deep PF + general-n inner
+M1 Pro            I        47.71     63.57     328.33     869.79  Eytzinger outer + 4-deep PF + n=4096 inner
+M1 Pro            Lem     141.82    200.30     365.62     876.66  Lemire reference (bsearch + simd_quad)
+Intel Skylake     A       235.33    155.16     778.10     794.65  bsearch outer + general-n inner
+Intel Skylake     B       216.26    127.51     782.86     843.58  two-level spine outer + general-n inner
+Intel Skylake     C       148.06    134.88     668.83     718.35  bsearch outer + n=4096 inner
+Intel Skylake     D        95.58     96.18     554.10     710.10  two-level spine outer + n=4096 inner
+Intel Skylake     E        86.62     88.17     947.75     962.42  Shar branchless outer + general-n inner
+Intel Skylake     F        84.42     83.72     594.47     826.85  Shar branchless outer + n=4096 inner
+Intel Skylake     G       304.27    299.74     781.71    1215.71  Shar outer + Shar inner (no spine)
+Intel Skylake     H       100.65    109.12    1052.16    1067.39  Eytzinger outer + 4-deep PF + general-n inner
+Intel Skylake     I        88.79    101.20     718.71     941.36  Eytzinger outer + 4-deep PF + n=4096 inner
+Intel Skylake     Lem     258.17    270.41     951.47     953.71  Lemire reference (bsearch + simd_quad)
+Intel Emerald     A       136.62    113.12     262.28     446.37  bsearch outer + general-n inner
+Intel Emerald     B       110.09     94.99     282.89     440.29  two-level spine outer + general-n inner
+Intel Emerald     C        62.63    103.61     200.71     410.39  bsearch outer + n=4096 inner
+Intel Emerald     D        79.30     92.20     251.27     428.82  two-level spine outer + n=4096 inner
+Intel Emerald     E        67.91     69.32     311.29     518.94  Shar branchless outer + general-n inner
+Intel Emerald     F        55.43     58.12     240.31     512.30  Shar branchless outer + n=4096 inner
+Intel Emerald     G       267.22    143.00     448.36     923.46  Shar outer + Shar inner (no spine)
+Intel Emerald     H        66.75     70.72     363.50     631.33  Eytzinger outer + 4-deep PF + general-n inner
+Intel Emerald     I        55.05     62.17     315.77     607.45  Eytzinger outer + 4-deep PF + n=4096 inner
+Intel Emerald     Lem     178.70    148.98     428.60     666.15  Lemire reference (bsearch + simd_quad)
+Graviton 4        A       161.29    102.72     382.74     418.51  bsearch outer + general-n inner
+Graviton 4        B       148.54     94.73     345.80     498.63  two-level spine outer + general-n inner
+Graviton 4        C        91.94     95.44     255.04     406.23  bsearch outer + n=4096 inner
+Graviton 4        D       111.16     89.72     316.83     484.37  two-level spine outer + n=4096 inner
+Graviton 4        E        80.11     58.16     325.26     498.94  Shar branchless outer + general-n inner
+Graviton 4        F        65.37     50.34     268.45     486.13  Shar branchless outer + n=4096 inner
+Graviton 4        G       149.60    130.06     359.41     597.22  Shar outer + Shar inner (no spine)
+Graviton 4        H        64.71     63.18     370.72     635.46  Eytzinger outer + 4-deep PF + general-n inner
+Graviton 4        I        57.49     58.38     311.10     619.95  Eytzinger outer + 4-deep PF + n=4096 inner
+Graviton 4        Lem     181.62    196.19     366.88     519.73  Lemire reference (bsearch + simd_quad)
 

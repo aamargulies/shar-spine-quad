@@ -253,15 +253,49 @@ void simd_quad_m4_build_spine(const uint16_t *carr, int32_t cardinality,
 }
 
 /*
- * Compile-time n=4096 specialization, M4 edition.
+ * Compile-time n=4096 specialization, M4 edition (hybrid).
  *
  * With gap=64 and n=4096 the spine has exactly 64 entries (128 B = 1 M4
- * cache line, covered by a single __builtin_prefetch). The quaternary
- * descent runs exactly three iterations (n=64 -> 16 -> 4 -> 1). Unlike
- * the gap=32 hosts, there is no binary step: the descent lands at n=1
- * directly, so the loop structure collapses to three constant-offset
- * quaternary probes followed by the final lo pick. All probe offsets
- * materialize as compile-time constants.
+ * cache line, covered by a single __builtin_prefetch). The hybrid runs
+ * two quat iters (n=64 → 16 → 4) and replaces the natural third quat
+ * iter + final-lo pick with a branchless 4-probe finish:
+ *
+ *     lo = base + (spine[base  ] < pos)
+ *               + (spine[base+1] < pos)
+ *               + (spine[base+2] < pos)
+ *               + (spine[base+3] < pos);
+ *
+ * Same mechanism as the GV4/EMR hybrid port (quat-exit n=2 → 2-probe
+ * finish); gap=64 lands at quat-exit n=4 so the finish widens to 4
+ * probes, still one dependent load-use round.
+ *
+ * Correctness: after iter 2 the invariant "target in [base, base+n]"
+ * with n=4 gives base ∈ [0, num_blocks-4] = [0, 60], so spine[base+3]
+ * is always a valid real entry (spine has 64 entries indexed 0..63).
+ * No sentinels needed because num_blocks is known at compile time. The
+ * spine is sorted, so (spine[base+k] < pos) for k ∈ {0,1,2,3} is a
+ * monotone-decreasing indicator; the sum counts exactly how many
+ * entries at base..base+3 are below pos, which is the correct offset.
+ * The caller-visible `lo < num_blocks` check still handles
+ * lo == base+4 == num_blocks for "past the end".
+ *
+ * Ship/no-ship call on M1 Pro 2026-05-12 (m1_runs/hybrid_run{1..5}.txt):
+ * hybrid beat the prior 3-quat + final-lo unroll −4.4% warm, cold tied
+ * within noise (−0.4%). Warm win was strictly monotone across all 5
+ * runs. Same pattern as the GV4 ship call (2026-05-01) and the EMR
+ * follow-on (2026-05-12, −54.8% warm / −9.7% cold). Confirmed on M4 Max
+ * 2026-05-12 (m4_runs/hybrid_run{1..5}.txt): hybrid beat the unroll
+ * −2.6% warm (monotone 5/5), cold −2.2% (3/5, within the 18.5–25.8 ns
+ * variance band). Unroll retired on both Apple-silicon hosts;
+ * simd_quad_m4_spine_4096 IS the hybrid.
+ *
+ * The structural cold regression vs simd_quad_m4_spine (general-n) is
+ * unchanged on either host (M4 Max +188%, M1 Pro +212%) — the 4-probe
+ * finish saves one dependent spine round vs the 3-quat + final-lo
+ * shape, and the saving shows up in warm but not cold because cold is
+ * dominated by the three tier misses + block-load the spine can't
+ * overlap regardless of finish shape. Warm-only callers win here;
+ * first-touch callers should prefer simd_quad_m4_spine.
  *
  * 4096 % 64 == 0 so there is no tail sweep: lo == num_blocks means
  * "past the end" and we return false.
@@ -288,15 +322,12 @@ bool simd_quad_m4_spine_4096(const uint16_t *carr, const uint16_t *spine,
         int32_t k3 = spine[base + 12];
         base += ((k1 < pos) + (k2 < pos) + (k3 < pos)) * 4;
     }
-    // Quaternary iter 3: n=4, quarter=1.
-    {
-        int32_t k1 = spine[base + 1];
-        int32_t k2 = spine[base + 2];
-        int32_t k3 = spine[base + 3];
-        base += ((k1 < pos) + (k2 < pos) + (k3 < pos)) * 1;
-    }
-    // No binary step: n=1 after iter 3. Final lo pick directly.
-    int32_t lo = (spine[base] < pos) ? base + 1 : base;
+    // Branchless 4-probe finish: n=4.
+    int32_t lo = base
+               + (spine[base    ] < pos)
+               + (spine[base + 1] < pos)
+               + (spine[base + 2] < pos)
+               + (spine[base + 3] < pos);
 
     if (lo < num_blocks) {
         const uint16_t *blk = carr + lo * gap;

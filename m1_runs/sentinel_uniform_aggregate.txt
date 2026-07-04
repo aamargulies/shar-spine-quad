@@ -1,0 +1,110 @@
+=== trial 1 ===
+# bench_profile_m4: num_sets=512 reps=5 hit_frac=0.00 miss_rate=0.931
+# carr per set = 4096 u16 (8192 B), spine = 64 u16 (128 B), spine_lo = 64 u16 (128 B)
+# units: ns/query (best of 5 reps)
+
+phase                | warm     | cold     | cold/warm
+---------------------+----------+----------+----------
+full (hybrid)        |    4.33  |   36.29  |  8.38x
+full + pfC (4-way)   |    5.06  |   41.83  |  8.27x
+full + sentinel      |    4.88  |   37.35  |  7.66x
+descent-only hybrid  |    3.14  |   11.80  |  3.75x
+descent-only general |    3.22  |   12.70  |  3.94x
+descent + blk-only   |    4.61  |   36.78  |  7.98x
+
+# blk-only - descent-hybrid = isolated block-load cost
+warm  blk-only-only ~ 1.46 ns
+cold  blk-only-only ~ 24.98 ns
+
+# Phase composition of cold full (36.29 ns/q):
+# - if descent-hybrid (11.80) ~ full, descent dominates
+# - if blk-only-only (24.98) ~ full, block-load dominates
+# - if descent+blk separately (36.78) >> full, phases overlap
+=== trial 2 ===
+# bench_profile_m4: num_sets=512 reps=5 hit_frac=0.00 miss_rate=0.931
+# carr per set = 4096 u16 (8192 B), spine = 64 u16 (128 B), spine_lo = 64 u16 (128 B)
+# units: ns/query (best of 5 reps)
+
+phase                | warm     | cold     | cold/warm
+---------------------+----------+----------+----------
+full (hybrid)        |    4.62  |   38.33  |  8.30x
+full + pfC (4-way)   |    5.38  |   42.97  |  7.98x
+full + sentinel      |    5.18  |   41.67  |  8.04x
+descent-only hybrid  |    3.22  |   17.01  |  5.27x
+descent-only general |    3.22  |   17.66  |  5.48x
+descent + blk-only   |    4.62  |   36.62  |  7.93x
+
+# blk-only - descent-hybrid = isolated block-load cost
+warm  blk-only-only ~ 1.39 ns
+cold  blk-only-only ~ 19.61 ns
+
+# Phase composition of cold full (38.33 ns/q):
+# - if descent-hybrid (17.01) ~ full, descent dominates
+# - if blk-only-only (19.61) ~ full, block-load dominates
+# - if descent+blk separately (36.62) >> full, phases overlap
+=== trial 3 ===
+# bench_profile_m4: num_sets=512 reps=5 hit_frac=0.00 miss_rate=0.931
+# carr per set = 4096 u16 (8192 B), spine = 64 u16 (128 B), spine_lo = 64 u16 (128 B)
+# units: ns/query (best of 5 reps)
+
+phase                | warm     | cold     | cold/warm
+---------------------+----------+----------+----------
+full (hybrid)        |    4.59  |   36.79  |  8.01x
+full + pfC (4-way)   |    5.36  |   44.19  |  8.24x
+full + sentinel      |    5.17  |   40.61  |  7.86x
+descent-only hybrid  |    3.22  |   15.54  |  4.82x
+descent-only general |    3.22  |   17.01  |  5.27x
+descent + blk-only   |    4.60  |   37.68  |  8.19x
+
+# blk-only - descent-hybrid = isolated block-load cost
+warm  blk-only-only ~ 1.38 ns
+cold  blk-only-only ~ 22.14 ns
+
+# Phase composition of cold full (36.79 ns/q):
+# - if descent-hybrid (15.54) ~ full, descent dominates
+# - if blk-only-only (22.14) ~ full, block-load dominates
+# - if descent+blk separately (37.68) >> full, phases overlap
+=== trial 4 ===
+# bench_profile_m4: num_sets=512 reps=5 hit_frac=0.00 miss_rate=0.931
+# carr per set = 4096 u16 (8192 B), spine = 64 u16 (128 B), spine_lo = 64 u16 (128 B)
+# units: ns/query (best of 5 reps)
+
+phase                | warm     | cold     | cold/warm
+---------------------+----------+----------+----------
+full (hybrid)        |    4.62  |   38.57  |  8.35x
+full + pfC (4-way)   |    5.37  |   46.96  |  8.75x
+full + sentinel      |    5.17  |   40.61  |  7.85x
+descent-only hybrid  |    3.23  |   16.03  |  4.96x
+descent-only general |    3.21  |   16.60  |  5.16x
+descent + blk-only   |    4.60  |   36.62  |  7.96x
+
+# blk-only - descent-hybrid = isolated block-load cost
+warm  blk-only-only ~ 1.37 ns
+cold  blk-only-only ~ 20.59 ns
+
+# Phase composition of cold full (38.57 ns/q):
+# - if descent-hybrid (16.03) ~ full, descent dominates
+# - if blk-only-only (20.59) ~ full, block-load dominates
+# - if descent+blk separately (36.62) >> full, phases overlap
+=== trial 5 ===
+# bench_profile_m4: num_sets=512 reps=5 hit_frac=0.00 miss_rate=0.931
+# carr per set = 4096 u16 (8192 B), spine = 64 u16 (128 B), spine_lo = 64 u16 (128 B)
+# units: ns/query (best of 5 reps)
+
+phase                | warm     | cold     | cold/warm
+---------------------+----------+----------+----------
+full (hybrid)        |    4.46  |   35.81  |  8.04x
+full + pfC (4-way)   |    5.20  |   41.91  |  8.06x
+full + sentinel      |    5.02  |   38.74  |  7.72x
+descent-only hybrid  |    3.12  |   11.72  |  3.75x
+descent-only general |    3.12  |   12.45  |  3.99x
+descent + blk-only   |    4.47  |   36.21  |  8.11x
+
+# blk-only - descent-hybrid = isolated block-load cost
+warm  blk-only-only ~ 1.34 ns
+cold  blk-only-only ~ 24.49 ns
+
+# Phase composition of cold full (35.81 ns/q):
+# - if descent-hybrid (11.72) ~ full, descent dominates
+# - if blk-only-only (24.49) ~ full, block-load dominates
+# - if descent+blk separately (36.21) >> full, phases overlap

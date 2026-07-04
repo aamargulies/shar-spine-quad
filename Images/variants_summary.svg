@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b8860b"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="480" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a1a1a">The six benchmarked variants</text>
+  <text x="480" y="56" text-anchor="middle" font-size="13" fill="#666" font-style="italic">Outer search over 512 containers  ×  Inner search inside one container</text>
+
+  <!-- Column headers (Inner) -->
+  <text x="340" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#1565c0">Inner: general-n</text>
+  <text x="560" y="96" text-anchor="middle" font-size="14" font-weight="bold" fill="#1565c0">Inner: compile-time n=4096</text>
+  <text x="560" y="114" text-anchor="middle" font-size="11" fill="#1565c0" font-style="italic">(unrolled, branches removed)</text>
+  <text x="780" y="110" text-anchor="middle" font-size="13" fill="#555" font-weight="bold">Effect</text>
+
+  <!-- Row headers (Outer) -->
+  <text x="140" y="178" text-anchor="middle" font-size="13" font-weight="bold" fill="#6a1b9a">Outer: bsearch</text>
+  <text x="140" y="196" text-anchor="middle" font-size="11" fill="#6a1b9a" font-style="italic">(branching)</text>
+
+  <text x="140" y="278" text-anchor="middle" font-size="13" font-weight="bold" fill="#6a1b9a">Outer: spine</text>
+  <text x="140" y="296" text-anchor="middle" font-size="11" fill="#6a1b9a" font-style="italic">(sampled index)</text>
+
+  <text x="140" y="378" text-anchor="middle" font-size="13" font-weight="bold" fill="#b8860b">Outer: Shar</text>
+  <text x="140" y="396" text-anchor="middle" font-size="11" fill="#b8860b" font-style="italic">(branchless cmov)</text>
+
+  <!-- ===== Row A-C: bsearch outer ===== -->
+  <!-- A -->
+  <rect x="240" y="140" width="200" height="80" fill="#fafafa" stroke="#999" stroke-width="1.2" rx="4"/>
+  <text x="260" y="163" font-size="16" font-weight="bold" fill="#666">A</text>
+  <text x="340" y="163" text-anchor="middle" font-size="11" fill="#888" font-style="italic">(baseline)</text>
+  <text x="340" y="188" text-anchor="middle" font-size="12" fill="#333">naive outer,</text>
+  <text x="340" y="204" text-anchor="middle" font-size="12" fill="#333">naive inner</text>
+
+  <!-- C -->
+  <rect x="460" y="140" width="200" height="80" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.2" rx="4"/>
+  <text x="480" y="163" font-size="16" font-weight="bold" fill="#1565c0">C</text>
+  <text x="560" y="188" text-anchor="middle" font-size="12" fill="#1565c0">inner unroll only</text>
+  <text x="560" y="204" text-anchor="middle" font-size="11" fill="#1565c0" font-style="italic">helps warm, not cold</text>
+
+  <!-- Row effect annotation -->
+  <text x="780" y="185" text-anchor="middle" font-size="11" fill="#555">inner path</text>
+  <text x="780" y="200" text-anchor="middle" font-size="11" fill="#555">gets faster</text>
+
+  <!-- ===== Row B-D: spine outer ===== -->
+  <!-- B -->
+  <rect x="240" y="240" width="200" height="80" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2" rx="4"/>
+  <text x="260" y="263" font-size="16" font-weight="bold" fill="#1b5e20">B</text>
+  <text x="340" y="288" text-anchor="middle" font-size="12" fill="#1b5e20">outer spine only</text>
+  <text x="340" y="304" text-anchor="middle" font-size="11" fill="#1b5e20" font-style="italic">disappointing on Intel</text>
+
+  <!-- D -->
+  <rect x="460" y="240" width="200" height="80" fill="#dcedc8" stroke="#558b2f" stroke-width="1.2" rx="4"/>
+  <text x="480" y="263" font-size="16" font-weight="bold" fill="#33691e">D</text>
+  <text x="560" y="288" text-anchor="middle" font-size="12" fill="#33691e">spine + unroll</text>
+  <text x="560" y="304" text-anchor="middle" font-size="11" fill="#33691e" font-style="italic">the predicted winner</text>
+
+  <text x="780" y="285" text-anchor="middle" font-size="11" fill="#555">outer spine</text>
+  <text x="780" y="300" text-anchor="middle" font-size="11" fill="#555">too small to help</text>
+
+  <!-- ===== Row E-F: Shar outer ===== -->
+  <!-- E -->
+  <rect x="240" y="340" width="200" height="80" fill="#fff8e1" stroke="#f9a825" stroke-width="1.2" rx="4"/>
+  <text x="260" y="363" font-size="16" font-weight="bold" fill="#b8860b">E</text>
+  <text x="340" y="388" text-anchor="middle" font-size="12" fill="#b8860b">Shar outer only</text>
+  <text x="340" y="404" text-anchor="middle" font-size="11" fill="#b8860b" font-style="italic">already beats D</text>
+
+  <!-- F: the winner. Gold border, slight glow. -->
+  <rect x="458" y="338" width="204" height="84" fill="#fff3e0" stroke="#b8860b" stroke-width="3" rx="6"/>
+  <text x="478" y="363" font-size="18" font-weight="bold" fill="#b8860b">F  ★</text>
+  <text x="560" y="388" text-anchor="middle" font-size="13" font-weight="bold" fill="#b8860b">Shar + unroll</text>
+  <text x="560" y="406" text-anchor="middle" font-size="11" fill="#b8860b" font-style="italic">winner on all 6 hosts</text>
+
+  <text x="780" y="385" text-anchor="middle" font-size="11" fill="#555">branchless outer</text>
+  <text x="780" y="400" text-anchor="middle" font-size="11" fill="#555">wins everywhere</text>
+
+  <!-- Arrow pointing to F -->
+  <line x1="700" y1="380" x2="672" y2="380" stroke="#b8860b" stroke-width="2" marker-end="url(#arr-gold)"/>
+
+  <!-- Bottom summary -->
+  <rect x="60" y="458" width="840" height="60" fill="#fff8e1" stroke="#b8860b" stroke-width="1.2" rx="4"/>
+  <text x="480" y="482" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">Prediction refuted: every host preferred branchless outer (F) over outer spine (D).</text>
+  <text x="480" y="504" text-anchor="middle" font-size="12" fill="#333" font-style="italic">A 1971 algorithm beat the fancy modern layout on hardware its inventor couldn't have imagined.</text>
+
+</svg>

@@ -1,0 +1,51 @@
+5-run medians of ./bench 4000 5000 on EMR (Xeon 8559C), 2026-05-12. Raw: shipped_run{1..5}.txt.
+Build: g++ -O3 -march=sapphirerapids -std=c++20 bench.cpp simd_quad_intel.c -o bench
+intel_spine_4096 here is the shipped hybrid (3 quat + branchless 2-probe finish) after the prior unroll was retired.
+
+    n  |  linear  binary    simd   intel  intels   warm  |   linear  binary    simd   intel  intels   cold
+------------------------------------------------------------------------------------------------------------
+    8  |    2.50   14.60    2.90    2.50    2.50   warm  |    8.40   17.50    8.30    2.50    2.50   cold
+   11  |    3.40   16.30    3.70    6.20    6.30   warm  |    9.10   18.90    9.40    8.20    8.20   cold
+   16  |    4.00   18.60    3.20    2.50    2.50   warm  |    9.90   22.00    3.40    2.50    2.50   cold
+   23  |    5.00   20.70    9.40    7.70    7.80   warm  |   11.20   22.90    9.80   10.50    9.70   cold
+   32  |    6.50   23.00    3.20    3.10    3.90   warm  |   12.20   25.80    3.00    3.00    4.20   cold
+   32* | intel_spine=3.87 intel_spine_pad=3.91  (warm)  | intel_spine_pad=3.47  (cold)
+   47  |    8.50   25.20   10.30   10.20   11.00   warm  |   14.40   28.00   10.60   10.50   10.90   cold
+   47* | intel_spine=10.95 intel_spine_pad=10.96  (warm)  | intel_spine_pad=10.85  (cold)
+   64  |   11.50   27.60    4.90    3.20    4.10   warm  |   16.70   31.00    5.00    3.20    3.90   cold
+   64* | intel_spine=4.11 intel_spine_pad=3.99  (warm)  | intel_spine_pad=3.65  (cold)
+   89  |   15.70   29.70    7.50   10.20   11.10   warm  |   19.10   32.30    7.80   10.70   11.40   cold
+   89* | intel_spine=11.06 intel_spine_pad=10.97  (warm)  | intel_spine_pad=11.25  (cold)
+  128  |   21.50   33.40   10.80    4.70    4.40   warm  |   23.40   37.20   11.90    5.50    5.40   cold
+  128* | intel_spine=4.41 intel_spine_pad=4.97  (warm)  | intel_spine_pad=6.16  (cold)
+  177  |   30.00   35.30    7.90    7.50    7.10   warm  |   31.40   38.10   10.60    8.90    8.90   cold
+  177* | intel_spine=7.12 intel_spine_pad=7.41  (warm)  | intel_spine_pad=9.80  (cold)
+  256  |   42.70   39.40    7.50   10.30   10.20   warm  |   40.20   45.30   15.60   15.10   12.90   cold
+  256* | intel_spine=10.24 intel_spine_pad=4.91  (warm)  | intel_spine_pad=11.22  (cold)
+  256* | intel_spine_256:   warm 3.34  cold 7.38   (vs spine: -67.4% warm / -42.8% cold)
+  333  |   54.50   40.90   11.20    8.50    7.40   warm  |   56.20   49.80   23.40   19.40   15.40   cold
+  333* | intel_spine=7.41 intel_spine_pad=8.26  (warm)  | intel_spine_pad=18.75  (cold)
+  512  |   83.00   45.20   15.10    7.60    6.50   warm  |   75.50   61.50   33.30   25.60   15.90   cold
+  512* | intel_spine=6.49 intel_spine_pad=7.29  (warm)  | intel_spine_pad=19.84  (cold)
+  512* | intel_spine_512:   warm 4.55  cold 10.50   (vs spine: -29.9% warm / -34.0% cold)
+  617  |  114.80   46.20   11.40   10.40    9.40   warm  |   94.90   66.60   40.20   37.30   22.30   cold
+  617* | intel_spine=9.38 intel_spine_pad=9.84  (warm)  | intel_spine_pad=25.31  (cold)
+ 1001  |  174.40   50.30   11.30   10.20    9.20   warm  |  140.20   79.40   48.20   45.00   24.50   cold
+ 1001* | intel_spine=9.18 intel_spine_pad=9.66  (warm)  | intel_spine_pad=27.08  (cold)
+ 1024  |  177.30   50.20   10.20   15.20   14.70   warm  |  142.30   79.60   46.10   39.50   23.90   cold
+ 1024* | intel_spine=14.73 intel_spine_pad=7.17  (warm)  | intel_spine_pad=23.70  (cold)
+ 1024* | intel_spine_1024:   warm 4.73  cold 12.87   (vs spine: -67.9% warm / -46.2% cold)
+ 1234  |  210.80   51.60   13.60   11.20    9.70   warm  |  169.90   85.20   51.10   48.80   26.10   cold
+ 1234* | intel_spine=9.72 intel_spine_pad=9.82  (warm)  | intel_spine_pad=28.25  (cold)
+ 1777  |  299.00   54.60   18.50   10.20    9.30   warm  |  232.70   94.70   57.50   48.80   27.10   cold
+ 1777* | intel_spine=9.25 intel_spine_pad=9.70  (warm)  | intel_spine_pad=30.98  (cold)
+ 2048  |  339.70   55.50   18.90    9.90    9.10   warm  |  275.10  108.20   68.80   59.50   32.20   cold
+ 2048* | intel_spine=9.06 intel_spine_pad=9.49  (warm)  | intel_spine_pad=32.99  (cold)
+ 2048* | intel_spine_2048:   warm 5.53  cold 20.41   (vs spine: -39.0% warm / -36.6% cold)
+ 2999  |  489.90   58.70   13.60   17.40   15.90   warm  |  377.80  109.40   69.00   63.20   33.90   cold
+ 2999* | intel_spine=15.91 intel_spine_pad=9.76  (warm)  | intel_spine_pad=33.31  (cold)
+ 3967  |  637.20   61.00   13.70   19.70   18.10   warm  |  487.70  119.40   73.50   69.50   38.90   cold
+ 3967* | intel_spine=18.11 intel_spine_pad=9.91  (warm)  | intel_spine_pad=36.13  (cold)
+ 4096  |  656.10   61.00   13.60   19.40   17.90   warm  |  498.30  119.40   73.70   66.90   37.20   cold
+ 4096* | intel_spine=17.86 intel_spine_pad=9.57  (warm)  | intel_spine_pad=35.76  (cold)
+ 4096* | intel_spine_4096:   warm 6.50  cold 24.36   (vs spine: -63.6% warm / -34.5% cold)
