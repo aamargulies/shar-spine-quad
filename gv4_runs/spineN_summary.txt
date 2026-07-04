@@ -1,0 +1,24 @@
+5-run medians of ./bench 4000 5000 on GV4 r8g, 2026-05-12.
+Raw outputs: spineN_run{1..5}.txt.
+
+n=512:
+  warm: base 6.17  pad 6.61   _spine_512 4.74    (-23.2% vs base)
+  cold: base 17.74 pad 19.60  _spine_512 13.26   (-25.2% vs base)
+
+n=2048:
+  warm: base 7.89  pad 8.46   _spine_2048 6.13   (-22.3% vs base)
+  cold: base 23.60 pad 27.19  _spine_2048 27.62  (+17.0% vs base) <-- regression
+
+n=4096 (existing specialization):
+  warm: base 16.19 pad 8.51   _spine_4096 13.96  (-13.8% vs base)
+  cold: base 37.63 pad 41.33  _spine_4096 32.07  (-14.8% vs base)
+
+Warm variance across 5 runs: 0.01-0.04 ns (bench-stable).
+Cold variance: up to 12 ns/run spread for _spine_2048 -- shared-tenant r8g noise.
+
+Finding: _spine_512 is a clean win in both regimes. _spine_2048 wins
+warm but regresses cold by ~17%; single-run had hidden this behind
+one outlier. Likely same mechanism as M4 _spine_4096 cold regression:
+straight-line unroll clusters all tier probes at the front, leaving
+the final block load with less OoO overlap vs general-n descent's
+data-dependent pacing.

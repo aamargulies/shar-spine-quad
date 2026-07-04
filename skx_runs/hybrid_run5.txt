@@ -1,0 +1,50 @@
+correctness: ok
+
+size   | warm ns/q:  linear  binary  simd   intel  intels | cold ns/q:  linear  binary  simd   intel  intels
+-------+------------------------------------------------+------------------------------------------------
+    8  |    16.5    25.1   17.8   13.3   12.5              |    28.7    35.7   27.4   14.8   12.4
+   11  |    18.3    27.2   20.2   28.3   18.3              |    24.6    31.0   21.7   18.4   17.7
+   16  |    20.5    29.7   15.8   12.9   11.8              |    26.8    33.0   14.6   11.6   10.2
+   23  |    23.8    32.1   23.3   21.4   20.4              |    44.6    49.7   30.5   30.5   28.0
+   32  |    16.8    37.4   17.4   14.7   14.8              |    32.1    38.9   15.7   12.7   12.5
+   32* | intel_spine=14.83 intel_spine_pad=14.95  (warm)  | intel_spine=12.53 intel_spine_pad=19.79  (cold)
+   47  |    23.4    38.4   26.8   23.4   23.3              |    38.1    42.3   24.7   21.8   20.4
+   47* | intel_spine=23.32 intel_spine_pad=23.01  (warm)  | intel_spine=20.41 intel_spine_pad=30.10  (cold)
+   64  |    18.8    50.0   17.4   15.4   15.9              |    37.4    48.0   15.8   13.8   13.6
+   64* | intel_spine=15.89 intel_spine_pad=16.18  (warm)  | intel_spine=13.58 intel_spine_pad=31.22  (cold)
+   89  |    22.1    46.0   22.3   25.6   26.0              |    43.4    50.8   21.4   25.4   24.8
+   89* | intel_spine=25.98 intel_spine_pad=25.49  (warm)  | intel_spine=24.83 intel_spine_pad=56.17  (cold)
+  128  |    21.9    51.2   17.9   17.2   16.6              |    45.1    60.0   20.3   17.7   19.0
+  128* | intel_spine=16.57 intel_spine_pad=16.30  (warm)  | intel_spine=19.05 intel_spine_pad=50.11  (cold)
+  177  |    24.0    53.3   22.7   22.6   20.0              |    69.3    79.9   40.5   34.4   42.9
+  177* | intel_spine=20.00 intel_spine_pad=20.52  (warm)  | intel_spine=42.90 intel_spine_pad=83.13  (cold)
+  256  |    26.4    59.2   21.2   18.1   16.9              |    60.6    75.6   34.1   24.5   24.0
+  256* | intel_spine=16.92 intel_spine_pad=17.11  (warm)  | intel_spine=24.02 intel_spine_pad=68.37  (cold)
+  256* | intel_spine=16.92 intel_spine_256=14.09  (warm)  | intel_spine=24.02 intel_spine_256=53.30  (cold)
+  333  |    32.0    60.5   24.4   23.5   20.1              |    77.1    90.6   42.3   38.7   33.8
+  333* | intel_spine=20.12 intel_spine_pad=22.12  (warm)  | intel_spine=33.82 intel_spine_pad=88.80  (cold)
+  512  |    39.5    64.1   23.6   22.1   19.5              |   104.4   126.9   56.4   46.3   48.6
+  512* | intel_spine=19.52 intel_spine_pad=20.40  (warm)  | intel_spine=48.65 intel_spine_pad=109.94  (cold)
+  512* | intel_spine=19.52 intel_spine_512=16.86  (warm)  | intel_spine=48.65 intel_spine_512=125.18  (cold)
+  617  |    48.3    66.4   31.9   28.9   25.3              |   123.3   125.7   78.6   72.2   55.4
+  617* | intel_spine=25.32 intel_spine_pad=25.27  (warm)  | intel_spine=55.43 intel_spine_pad=127.47  (cold)
+ 1001  |    60.3    70.4   28.9   29.0   25.1              |   183.3   157.5   94.3   93.4   66.4
+ 1001* | intel_spine=25.13 intel_spine_pad=26.18  (warm)  | intel_spine=66.41 intel_spine_pad=140.77  (cold)
+ 1024  |    61.4    77.7   39.6   25.1   22.2              |   185.9   169.8   96.2   78.7   63.1
+ 1024* | intel_spine=22.23 intel_spine_pad=22.73  (warm)  | intel_spine=63.12 intel_spine_pad=130.79  (cold)
+ 1024* | intel_spine=22.23 intel_spine_1024=16.54  (warm)  | intel_spine=63.12 intel_spine_1024=145.54  (cold)
+ 1234  |    84.4    81.9   66.7   48.9   37.0              |   258.9   258.6  154.7  147.3   95.9
+ 1234* | intel_spine=37.01 intel_spine_pad=35.27  (warm)  | intel_spine=95.94 intel_spine_pad=180.30  (cold)
+ 1777  |   241.7    85.1   32.4   28.5   25.3              |   300.7   188.6  162.7  140.6   94.0
+ 1777* | intel_spine=25.35 intel_spine_pad=25.72  (warm)  | intel_spine=94.03 intel_spine_pad=151.56  (cold)
+ 2048  |   121.8    75.9   30.0   28.6   24.9              |   392.6   230.5  131.7  118.5   94.5
+ 2048* | intel_spine=24.87 intel_spine_pad=25.77  (warm)  | intel_spine=94.48 intel_spine_pad=151.30  (cold)
+ 2048* | intel_spine=24.87 intel_spine_2048=17.20  (warm)  | intel_spine=94.48 intel_spine_2048=106.79  (cold)
+ 2999  |   161.4    80.2   32.5   34.3   30.0              |   465.1   236.8  200.1  150.1  129.4
+ 2999* | intel_spine=30.02 intel_spine_pad=26.61  (warm)  | intel_spine=129.35 intel_spine_pad=170.95  (cold)
+ 3967  |   205.5    81.1   32.3   34.2   30.0              |   588.3   268.7  228.3  195.4  139.0
+ 3967* | intel_spine=29.98 intel_spine_pad=29.36  (warm)  | intel_spine=139.03 intel_spine_pad=176.25  (cold)
+ 4096  |   200.7    80.7   32.6   36.2   27.0              |   604.2   263.7  192.3  166.0  130.5
+ 4096* | intel_spine=26.98 intel_spine_pad=26.44  (warm)  | intel_spine=130.53 intel_spine_pad=231.43  (cold)
+ 4096* | intel_spine=26.98 intel_spine_4096=18.00  (warm)  | intel_spine=130.53 intel_spine_4096=123.00  (cold)
+ 4096* | intel_spine_4096=18.00 intel_spine_4096_unroll=26.39  (warm)  | intel_spine_4096=123.00 intel_spine_4096_unroll=124.08  (cold)

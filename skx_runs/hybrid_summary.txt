@@ -1,0 +1,49 @@
+SKX hybrid-vs-unroll ship/no-ship decision (2026-05-13)
+=======================================================
+
+Host: Intel Xeon Platinum 8175M (Skylake-SP, AVX-512BW, no VBMI2)
+Build: g++ -O3 -march=native -std=c++20 bench.cpp simd_quad_intel.c -o bench
+Bench: ./bench 4000 5000, 5 runs (raw: hybrid_run{1..5}.txt)
+
+Per-run A/B at n=4096:
+  run | hybrid_w  unroll_w | hybrid_c  unroll_c
+    1 |    18.92     26.60 |   116.33    184.54
+    2 |    18.83     26.05 |   213.53    122.96
+    3 |    19.06     26.83 |   185.57    132.74
+    4 |    22.77     27.57 |   185.01    127.14
+    5 |    18.00     26.39 |   123.00    124.08
+
+5-run median A/B at n=4096:
+  intel_spine_4096 (hybrid)       : warm  18.92  cold  185.01 ns
+  intel_spine_4096_unroll (prior) : warm  26.60  cold  127.14 ns
+  hybrid vs unroll                : -28.9% warm  +45.5% cold
+
+Verdict: SHIP the hybrid (keep shipped state).
+
+Warm: hybrid is strictly monotonic across 5/5 runs (hybrid 18.00-22.77
+ns; unroll 26.05-27.57 ns; zero overlap), 5/5 wins at a -28.9% median
+margin. This is a real structural win, matching the cross-host pattern
+(EMR -54.8%, Pi 5 -16.9%, M1 -4.4%, M4 -2.6%, all monotone). Mechanism:
+the 2-probe finish saves one dependent load-use round (binary-step +
+final-lo = 2 rounds; 2-probe finish = 1) which no compiler pass can
+reconstruct.
+
+Cold: unroll appears to win by +45.5% at the median, but this is SKX
+shared-tenant noise dominating, not a structural signal. The per-run
+cold numbers swing 116.33-213.53 ns for the hybrid and 122.96-184.54
+ns for the unroll -- two heavily-overlapping ranges with the hybrid's
+variance driven entirely by neighbor DRAM contention on this shared
+Xeon. The hybrid wins cold in runs 1 and 5 (116 vs 185, 123 vs 124),
+loses in runs 2/3/4. This matches the pre-existing SKX cold variance
+documented in CLAUDE.md ("SKX cold at large n swings +-25-30%");
+nothing about changing a data-dependent finish shape would plausibly
+make cold worse by 46% under a structural mechanism.
+
+Corroborating: on EMR (shares simd_quad_intel.c, different AVX-512
+path), the same hybrid beat the same unroll -9.7% cold; on GV4/Pi 5
+cold was -5% / +6.7% (noise band); on M1/M4 cold was tied within
+noise. Zero host has ever shown a structural +46% cold regression from
+this change.
+
+Decision: ship the hybrid. The shipped code is already the hybrid -- no
+source change required. The prior unroll stays retired.

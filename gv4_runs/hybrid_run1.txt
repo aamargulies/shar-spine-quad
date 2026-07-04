@@ -1,0 +1,30 @@
+correctness: ok
+
+size   | warm ns/q:  linear  binary  simd   pi5   pi5s    m4   m4s   gv4   gv4s       | cold ns/q:  linear  binary  simd   pi5   pi5s    m4   m4s   gv4   gv4s      
+-------+----------------------------------------------------------------------------+----------------------------------------------------------------------------
+    8  |     3.2    11.8    3.6    2.8    2.9    2.8    2.9    2.9    2.8 |     6.4    13.8    6.3    2.6    2.7    2.6    2.7    2.6    2.6
+   16  |     7.1    15.2    3.2    2.9    2.9    2.8    2.8    2.9    2.8 |     8.3    17.8    3.1    2.6    2.7    2.6    2.6    2.6    2.6
+   32  |    11.6    18.6    3.2    3.3    3.7    2.8    2.8    3.3    3.9 |    11.0    21.7    3.4    3.3    4.1    2.7    2.8    3.5    4.0
+   32* | gv4_spine=3.86 gv4_spine_pad=3.86  (warm)  | gv4_spine=3.96 gv4_spine_pad=4.32  (cold)
+   64  |    15.8    22.0    4.9    3.4    3.9    3.9    4.3    3.4    4.0 |    16.6    26.4    5.1    3.9    4.6    4.4    5.1    3.9    4.2
+   64* | gv4_spine=4.00 gv4_spine_pad=3.97  (warm)  | gv4_spine=4.22 gv4_spine_pad=4.86  (cold)
+  128  |    37.5    25.8    9.7    5.3    4.3    4.1    4.7    5.1    4.5 |    28.8    31.0   10.6    6.7    6.1    5.7    6.3    6.5    6.1
+  128* | gv4_spine=4.51 gv4_spine_pad=4.90  (warm)  | gv4_spine=6.11 gv4_spine_pad=6.91  (cold)
+  256  |    67.4    29.9    7.9   10.0    8.7    6.0    5.0   10.0    8.8 |    54.3    36.4   11.5   14.2   10.7    9.9    9.3   13.0   10.6
+  256* | gv4_spine=8.84 gv4_spine_pad=4.86  (warm)  | gv4_spine=10.61 gv4_spine_pad=8.89  (cold)
+  256* | gv4_spine=8.84 gv4_spine_256h=3.57  (warm)  | gv4_spine=10.61 gv4_spine_256h=6.93  (cold)
+  512  |   116.2    34.2   15.2    8.6    6.0   10.5    9.2    7.9    6.2 |   104.1    42.9   22.4   18.0   17.6   17.1   14.2   16.6   16.4
+  512* | gv4_spine=6.19 gv4_spine_pad=6.61  (warm)  | gv4_spine=16.39 gv4_spine_pad=16.44  (cold)
+  512* | gv4_spine=6.19 gv4_spine_512=4.74  (warm)  | gv4_spine=16.39 gv4_spine_512=12.00  (cold)
+ 1024  |   236.4    38.7   11.2   15.9   13.2    9.0    6.8   15.6   13.3 |   201.8    57.9   35.4   35.7   24.0   30.3   26.8   31.5   19.8
+ 1024* | gv4_spine=13.31 gv4_spine_pad=6.60  (warm)  | gv4_spine=19.76 gv4_spine_pad=18.52  (cold)
+ 1024* | gv4_spine=13.31 gv4_spine_1024h=4.94  (warm)  | gv4_spine=19.76 gv4_spine_1024h=14.71  (cold)
+ 2048  |   466.2    43.2   19.9   12.3    7.8   16.4   13.7   11.1    7.9 |   436.4   105.4   75.8   67.6   34.3   57.0   30.6   60.6   27.2
+ 2048* | gv4_spine=7.91 gv4_spine_pad=8.47  (warm)  | gv4_spine=27.16 gv4_spine_pad=32.01  (cold)
+ 2048* | gv4_spine=7.91 gv4_spine_2048=6.12  (warm)  | gv4_spine=27.16 gv4_spine_2048=18.86  (cold)
+ 4096  |   903.7    47.7   15.2   20.8   16.0   11.7    9.0   20.0   16.2 |   828.0   131.3  108.1   94.6   35.7   80.6   32.9   75.2   35.9
+ 4096* | gv4_spine=16.22 gv4_spine_pad=8.51  (warm)  | gv4_spine=35.86 gv4_spine_pad=32.92  (cold)
+ 4096* | gv4_spine=16.22 gv4_spine_4096h=7.00  (warm)  | gv4_spine=35.86 gv4_spine_4096h=35.04  (cold)
+ 4096* | gv4_spine=16.22 gv4_spine_4096=14.19  (warm)  | gv4_spine=35.86 gv4_spine_4096=29.14  (cold)
+ 4096* |  m4_spine=8.99  m4_spine_4096=7.05  (warm)  |  m4_spine=32.90  m4_spine_4096=37.42  (cold)
+ 4096* | pi5_spine=16.02 pi5_spine_4096=13.97  (warm)  | pi5_spine=35.74 pi5_spine_4096=32.50  (cold)

@@ -1,0 +1,33 @@
+Lemire's article doesn't give explicit ns numbers — it shows plots on an M4 and an Emerald Rapids host — so the cleanest "original" reference line we have in the repo is the `simd_quad (reference)` column in our tables, which is Lemire's algorithm body (`simd_quad.c`) ported verbatim to each host. All numbers below are at n=4096 (the same heavy hitter Lemire plotted), per-cell medians of 5 × `./bench 4000 5000`.
+
+**Single-lookup on a 4096-element `uint16_t` array — winners per host**
+
+| host | std::binary_search | Lemire SIMD Quad (`simd_quad.c`) | winner variant | winner warm | winner cold | winner vs Lemire |
+|---|---:|---:|---|---:|---:|---:|
+| Pi 5 (Cortex-A76) | 79.0 / 320.0 | 31.6 / 295.3 | `simd_quad_pi5 + spine`¹ | 23.8 | 138.4 | 1.33× warm / **2.13× cold** |
+| M4 Max (P-core) | 11.1 / 66.6 | 6.3 / 31.5 | warm: `simd_quad_m4_spine_4096` <br>cold: `simd_quad_m4 + spine` | 3.65 | 6.5 | **1.73× warm** / **4.85× cold** |
+| Intel Skylake-SP (Xeon 8175M) | 82.3 / 276.8 | 33.0 / 171.5 | `simd_quad_intel_spine_4096` | 27.11 | 122.98 | 1.22× warm / 1.39× cold |
+| Intel Emerald Rapids (Xeon 8559C) | 60.6 / 117.6 | 13.8 / 71.0 | `simd_quad_intel_spine_4096` | 14.02 | 25.87 | ≈1.0× warm² / **2.74× cold** |
+| AWS Graviton 4 (Neoverse V2) | 47.3 / 129.8 | 15.2 / 85.4 | `simd_quad_graviton_spine_4096` | 14.61 | 35.52 | 1.04× warm / **2.40× cold** |
+
+¹ On Pi 5 the compile-time n=4096 unroll is a wash (warm +0.1%, cold +2.7% vs the general spine) — either ship is fine.
+² EMR warm at n=4096 is noisy on this shared-tenant EC2 host; the reference column landed in the same 13–18 ns band as spine/spine_4096, so "winner" here is within session noise. The cold picture (2.7×) is the clean story Lemire's article was pointing at.
+
+**Two-level (`bench_twolevel`, 512 containers × 4096 inner, ~4 MB per set) — winners per host**
+
+Lemire's article doesn't cover this; it's our own Roaring-set-shaped workload. Baseline A is plain `std::binary_search` outer + general-n spine inner (i.e. Lemire SIMD Quad on the inner, stock C++ on the outer).
+
+| host | baseline A (warm / cold) | winner variant | winner (warm / cold) | vs A |
+|---|---:|---|---:|---:|
+| Pi 5 (A76)    | 250.78 / 426.11 | **F** Shar outer + n=4096 inner       | 260.46 / 33.05 | +4% warm / **12.9× cold** |
+| M4 Max        | 161.93 /  22.30 | **F** Shar outer + n=4096 inner       |  13.61 /  7.08 | **11.9× warm** / **3.2× cold** |
+| Intel Skylake | 234.69 / 122.02 | **F** Shar outer + n=4096 inner       |  91.16 / 26.90 | **2.57× warm** / **4.54× cold** |
+| Intel Emerald | 157.60 /  95.56 | **F** Shar outer + n=4096 inner       |  72.55 / 16.98 | **2.17× warm** / **5.63× cold** |
+| Graviton 4    | 175.83 /  85.77 | **F** Shar outer + n=4096 inner       |  73.74 / 14.66 | **2.38× warm** / **5.85× cold** |
+
+**What's worth noting vs Lemire's framing**
+
+- Lemire's original result: SIMD Quad beats `std::binary_search` at n=4096 on both EMR and M4, with a bigger win cold on M4 and a bigger win warm on EMR. Our data reproduces that: EMR cold 2.74×, M4 cold 4.85× over his own algorithm once we apply the **spine** (his next-step hint in the article conclusion: "I suspect that we can do even better").
+- The single biggest optimization on every host was the spine (sequential streaming read of block-last-element keys) rather than anything SIMD-specific.
+- The 2026-05-01 re-benches turned up a real surprise: on a Roaring-set workload (outer search across container keys + inner search within), **Shar's 1971 branchless binary search** beats the outer spine on every host, including the two Intel cores where we expected the LLC streamer to make outer-spine unbeatable. SKX: F beats D by −9.7% warm / −22.9% cold. EMR (measured 2026-05-01): F beats D by −21.2% warm / −40.0% cold — the biggest x86 margin. All five uarchs (Pi 5, M4, SKX, EMR, GV4) converge on variant F (Shar outer + compile-time-n=4096 inner) as the right ship for the Roaring workload.
+- Two predictions were refuted by these measurements. (1) "Intel's LLC streamers will love the outer-spine sequential multi-line pattern so the outer spine will win on x86." Wrong on both SKX and EMR. (2) "The EMR VBMI2 path doesn't downclock, so even if SKX loses to Shar the outer spine will still win on EMR." Also wrong — EMR actually gave Shar the *biggest* x86 margin. The likely unifying mechanism is just that the K=512 outer key spine is only 16 × 64-B = 1 KB (8 × 128-B on M4), too short for any stride prefetcher to matter, so the outer spine's dependent pointer chase is pure critical-path cost on every host. Shar's ~9-load cmov chain replaces that chase with independent loads that issue back-to-back on any OoO core with enough load AGUs.

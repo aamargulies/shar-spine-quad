@@ -1,24 +1,43 @@
 two-level spine micro-bench
-num_sets=200 warm_reps=200 num_containers=512 inner_n=4096
+num_sets=200 hot_reps=200 num_containers=512 inner_n=4096 mode=all
 per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
 correctness: ok
 
-var   description                                                warm ns/q   cold ns/q
-----  --------------------------------------------------------  ----------  ----------
-A     bsearch outer + general-n spine inner                         179.75       88.81
-B     two-level spine + general-n spine inner                       166.22       63.99
-C     bsearch outer + compile-time n=4096 inner                     117.26       49.19
-D     two-level spine + compile-time n=4096 inner                   127.20       30.50
-E     Shar branchless outer + general-n spine inner                  89.64       15.36
-F     Shar branchless outer + compile-time n=4096 inner              75.94       14.66
+var   description                                                  hot_bat     hot_ser    cold_bat    cold_ser
+----  --------------------------------------------------------  ----------  ----------  ----------  ----------
+A     bsearch outer + general-n spine inner                         161.29      106.97      374.81      414.39
+B     two-level spine + general-n spine inner                       148.90      102.64      345.80      496.31
+C     bsearch outer + compile-time n=4096 inner                      93.17       99.88      252.75      405.19
+D     two-level spine + compile-time n=4096 inner                   113.76       93.74      316.83      486.36
+E     Shar branchless outer + general-n spine inner                  81.22       61.76      319.87      498.94
+F     Shar branchless outer + compile-time n=4096 inner              66.13       52.10      267.83      473.31
+G     Shar outer + Shar inner (n=4096, no spine)                    151.30      136.70      353.30      563.44
+H     Eytzinger outer + 4-deep PF + general-n spine inner            66.53       65.23      370.72      634.63
+I     Eytzinger outer + 4-deep PF + compile-time n=4096 inner        58.96       59.80      298.90      615.55
+Lem   Lemire reference (bsearch outer + simd_quad inner)            186.51      207.90      367.98      559.55
 
-deltas vs A:
-  outer spine   (B vs A):    warm -7.5%  cold -27.9%
-  inner 4096    (C vs A):    warm -34.8%  cold -44.6%
-  both spines   (D vs A):    warm -29.2%  cold -65.7%
-  Shar outer    (E vs A):    warm -50.1%  cold -82.7%
-  Shar + inner  (F vs A):    warm -57.8%  cold -83.5%
+deltas vs A (hot_bat  hot_ser  cold_bat  cold_ser):
+  B   vs A:     -7.7%     -4.0%     -7.7%    +19.8%
+  C   vs A:    -42.2%     -6.6%    -32.6%     -2.2%
+  D   vs A:    -29.5%    -12.4%    -15.5%    +17.4%
+  E   vs A:    -49.6%    -42.3%    -14.7%    +20.4%
+  F   vs A:    -59.0%    -51.3%    -28.5%    +14.2%
+  G   vs A:     -6.2%    +27.8%     -5.7%    +36.0%
+  H   vs A:    -58.8%    -39.0%     -1.1%    +53.1%
+  I   vs A:    -63.4%    -44.1%    -20.3%    +48.5%
+  Lem vs A:    +15.6%    +94.4%     -1.8%    +35.0%
 
-deltas vs D (current best stacked):
-  Shar outer    (E vs D):    warm -29.5%  cold -49.6%
-  Shar + inner  (F vs D):    warm -40.3%  cold -51.9%
+deltas vs D (outer spine + n=4096 inner):
+  E   vs D:    -28.6%    -34.1%     +1.0%     +2.6%
+  F   vs D:    -41.9%    -44.4%    -15.5%     -2.7%
+  G   vs D:    +33.0%    +45.8%    +11.5%    +15.8%
+
+deltas vs F (Shar outer + n=4096 inner, ship recommendation):
+  G   vs F:   +128.8%   +162.4%    +31.9%    +19.0%
+  H   vs F:     +0.6%    +25.2%    +38.4%    +34.1%
+  I   vs F:    -10.9%    +14.8%    +11.6%    +30.1%
+
+deltas vs Lemire reference (how much our stack improves on the published baseline):
+  A   vs Lem:   -13.5%    -48.5%     +1.9%    -25.9%
+  D   vs Lem:   -39.0%    -54.9%    -13.9%    -13.1%
+  F   vs Lem:   -64.5%    -74.9%    -27.2%    -15.4%

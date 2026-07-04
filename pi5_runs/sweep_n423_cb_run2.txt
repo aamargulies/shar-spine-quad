@@ -1,0 +1,2 @@
+# bench_sweep inner_n=423 mode=cb num_sets=100 hot_reps=200
+RESULT inner_n=423 mode=cb F=856.8500 Fstar=902.2200

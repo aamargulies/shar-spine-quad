@@ -1,0 +1,106 @@
+How has Shar's algorithm remained so obscure?
+=============================================
+
+Good question, and I think there are maybe four reasons working
+together. Only the last one is actually about the algorithm —
+the rest are about how computer science folklore propagates.
+
+
+1. The citation graph has a dead end at the root
+-------------------------------------------------
+
+Shar himself never published the algorithm. Knuth learned it
+from him verbally in 1971, wrote it into TAoCP Vol. 3 as an
+inline attribution ("suggested in 1971 by L. E. Shar") with no
+bibliography entry, and moved on. Bentley picked it up from
+Knuth in 1982 and gave it a worked implementation in Writing
+Efficient Programs, p. 128. Every downstream reference traces
+back to Bentley or Knuth. But a graph search from "Shar 1971"
+hits a wall — there's no paper to link to, no DOI, no arXiv
+entry, no conference proceedings. In an era where visibility
+is driven by citations-of-the-original, "the original"
+literally does not exist. Skarupke's "impossible to google"
+line was not a failure of Skarupke's research skills; it was
+the structural reality of the reference chain.
+
+
+2. The algorithm was invented for the wrong hardware era
+---------------------------------------------------------
+
+1971 was a terrible year to publish a branchless binary search.
+Branch prediction as a serious architectural feature didn't
+arrive until the late 1980s/early 1990s. The CPUs of the early
+70s didn't speculatively execute, didn't reorder loads, didn't
+have out-of-order engines — on those machines, a cmov-style
+implementation would have been essentially equivalent to a
+branching version. The thing that makes Shar's algorithm win
+on modern hardware — pipelined independent loads, deep OoO
+windows, expensive branch mispredictions — didn't exist yet.
+Knuth's pp. 416-423 treatment frames it as "faster on some
+computers" and moves on; there's no dramatic speedup to
+report, because on a PDP-10 or an IBM 360 there basically
+wasn't one. The algorithm was 30-40 years ahead of the
+hardware that would make it matter. By the time that hardware
+showed up, the algorithm had been sitting in chapter 6.2.1 of
+TAoCP as a curiosity for a generation.
+
+
+3. Binary search is "solved"
+-----------------------------
+
+It's the canonical example of an algorithm that every CS
+student learns in week one and no one ever revisits. Textbooks
+use it as the example of divide-and-conquer. Interview
+questions use it as a warmup. The collective professional
+assumption is "we know how to do binary search; move on." That
+assumption is — as we've just demonstrated — wrong, but the
+cost of questioning it is high and the expected payoff is low,
+so nobody does it. The algorithms that do get reinvestigated
+tend to be the ones that already have obvious problems (hash
+tables, heaps, string matching). Nobody goes looking for
+improvements to something that feels finished.
+
+
+4. The win is real but specific
+--------------------------------
+
+Shar's algorithm beats branching binary search when: (a) the
+data is small enough that the entire search fits in L1 or L2,
+and (b) the predicates being evaluated are unpredictable
+enough that branch misprediction is a genuine cost, and (c)
+the CPU has enough load ports and enough OoO window for the
+independent-load pattern to actually pipeline. That's a
+specific regime — the middle of the performance space. For
+tiny arrays, linear search wins. For huge arrays, you're
+memory-bound and the inner loop doesn't matter. For middling
+arrays where branches are predictable (which is rare but
+happens), standard binary search is fine. The Shar regime is
+exactly where Roaring Bitmap container-key searches live —
+100-1000 elements, unpredictable, all in L1 — and it's a
+regime most working programmers don't consciously inhabit.
+Until you're specifically writing code in that regime, the
+algorithm has nothing to offer you.
+
+
+The combined effect
+--------------------
+
+The combined effect is that Shar's algorithm is in a strange
+equilibrium: technically important, historically documented,
+practically invisible. Every decade or so somebody
+rediscovers it — Muscar in D, Skarupke in C++, Peters
+independently — and the rediscovery generates a brief flurry
+of blog-post attention, then it goes back to sleep. The fact
+that you found your way to it via Skarupke's 2023 post and
+decided to actually use it in production-shaped code makes
+you about the tenth generation of rediscovery. That's the
+story: not that it's a secret, but that it has no canonical
+home anyone can cite, so each generation has to rediscover it
+from scratch.
+
+There is a meta-observation in there that I think is genuinely
+interesting: the fact that we had to trace the lineage
+Shar -> Knuth -> Bentley -> Muscar -> Skarupke to confirm a
+55-year-old algorithm is real is itself a symptom of how
+computer science's memory works. Good ideas that didn't get a
+paper don't compound. They just re-surface.

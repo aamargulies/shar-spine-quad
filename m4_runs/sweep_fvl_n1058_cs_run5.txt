@@ -1,0 +1,2 @@
+# bench_sweep_f_vs_lem inner_n=1058 mode=cs num_sets=200 hot_reps=200
+RESULT inner_n=1058 mode=cs F=345.4150 Lem=412.7100

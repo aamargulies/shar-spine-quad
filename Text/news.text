@@ -1,0 +1,220 @@
+# What's actually news in this project
+
+A skeptical re-read of what's novel vs. what's re-validation of known
+techniques. Written after six-host measurements landed (Pi 5, M1 Pro,
+M4 Max, Skylake-SP, Emerald Rapids, Graviton 4).
+
+
+## The honest one-line summary
+
+A small, side-indexed spine recovers ~15–25% warm and 2–3× cold at
+n=4096 across six wildly different uarchs. That's the headline. The
+compile-time n=4096 unroll is a shipping detail. The "Shar beats outer
+spine" result is a real but narrow correction to our own prediction, not
+a refutation of anything in the literature.
+
+
+## The spine is the real contribution
+
+Lemire's original article has: quaternary interpolation over blocks +
+SIMD leaf compare. The descent reads probe keys directly from `carr`,
+so each probe is a dependent load on an arbitrary cache line — cold-cache
+pointer chase.
+
+This project adds: a packed side index (`cardinality/gap` u16s, 256 B at
+n=4096 gap=32, 128 B at n=4096 gap=64) that the descent reads from
+instead. Cold-cache access pattern flips from "scattered dependent loads"
+to "sequential cache-line streaming," which HW streamers handle for free.
+
+Cold-cache results at n=4096: Pi 5 ~2×, M4 ~3×, SKX/EMR/GV4 ~2–3×. Not
+tuning — a structural change to the memory access pattern.
+
+Why this is reportable:
+  - Six-host cross-validation. Same 2–3× cold win on four different
+    uarch families (A76, Apple-silicon, Intel server, Neoverse V2).
+    Stronger evidence than any single-host blog post.
+  - Cold-cache numbers at all. Most sorted-search microbenchmarks report
+    warm-only, where the spine's advantage shrinks. The warm/cold gap on
+    Roaring-sized arrays is exactly where real workloads live, and it's
+    the regime Lemire's article doesn't address.
+  - Roaring specifically. CRoaring ships with galloping/binary search on
+    array containers; nobody appears to have proposed a side spine there.
+    Concrete drop-in improvement for an actually-used library.
+
+Where I'd temper the claim:
+  - The spine as an idea isn't novel. It's the top level of a B-tree /
+    cache-oblivious staircase / any sparse index over a sorted array.
+    What's new is applying it to the 4096-element-cap Roaring container
+    and measuring the cold/warm tradeoff across modern uarchs.
+  - Additive to Lemire, not a refutation. Correct headline is "Lemire
+    + spine," not "Lemire was wrong."
+
+
+## Warm is the production regime, and the warm numbers still hold
+
+Most production Roaring traffic hits warm containers (hot working sets,
+repeated contains/union operations on the same key space). So the warm
+numbers are the ones that matter for the sell; cold is the contingency
+story for first-touch paths and cache-thrash regimes (e.g. set-union
+scans across many containers).
+
+Warm n=4096, best tuned path vs. Lemire's reference (`simd_quad`):
+
+  Host     Lemire ref   Shipped best            Warm win
+  -----    ----------   -------------------     --------
+  Pi 5     31.6         23.78 (spine_4096)      -25%
+  M4 Max    6.3          3.65 (spine_4096)      -42%
+  M1 Pro    9.2          6.16 (spine_4096)      -33%
+  SKX      33.0         27.11 (spine_4096)      -18%
+  EMR      13.8         14.02 (spine_4096)      tied (+1.6%)
+  GV4      15.2         14.67 (spine_4096)      tied (-3%)
+
+Isolating the spine's warm contribution (tuned-ISA without vs. with
+spine, holding the SIMD block-check constant):
+
+  Host     No spine   + spine   Spine-only warm win
+  -----    --------   -------   -------------------
+  Pi 5     32.4       23.8      -27%
+  M4 Max    5.0        4.3      -14%
+  SKX      31.6       26.8      -15%
+  EMR      19.5       18.0       -8%
+  GV4      20.0       16.2      -19%
+
+Honest warm picture:
+  - Spine gives 8–27% warm wins on every host. Not 2–3× like cold, but
+    not nothing either. Mechanism survives warm: 128–256 B of spine fits
+    in L1 and hits sequentially, whereas `carr` probes hit 3 different
+    L1 lines per iteration. Lower L1 pressure + better line utilization.
+  - Compile-time n=4096 unroll adds another 10–22% warm on M4/EMR/GV4,
+    wash elsewhere.
+  - EMR and GV4 warm at n=4096 land essentially tied with Lemire's
+    reference. The zmm/NEON block-check regresses warm vs. the
+    SSE2/reference leaf; spine + unroll claw it back to parity. On the
+    two newest server hosts, warm n=4096 is *not* a story — the
+    reference was already near-optimal there, and the spine's value is
+    the cold 2–3×.
+  - Pi 5, M1, M4, SKX warm wins are 18–42%. Real, shippable, and those
+    hosts cover "older server Intel," "laptop ARM," and "embedded ARM."
+
+
+## Absolute EMR headline at n=4096
+
+Two ways to read it, and the honest story needs both.
+
+Incremental: tuned-Intel without vs. with spine (same hardware path):
+  - Warm: 19.5  -> 14.02  =  -28% / -5.5 ns
+  - Cold: 64.9  -> 25.87  =  -60% / -39 ns / 2.51x faster
+
+Versus Lemire's reference (the SSE2 quaternary):
+  - Warm: 13.8  -> 14.02  =  essentially tied
+  - Cold: 71.0  -> 25.87  =  2.74x faster / -45 ns
+
+So EMR at n=4096 is "cold-cache 2.7x over Lemire, warm-cache a wash."
+That actually strengthens the spine-is-the-real-news framing: the spine
+solves a cold-memory problem, and EMR's warm path was already near the
+AVX-512 issue limit where there's nothing left to win.
+
+Separately: the `simd_quad_intel` warm regression vs. the SSE2 reference
+at 13.8 -> 19.5 is itself interesting — the zmm single-compare
+block-check pays a fixed cost that the warm SSE2 path doesn't. Spine +
+unroll land us back at parity warm and 2.7x ahead cold. Net: the AVX-512
+block-check is load-bearing for cold but neutral-to-negative warm on
+EMR; the spine carries the warm/cold story either way.
+
+
+## The Shar-outer result, in proportion
+
+Claim: "is it fair to say Lemire's SIMD article has been refuted /
+replaced by Shar?" Answer: no, that conflates two search levels.
+
+Lemire's article is about searching inside one sorted container. The
+winning shape on every host in this project is still what Lemire
+proposed: quaternary descent + SIMD block-compare at the bottom. The
+SIMD block-check (NEON vceqq OR-tree, AVX2 cmpeq+movemask, or EMR's
+zmm+kortest) is load-bearing on all six hosts — nothing has replaced it.
+
+Shar is about the *outer* search across 512 container keys in the
+two-level RoaringSet — a problem Lemire's article doesn't address. Shar
+beats the outer spine because the K=512 key array is 1–8 cache lines
+(too short for any stride prefetcher to exploit), so a branchless cmov
+chain of ~9 independent scalar loads beats a dependent pointer chase.
+That calculus changes at the inner level: n=4096 = 64 lines, the spine
+streams cleanly, and Shar isn't competitive there.
+
+What was actually refuted is narrower: our prediction that the outer
+spine would win on Intel because of LLC streamers. It didn't — not on
+SKX, not on EMR. Scalar-vs-scalar argument about which descent shape
+fits a short key array, not about SIMD.
+
+Honest endgame: **Shar outside + Lemire-style SIMD-quad inside**. The
+two compose; they don't compete. The only thing that lost is the
+assumption that the same descent shape works at both levels.
+
+
+## How was the Shar-outer win missed?
+
+Honest answer: "missed by everyone" overstates it. The surprise is
+narrower than it looks.
+
+Shar itself isn't unknown. Branchless binary search via cmov + step-
+halving is standard fare in the benchmark-oriented corner — probablydance
+2023, Abseil-style work, Paul Khuong's writeups, game-engine lower_bound
+benchmarks. Anyone who has microbenchmarked sorted-array lookup on a
+modern OoO core has probably landed on it. The 2026 "discovery" isn't
+the algorithm.
+
+What's new here is narrow and specific to this project:
+
+  1. Measuring it in the Roaring outer-level context. Real CRoaring uses
+     plain binary/galloping search on container keys, not a spine.
+     Nobody in Roaring-land was comparing "outer spine" to Shar because
+     nobody was proposing an outer spine. *We* proposed the outer spine
+     here, discovered it didn't beat Shar, and that's the result. It's
+     less "Shar won" and more "our outer-spine idea lost to the obvious
+     baseline."
+
+  2. The refuted prediction was ours. The "Intel LLC streamers will love
+     a multi-line outer spine" hypothesis was plausible at the
+     whiteboard and specifically wrong because K=512 * 2 B = 1 KB is
+     just too short for any stride prefetcher to see enough lines to
+     engage. That's the real learning, and it's about prefetcher working
+     sets, not about Shar.
+
+  3. Six-host convergence. Cross-host agreement (Pi 5 / M1 / M4 / SKX /
+     EMR / GV4) on the same winner is unusual; most blog-post benchmarks
+     are single-host. But the result each host produces individually
+     wouldn't surprise anyone who runs their own numbers.
+
+Why the SIMD-quad framing persists in the literature: Lemire's article
+is about the inner-container problem, which *is* genuinely SIMD-shaped.
+Papers cluster around the interesting vector-instruction story; "the
+512-entry key array on top was fine with branchless binary search" isn't
+a paper. That's not something being missed — it's a problem nobody
+framed.
+
+Real contribution on the outer level: a *local* result about a specific
+two-level layout with a specific small K, not a general refutation
+anyone overlooked. Honest headline: "our outer-spine idea didn't pan
+out; the plain branchless baseline is what you should ship." Less
+exciting title, more accurate.
+
+
+## What to sell, in priority order
+
+1. **Spine + compile-time n=4096 beats Lemire at n=4096.** 15–42% warm
+   on the older/narrower hosts; 2–3x cold across all six. This is the
+   blog-post-worthy result. Six-host validation gives it weight no
+   single-host benchmark would have.
+
+2. **Six-host uarch-dependent tuning catalog.** Gap tracks cache line,
+   not SIMD width. Speculative prefetch helps narrow-OoO (A76) and
+   downclocked-scalar (SKX), hurts wide-OoO (M-series, EMR, GV4).
+   Apple-silicon gap=64 is unique. These are concrete, portable lessons
+   that CRoaring and similar libraries could apply.
+
+3. **Shar outer + quad inner for the two-level RoaringSet API.**
+   Correction of our own outer-spine prediction. Useful as the shippable
+   RoaringSet shape; not a standalone result.
+
+4. Compile-time n=4096 unroll. Shipping detail. Biggest win on EMR
+   (-22% warm / -30% cold). Wash or mild regression elsewhere. Footnote.

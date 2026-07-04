@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c62828"/>
+    </marker>
+    <marker id="arr-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e65100"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2e7d32"/>
+    </marker>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="480" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a1a1a">Lemire's quaternary descent: one step, no branches</text>
+  <text x="480" y="54" text-anchor="middle" font-size="13" fill="#666" font-style="italic">Three probes, three compares, one arithmetic update. The range shrinks by 4×, and the CPU never has to guess.</text>
+
+  <!-- =================== STEP 1 =================== -->
+  <text x="40" y="94" font-size="16" font-weight="bold" fill="#1a1a1a">① Start with n keys. Place 3 probes at the quarter points.</text>
+
+  <!-- Range strip: 256 keys, quarter=64 -->
+  <rect x="60" y="108" width="840" height="36" fill="#fff3e0" stroke="#e65100" stroke-width="1.3"/>
+  <g stroke="#e65100" stroke-width="0.5" opacity="0.35">
+    <line x1="112" y1="108" x2="112" y2="144"/>
+    <line x1="164" y1="108" x2="164" y2="144"/>
+    <line x1="216" y1="108" x2="216" y2="144"/>
+    <line x1="268" y1="108" x2="268" y2="144"/>
+    <line x1="320" y1="108" x2="320" y2="144"/>
+    <line x1="372" y1="108" x2="372" y2="144"/>
+    <line x1="424" y1="108" x2="424" y2="144"/>
+    <line x1="476" y1="108" x2="476" y2="144"/>
+    <line x1="528" y1="108" x2="528" y2="144"/>
+    <line x1="580" y1="108" x2="580" y2="144"/>
+    <line x1="632" y1="108" x2="632" y2="144"/>
+    <line x1="684" y1="108" x2="684" y2="144"/>
+    <line x1="736" y1="108" x2="736" y2="144"/>
+    <line x1="788" y1="108" x2="788" y2="144"/>
+    <line x1="840" y1="108" x2="840" y2="144"/>
+  </g>
+
+  <!-- Quarter-point probes: at 25%, 50%, 75% of the range (60..900 → 270, 480, 690) -->
+  <g>
+    <line x1="270" y1="80" x2="270" y2="106" stroke="#c62828" stroke-width="1.8" marker-end="url(#arr-red)"/>
+    <line x1="480" y1="80" x2="480" y2="106" stroke="#c62828" stroke-width="1.8" marker-end="url(#arr-red)"/>
+    <line x1="690" y1="80" x2="690" y2="106" stroke="#c62828" stroke-width="1.8" marker-end="url(#arr-red)"/>
+  </g>
+  <text x="270" y="76" text-anchor="middle" font-size="11" font-weight="bold" fill="#c62828">k₁ = key[¼]</text>
+  <text x="480" y="76" text-anchor="middle" font-size="11" font-weight="bold" fill="#c62828">k₂ = key[½]</text>
+  <text x="690" y="76" text-anchor="middle" font-size="11" font-weight="bold" fill="#c62828">k₃ = key[¾]</text>
+
+  <!-- Range endpoints -->
+  <text x="60"  y="162" font-size="11" fill="#e65100">base</text>
+  <text x="900" y="162" text-anchor="end" font-size="11" fill="#e65100">base + n</text>
+
+  <!-- Four-quarter brackets beneath -->
+  <g stroke="#888" stroke-width="1">
+    <line x1="60"  y1="178" x2="270" y2="178"/>
+    <line x1="270" y1="178" x2="480" y2="178"/>
+    <line x1="480" y1="178" x2="690" y2="178"/>
+    <line x1="690" y1="178" x2="900" y2="178"/>
+    <line x1="60"  y1="174" x2="60"  y2="182"/>
+    <line x1="270" y1="174" x2="270" y2="182"/>
+    <line x1="480" y1="174" x2="480" y2="182"/>
+    <line x1="690" y1="174" x2="690" y2="182"/>
+    <line x1="900" y1="174" x2="900" y2="182"/>
+  </g>
+  <text x="165" y="194" text-anchor="middle" font-size="10" fill="#555">quarter 0</text>
+  <text x="375" y="194" text-anchor="middle" font-size="10" fill="#555">quarter 1</text>
+  <text x="585" y="194" text-anchor="middle" font-size="10" fill="#555">quarter 2</text>
+  <text x="795" y="194" text-anchor="middle" font-size="10" fill="#555">quarter 3</text>
+
+  <!-- =================== STEP 2 =================== -->
+  <text x="40" y="230" font-size="16" font-weight="bold" fill="#1a1a1a">② Compare each probe to the target. Each answer is 0 or 1.</text>
+
+  <!-- Target value box -->
+  <rect x="60" y="248" width="130" height="30" fill="#c8e6c9" stroke="#2e7d32" stroke-width="1.3" rx="4"/>
+  <text x="125" y="269" text-anchor="middle" font-size="12" font-weight="bold" fill="#1b5e20">target = pos</text>
+
+  <!-- Three comparisons as boxes -->
+  <g transform="translate(240, 248)">
+    <rect x="0" y="0" width="170" height="30" fill="#ffebee" stroke="#c62828" stroke-width="1.2" rx="3"/>
+    <text x="85" y="20" text-anchor="middle" font-size="12" fill="#b71c1c"><tspan font-weight="bold">c₁ = (k₁ &lt; pos)</tspan> → 1</text>
+  </g>
+  <g transform="translate(430, 248)">
+    <rect x="0" y="0" width="170" height="30" fill="#ffebee" stroke="#c62828" stroke-width="1.2" rx="3"/>
+    <text x="85" y="20" text-anchor="middle" font-size="12" fill="#b71c1c"><tspan font-weight="bold">c₂ = (k₂ &lt; pos)</tspan> → 1</text>
+  </g>
+  <g transform="translate(620, 248)">
+    <rect x="0" y="0" width="170" height="30" fill="#ffebee" stroke="#c62828" stroke-width="1.2" rx="3"/>
+    <text x="85" y="20" text-anchor="middle" font-size="12" fill="#b71c1c"><tspan font-weight="bold">c₃ = (k₃ &lt; pos)</tspan> → 0</text>
+  </g>
+
+  <text x="820" y="267" font-size="11" fill="#555" font-style="italic">(example)</text>
+
+  <!-- =================== STEP 3 =================== -->
+  <text x="40" y="314" font-size="16" font-weight="bold" fill="#1a1a1a">③ Sum the three answers. That integer picks one of four quadrants, branchlessly.</text>
+
+  <!-- Centered formula -->
+  <rect x="230" y="332" width="500" height="46" fill="#fafafa" stroke="#888" stroke-width="1" rx="4"/>
+  <text x="480" y="360" text-anchor="middle" font-family="Menlo, Monaco, monospace" font-size="15" fill="#1a1a1a">
+    base += (c₁ + c₂ + c₃) × quarter;  n −= 3 × quarter;
+  </text>
+
+  <!-- Four outcome mini-boxes showing which quadrant wins -->
+  <g transform="translate(60, 396)">
+    <!-- sum=0 -->
+    <g transform="translate(0,0)">
+      <rect x="0" y="0" width="200" height="70" fill="#fafafa" stroke="#999" stroke-width="1" rx="3"/>
+      <text x="10" y="16" font-size="11" font-weight="bold" fill="#555">sum = 0</text>
+      <text x="10" y="30" font-size="10" fill="#666">all three keys ≥ pos</text>
+      <rect x="10" y="38" width="180" height="20" fill="#fff3e0" stroke="#e65100" stroke-width="0.8"/>
+      <rect x="10" y="38" width="45" height="20" fill="#ffcc80" stroke="#e65100" stroke-width="1.3"/>
+      <text x="100" y="53" text-anchor="middle" font-size="10" fill="#bf360c">keep quarter 0</text>
+    </g>
+    <!-- sum=1 -->
+    <g transform="translate(215,0)">
+      <rect x="0" y="0" width="200" height="70" fill="#fafafa" stroke="#999" stroke-width="1" rx="3"/>
+      <text x="10" y="16" font-size="11" font-weight="bold" fill="#555">sum = 1</text>
+      <text x="10" y="30" font-size="10" fill="#666">only k₁ &lt; pos</text>
+      <rect x="10" y="38" width="180" height="20" fill="#fff3e0" stroke="#e65100" stroke-width="0.8"/>
+      <rect x="55" y="38" width="45" height="20" fill="#ffcc80" stroke="#e65100" stroke-width="1.3"/>
+      <text x="100" y="53" text-anchor="middle" font-size="10" fill="#bf360c">keep quarter 1</text>
+    </g>
+    <!-- sum=2 (HIGHLIGHTED: the example) -->
+    <g transform="translate(430,0)">
+      <rect x="0" y="0" width="200" height="70" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" rx="3"/>
+      <text x="10" y="16" font-size="11" font-weight="bold" fill="#1b5e20">sum = 2  ← example</text>
+      <text x="10" y="30" font-size="10" fill="#2e7d32">k₁,k₂ &lt; pos;  k₃ ≥ pos</text>
+      <rect x="10" y="38" width="180" height="20" fill="#fff3e0" stroke="#e65100" stroke-width="0.8"/>
+      <rect x="100" y="38" width="45" height="20" fill="#a5d6a7" stroke="#2e7d32" stroke-width="1.3"/>
+      <text x="100" y="53" text-anchor="middle" font-size="10" fill="#1b5e20">keep quarter 2</text>
+    </g>
+    <!-- sum=3 -->
+    <g transform="translate(645,0)">
+      <rect x="0" y="0" width="200" height="70" fill="#fafafa" stroke="#999" stroke-width="1" rx="3"/>
+      <text x="10" y="16" font-size="11" font-weight="bold" fill="#555">sum = 3</text>
+      <text x="10" y="30" font-size="10" fill="#666">all three keys &lt; pos</text>
+      <rect x="10" y="38" width="180" height="20" fill="#fff3e0" stroke="#e65100" stroke-width="0.8"/>
+      <rect x="145" y="38" width="45" height="20" fill="#ffcc80" stroke="#e65100" stroke-width="1.3"/>
+      <text x="100" y="53" text-anchor="middle" font-size="10" fill="#bf360c">keep quarter 3</text>
+    </g>
+  </g>
+
+  <text x="480" y="493" text-anchor="middle" font-size="12" fill="#2e7d32" font-style="italic">No if / else. The sum IS the choice. That's what makes the inner loop branch-predictor-friendly.</text>
+
+  <!-- =================== STEP 4 =================== -->
+  <text x="40" y="528" font-size="16" font-weight="bold" fill="#1a1a1a">④ Range is now ¼ the size. Repeat.</text>
+
+  <!-- Before / after bars -->
+  <text x="60" y="556" font-size="11" fill="#555">before:</text>
+  <rect x="120" y="546" width="780" height="18" fill="#fff3e0" stroke="#e65100" stroke-width="1.2"/>
+  <text x="510" y="560" text-anchor="middle" font-size="11" fill="#bf360c">n = 256 keys</text>
+
+  <text x="60" y="588" font-size="11" fill="#555">after:</text>
+  <rect x="120" y="578" width="780" height="18" fill="#fff3e0" stroke="#e65100" stroke-width="0.6" opacity="0.35"/>
+  <rect x="510" y="578" width="195" height="18" fill="#a5d6a7" stroke="#2e7d32" stroke-width="1.3"/>
+  <text x="608" y="592" text-anchor="middle" font-size="11" fill="#1b5e20" font-weight="bold">n ≈ 64 keys</text>
+
+  <!-- Iteration count & handoff -->
+  <g transform="translate(60, 614)">
+    <rect x="0" y="0" width="840" height="66" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.2" rx="4"/>
+    <text x="20" y="22" font-size="12" font-weight="bold" fill="#1565c0">Cost per step: 3 loads · 3 compares · 1 add.  After ~3 iterations on n=256, n drops below 4.</text>
+    <text x="20" y="42" font-size="12" fill="#1565c0">Then a 2-probe binary tail (<tspan font-family="Menlo, Monaco, monospace" font-size="11">while (n &gt; 1)</tspan>) lands on one 16-element block.</text>
+    <text x="20" y="60" font-size="12" fill="#1565c0">One SIMD instruction compares the target to all 16 elements of that block at once, and we're done.</text>
+  </g>
+
+  <!-- Small handoff arrow from keys strip to SIMD -->
+  <line x1="705" y1="597" x2="705" y2="612" stroke="#555" stroke-width="1.3" marker-end="url(#arr-gray)"/>
+
+</svg>

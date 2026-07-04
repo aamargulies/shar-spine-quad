@@ -1,0 +1,45 @@
+How novel is the two-spine approach?
+
+Short version: the two layers are each well-established in isolation, but the
+combination applied to Roaring-style nested containers isn't something I can
+point to in the literature. A few specific angles:
+
+- Single-level spine (packing every Nth key into a dense contiguous side-array
+  so interpolation probes stream sequentially) is a classical implicit B+ tree
+  / Eytzinger-style layout, known for decades. Khuong & Morin's "Array layouts
+  for comparison-based searching" (2015) covers that family. The spine is
+  essentially the top one or two levels of an Eytzinger tree flattened out.
+  Novel-ish piece: using it alongside SIMD block-compare at the leaves
+  (gap = one cache line of u16s, block-check in one SIMD compare) is a
+  specific Roaring-fitting combination Lemire's original SIMD quaternary post
+  (the `article.text` in this repo) didn't do.
+
+- Applying the same pattern at the container-key level (the outer spine over
+  `keys[]` in `bench_twolevel.cpp`) is where it gets more unusual. Roaring-
+  style container sets classically use plain binary search over the outer key
+  array. There are plenty of papers on index-structure layouts (CSS-trees,
+  FAST, ART, learned indexes, etc.), but the specific maneuver of "take the
+  inner-spine trick that works for u16 container contents and copy it
+  wholesale one layer up to the u16 container keys, then keep the two spines
+  in sync" isn't something I've seen written up. The fact that it wins big
+  in both regimes independently (cold driven by the outer-spine streaming,
+  warm driven by the inner unroll) and stacks multiplicatively is the
+  interesting empirical observation.
+
+- Not-novel caveats: (a) multi-level sparse indexes are ancient (textbook
+  database stuff); (b) the idea of a small "fence" or "landmark" array per
+  block is in many B-tree variants; (c) cache-aware two-level search is the
+  whole motivation for CSS-trees (Rao & Ross 2000). So the underlying
+  structure is not new. What's specific here is the combination with
+  SIMD-quad block check at the leaves, the cache-line-sized block that lines
+  up gap=32 for 64 B lines and gap=64 for 128 B lines, and the empirical
+  result that it tracks cleanly across both SKX (AVX2 block check,
+  downclocked scalar loop) and EMR (zmm single-compare, full-frequency
+  scalar loop).
+
+If you're thinking about a write-up: I'd pitch it as "an old idea (multi-level
+index) applied at a new granularity (32-element u16 blocks) in a new home
+(Roaring container sets) with a specific SIMD leaf" rather than a
+fundamentally new data structure. The measurement story is strong --
+3.4-3.85x cold-cache improvement that replicates across two very different
+x86 uarchs -- which is what would carry the post.

@@ -1,0 +1,99 @@
+# SIMD reference
+
+Which SIMD instruction set each host uses, what register width we actually
+issue, and which SIMD sizes shape the algorithm. This is the companion to
+`CPU.text` (which covers cache hierarchy and latency) — SIMD here, memory
+there.
+
+Two universal rules across all six hosts:
+
+  1. SIMD is used in exactly one place per query: the **final block
+     compare**. The quaternary descent, the spine probes, the Shar outer
+     search, and all tail sweeps are scalar.
+
+  2. **Gap (block size) tracks cache line, not SIMD width.** Even the EMR
+     zmm path uses gap=32 — a 32-element u16 block is one 64-B line on
+     Intel, and crossing the line boundary costs more than the wider
+     block saves in interpolation depth. Only the 128-B-line Apple cores
+     go to gap=64.
+
+| Host              | ISA / widest SIMD used     | Intrinsics family | Block-check shape                                  | Gap | Block size |
+|-------------------|----------------------------|-------------------|----------------------------------------------------|-----|------------|
+| Pi 5 (A76)        | AArch64 NEON, 128-bit      | `arm_neon.h`      | `vld1q_u16_x2` → 2× `vceqq_u16` → OR → `vmaxvq`    |  32 |   64 B     |
+| M1 Pro (Firestorm)| AArch64 NEON, 128-bit      | `arm_neon.h`      | 2× `vld1q_u16_x4` → 8× `vceqq_u16` → OR-tree → `vmaxvq` |  64 |  128 B     |
+| M4 Max (P-core)   | AArch64 NEON, 128-bit      | `arm_neon.h`      | 2× `vld1q_u16_x4` → 8× `vceqq_u16` → OR-tree → `vmaxvq` |  64 |  128 B     |
+| Skylake-SP (8175M)| AVX2, 256-bit (zmm gated off)| `immintrin.h`   | 2× `_mm256_loadu_si256` → 2× `_mm256_cmpeq_epi16` → OR → `movemask` |  32 |   64 B     |
+| Emerald Rapids    | AVX-512 + VBMI2, 512-bit   | `immintrin.h`     | 1× `_mm512_loadu_si512` → `_mm512_cmpeq_epi16_mask` → `kortest` |  32 |   64 B     |
+| Graviton 4 (V2)   | AArch64 NEON, 128-bit      | `arm_neon.h`      | 2× `vld1q_u16_x2` → 4× `vceqq_u16` → OR → `vmaxvq` |  32 |   64 B     |
+
+M1 Pro and M4 Max share `simd_quad_m4.c` — same family (Apple-silicon
+P-core, 128-B line, 128-bit NEON, 3 load AGUs, wide OoO), so one file
+serves both. Graviton 4 is Neoverse V2 which has SVE2 at 128-bit VL, but
+since u16 search gets no width advantage over NEON at 128-bit VL we stay
+on plain NEON for portability. Skylake-SP has AVX-512BW but we
+**intentionally avoid zmm** — a single 512-bit instruction trips the
+core into AVX-512 license L2 and downclocks the surrounding scalar
+interpolation loop by ~15–20%, more than the one-instruction block-check
+saves. The zmm path is gated on `__AVX512VBMI2__` (Ice Lake-SP+), which
+is our proxy for "frequency penalty is gone."
+
+
+## Small-size SIMD fast paths
+
+When `n < gap`, the block-check descent doesn't apply. Each variant has
+one or two fast-path tiers that SIMD-compare a prefix and scalar-sweep
+the tail. Same cross-host shape as the block check, scaled down.
+
+| Host              | `[8,16)` tier     | `[16,32)` tier        | `[32,64)` tier (gap=64 only)  |
+|-------------------|-------------------|-----------------------|-------------------------------|
+| Pi 5 / GV4        | 1× `vld1q_u16`    | `vld1q_u16_x2` + OR   | —                             |
+| M1 Pro / M4 Max   | 1× `vld1q_u16`    | `vld1q_u16_x2` + OR   | `vld1q_u16_x4` + 4-wide OR    |
+| Skylake / EMR     | 1× `_mm_loadu_si128` (SSE2) | 1× `_mm256_loadu_si256` (AVX2) | —                 |
+
+Intel gap=32 means the `[16,32)` tier is the last before the main
+descent, so it naturally uses one 256-bit load; no tier needed above
+that. Apple silicon's gap=64 introduces an extra `[32,64)` tier that
+rides on `vld1q_u16_x4` (8× u16 = 128 bits × 4 = 512 bits worth of NEON
+loads), which the 3 AGUs can dispatch in parallel.
+
+
+## What decides the SIMD shape
+
+Two numbers per host drive the whole design:
+
+  - **Cache line size** (64 B on everything except Apple silicon's 128 B)
+    sets the gap. One block = one line.
+  - **SIMD register width × load AGUs** sets how the block is assembled.
+    Pi 5 has 2 AGUs → paired 128-bit loads; M-series has 3 AGUs → four
+    paired 128-bit loads per half-block; EMR has a 512-bit register wide
+    enough to eat the whole block in one load; SKX has the registers but
+    can't use them without losing the scalar loop's clock.
+
+Note what's **not** on that list: the widest SIMD the ISA supports. Every
+Intel host here technically has 512-bit zmm, but only EMR uses it; every
+AArch64 host technically has SVE/SVE2 or (on A76) a future path, but
+nobody uses it because at VL=128 there's no width advantage over NEON
+for u16 search.
+
+
+## Where SIMD is deliberately absent
+
+  - **Quaternary descent** over blocks (`while (n > 3)`): 3 scalar
+    dependent loads + 3 scalar `<` compares per iteration. Fits in
+    general-purpose registers, benefits from cmov lowering of the
+    branchless `base += (c1+c2+c3) * quarter` update. SIMD would serialize
+    what's already a load-AGU-bound pattern.
+  - **Spine descent** in `simd_quad_*_spine` / `_spine_4096`: same
+    scalar pattern over the packed spine. The spine itself is
+    SIMD-irrelevant — its whole point is to stream consecutive cache
+    lines into L1, which the hardware streamer does, not SIMD.
+  - **Shar outer branchless binary** (`bench_twolevel.cpp` variants E/F,
+    the cross-host winner): pure scalar cmov chain on K=512 u16 keys.
+    The algorithmic story here is **against** SIMD: ~9 independent
+    scalar loads on the critical path, issuing back-to-back through the
+    load AGUs, beat any vectorized shape that would force dependent-load
+    chaining through a spine. Four of the five 64-B-line hosts plus the
+    two 128-B-line Apple hosts all converge on this.
+  - **Tail sweeps** past `num_blocks * gap`: scalar. Never reached at
+    `n=4096` since 4096 % gap == 0 for both gap=32 and gap=64, so this
+    code is cold on the canonical hot path.
