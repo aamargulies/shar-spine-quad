@@ -1,5 +1,7 @@
 # The Khuong & Morin trick, in full detail
 
+*Source: Paul-Virak Khuong and Pat Morin, "Array Layouts for Comparison-Based Searching", arXiv:1509.05053, <https://arxiv.org/abs/1509.05053> (v2, 15 March 2017); ACM Journal of Experimental Algorithmics 22 (2017), pp. 1–39, <https://doi.org/10.1145/3053370>. The listing, section and "PDF p." references below are to the authors' 49-page PDF dated 14 March 2017, which this repository redistributed until 2026-10-11 and now only cites (see `THIRD_PARTY_NOTICES.md`).*
+
 *Revised 2026-10-11: the block/offset derivation in Components 1 and 4 was wrong — it mixed the paper's 0-based layout with this document's 1-based one, which is the error behind the mis-aimed prefetch in variants H/I — and the "~25 ns DRAM round trip" and "4-deep" wording were corrected. See `Text/corrections_2026-10.md` §1 and §5.*
 
 ## The setup

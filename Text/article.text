@@ -1,3 +1,50 @@
+================================================================================
+THIRD-PARTY CONTENT - NOT COVERED BY THIS REPOSITORY'S MIT LICENCE
+================================================================================
+Title:       You can beat the binary search
+Author:      Daniel Lemire
+URL:         https://lemire.me/blog/2026/04/27/you-can-beat-the-binary-search/
+Published:   27 April 2026 (page metadata: 2026-04-27T17:32:13+00:00)
+Copied:      on or about 30 April 2026 (file date; the bibliography in
+             Text/journey.text records "Accessed 30 Apr. 2026"); it entered this
+             repository as article.text in commit f0a9538 on 2026-05-11
+Re-checked:  2026-10-11 against the live page (differences listed below)
+Licence:     Creative Commons Attribution 3.0 (CC BY 3.0),
+             https://creativecommons.org/licenses/by/3.0/
+             per the blog's terms of use, https://lemire.me/blog/terms-of-use/,
+             which say: "All of the content except for the comments is made
+             available under a Creative Commons license to facilitate free
+             reuse: you can share and adapt this content, even for commercial
+             use, as long as you credit the blog posts to me." (on that page the
+             clause from "you can share" to "credit the blog posts to me" links
+             to the CC BY 3.0 deed)
+
+This file is a copy of a third-party work, (c) Daniel Lemire. It is EXCLUDED
+from the MIT licence in LICENSE, which covers this repository's own code, and is
+redistributed here under CC BY 3.0 with the attribution above. See
+THIRD_PARTY_NOTICES.md at the repository root.
+
+Differences between this copy and the original page:
+  - The header image and the six benchmark plots are not reproduced; the lines
+    "Intel/GCC:" and "Apple/LLVM" below mark where the plots appear.
+  - The copy ends with "Appendix: code is in simd_quad.c", a pointer added by
+    this repository's author to simd_quad.c in this repository, which holds the
+    post's SIMD Quad code as published on 27 April 2026. On the live page the
+    appendix ("Appendix (source code)") contains the code itself.
+  - The live page was updated on 2 October 2026 (page metadata
+    2026-10-02T23:16:55+00:00; the matching commit in Lemire's code repository
+    is dated 2026-10-02 and titled "Search arrays under 16 elements with
+    overlapping SIMD loads in the beat-binary-search post."). Its "Initial
+    Check" step now reads: "If the array has fewer than 16 elements, compare the
+    target against two overlapping SIMD loads that together cover the array
+    (below four elements, compare it against the first, middle and last
+    elements). There is no data-dependent branch." The text below is the
+    27 April 2026 version, which says "perform a simple linear search through
+    all elements"; its code (simd_quad.c) differs in the same way. Every other
+    paragraph matched the live page on 2026-10-11, apart from paragraph breaks
+    inside the two bullet lists.
+  - Headings, bullets and links were flattened to plain text.
+================================================================================
 
 You can beat the binary search
 

@@ -177,6 +177,8 @@ before the table. `./bench_twolevel [sets] [reps] [hb|hs|cb|cs|all] [order_seed]
 - `run_twolevel.sh`, `compute_twolevel_paired.py` — run campaigns and aggregate them with paired per-run statistics.
 - `plot.py` — datasets (only archive-derivable values) + figure generator; writes the PNGs and `bench_table.txt`.
 - `reproduce.sh` — host-aware build + run + comparison against archived medians.
+- `consolidate_sweep.py` — folds a sweep campaign's per-cell outputs into one `*_raw.txt` archive; the archived sweeps are `m4_runs/sweep_raw.txt`, `m4_runs/sweep_fvl_raw.txt` and `pi5_runs/sweep_raw.txt`.
+- `THIRD_PARTY_NOTICES.md` — third-party material (Lemire's post and kernel, the Khuong & Morin paper, the Knuth pages) and its status.
 - `{pi5,m4,m1,skx,emr,gv4}_runs/` — raw archived runs, per-host aggregators, `twolevel_paired.txt` (and `twolevel_paired_v2.txt` on the Pi 5).
 - `Text/corrections_2026-10.md` — the corrections record. `Text/` also holds the blog draft, talk, glossary and design notes; `KhuongMorin.md` documents the Eytzinger experiment and its retraction.
 
@@ -186,7 +188,8 @@ before the table. `./bench_twolevel [sets] [reps] [hb|hs|cb|cs|all] [order_seed]
 - The main bench's "cold" column is not a cache flush; the two-level harness's "hot" modes are hot only for the 1 KB outer array.
 - "One block = one cache line" requires a line-aligned array. The harnesses use `std::vector` (16-byte alignment), so most blocks straddle two lines; a Roaring integration should align container arrays and spines.
 - The Pi 5 kernel's in-loop prefetch is a net loss by the project's own data and should be removed after a dedicated A/B.
-- Repository hygiene (tracked binaries, third-party PDFs and scans, thousands of one-line sweep files) is listed in the corrections document and has not been addressed.
+- Every "vs Lemire" number is against the 2026-04-27 version of his kernel (`simd_quad.c`). Lemire revised the post and its code on 2026-10-02 (arrays under 16 elements are now searched with two overlapping SIMD loads instead of a linear scan), so the small-container bands may differ against the revised kernel.
+- Repository hygiene was addressed on 2026-10-11: the compiled binaries were untracked; the Khuong & Morin PDF, the three Knuth scans and the stale `Images/` renders and diagrams were removed from the tip (third-party material is cited in `THIRD_PARTY_NOTICES.md`); and the 7,600 per-cell sweep output files were folded into `m4_runs/sweep_raw.txt`, `m4_runs/sweep_fvl_raw.txt` and `pi5_runs/sweep_raw.txt` (`consolidate_sweep.py`). The published history was rewritten the same day with `git filter-repo` to purge the PDF, the scans and the binaries, so commit hashes from the 2026-07-03 pre-migration snapshot onward changed; clones made before then must be re-cloned or hard-reset to `origin/main`.
 
 ## Background
 
@@ -200,6 +203,16 @@ adapted to a 1-based layout.
 
 ## License
 
-The code is MIT-licensed (see `LICENSE`). `Text/article.text` is a copy of
-Daniel Lemire's blog post, © Daniel Lemire, kept for reference only and not
-covered by the MIT licence; read `simd_quad.c` for the reference kernel.
+The repository's own code is MIT-licensed (see `LICENSE`); `simd_quad.c` and
+`Text/article.text` are third-party, see `THIRD_PARTY_NOTICES.md`.
+`Text/article.text` is a copy of Daniel Lemire's
+blog post *You can beat the binary search* (© Daniel Lemire) as published on
+2026-04-27; the blog's [terms of use](https://lemire.me/blog/terms-of-use/)
+place its content under Creative Commons Attribution 3.0, so the copy is kept
+with an attribution header and is excluded from the MIT licence. `simd_quad.c`
+is the reference kernel from that post; neither the post, the terms page nor
+Lemire's code repository states a licence specific to the code (details in the
+notices file). The Khuong & Morin paper (PDF) and the three scanned pages of
+Knuth's *TAOCP* Vol. 3 that earlier commits carried were removed from the
+repository on 2026-10-11, including from its history (rewritten with
+`git filter-repo` the same day), and are cited instead.

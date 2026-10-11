@@ -410,4 +410,8 @@ alignment of `carr`/spine in the harnesses and kernels, a real cache flush
 for `bench.cpp`'s cold column, the F-vs-Lemire small-container bands (a
 size-dependent dispatch or a shorter scalar tail for n < 128), the
 hygiene items (tracked binaries, third-party PDFs/scans, 7,600 one-line
-sweep files, stale PNG copies).
+sweep files, stale PNG copies). The hygiene items were addressed later
+on 2026-10-11 (binaries untracked; PDF, scans and `Images/` removed from
+the tip and cited in `THIRD_PARTY_NOTICES.md`; sweep files folded into
+`*_raw.txt`; the published history was rewritten the same day to purge
+the PDF, the scans and the binaries).
