@@ -3,7 +3,7 @@
 #include <immintrin.h>
 
 #if !defined(__AVX2__)
-#error "simd_quad_intel.c requires AVX2 or better. For the 512-bit zmm block-check fast path build with -march=icelake-server or newer (or -march=x86-64-v4 / -march=sapphirerapids). For AVX2 only -- including Skylake-SP, where zmm is intentionally avoided due to frequency downclock -- use -march=haswell, -march=skylake-avx512, or -march=native on a SKX host. For pure SSE2, use the reference simd_quad.c instead."
+#error "simd_quad_intel.c requires AVX2 or better. For the 512-bit zmm block-check fast path build with -march=icelake-server, -march=sapphirerapids or newer (the gate is __AVX512VBMI2__; note that -march=x86-64-v4 does NOT define it and silently produces the AVX2 + prefetch variant). For AVX2 only -- including Skylake-SP, where zmm is intentionally avoided -- use -march=haswell, -march=skylake-avx512, or -march=native on a SKX host. For pure SSE2, use the reference simd_quad.c instead."
 #endif
 
 /*
@@ -13,9 +13,11 @@
  *
  * Differences from the reference simd_quad.c SSE2 path:
  *   - Block size is 32 u16 = one 64-byte cache line. Same "one block =
- *     one line" structural argument as the Pi 5 variant. Intel's 64-byte
- *     line matches the Pi 5's, so gap=32 lands in the same place; the
- *     M4 Max needed gap=64 only because its line is 128 B.
+ *     one line" structural argument as the Pi 5 variant, with the same
+ *     caveat: it holds only for a 64-byte-aligned carr, which the
+ *     harnesses do not enforce (Text/corrections_2026-10.md, section 5).
+ *     Intel's 64-byte line matches the Pi 5's, so gap=32 lands in the
+ *     same place; the M4 Max needed gap=64 only because its line is 128 B.
  *   - On Ice Lake-SP and newer the block check is a single 512-bit load
  *     covering the whole 32-element block, _mm512_cmpeq_epi16_mask,
  *     kortest. Three hot instructions in the block check vs. four NEON
@@ -23,10 +25,12 @@
  *   - On Skylake-SP/X (family 6 model 85) and on hosts without AVX-512BW
  *     we fall back to two 256-bit AVX2 loads + cmpeq + OR + movemask.
  *     Structurally the same as the Pi 5 vld1q_u16_x2 pattern, just wider.
- *     On Skylake-X this is *faster* than the zmm path because a single
- *     512-bit instruction per call trips the core into AVX-512 license L2
- *     and downclocks surrounding scalar code (the interpolation loop) by
- *     ~15-20% -- more than the 1-instruction block-check win saves. The
+ *     On Skylake-X this measured *faster* than the zmm path (the non-spine
+ *     intel path lost to SSE2 at n >= 2048 warm with zmm enabled). The
+ *     usual explanation is the AVX-512 frequency license: light 512-bit
+ *     ops such as integer compares move SKX to license level L1 (not L2,
+ *     as earlier versions of this comment said; L2 is for heavy FP/mul),
+ *     which still lowers the clock for the surrounding scalar loop. The
  *     zmm fast path is gated on __AVX512VBMI2__ rather than __AVX512BW__:
  *     VBMI2 first appeared in Ice Lake, which is also the first uarch
  *     where the AVX-512 frequency penalty is negligible. SKX sets
@@ -101,9 +105,14 @@ bool simd_quad_intel(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
         base += (c1 + c2 + c3) * quarter;
         n -= 3 * quarter;
 #if !defined(__AVX512VBMI2__)
-        // Skylake-SP/X and AVX2-only hosts: narrower OoO window, fewer LFBs,
-        // and on SKX the scalar loop is running at AVX-512 license L2 anyway,
-        // so overlapping the next probe with a software prefetch pays off.
+        // Skylake-SP/X and AVX2-only hosts: kept because the SKX A/B was
+        // inconclusive and the core is narrower (fewer LFBs, 2 load AGUs).
+        // CORRECTION 2026-10-11: earlier text here said the scalar loop
+        // "is running at AVX-512 license L2 anyway"; in this build no zmm
+        // instruction executes at all, so nothing is downclocked and that
+        // is not a reason to keep the prefetch. Note also that Zen 4/5
+        // define __AVX512VBMI2__, so AMD builds take the no-prefetch zmm
+        // branch untested.
         // Ice Lake-SP and newer (Sapphire/Emerald/Granite Rapids) have enough
         // ROB + load AGUs + aggressive HW prefetchers that the hint is pure
         // issue-slot waste -- measured on EMR (Xeon 8559C, 2026-04-30) as a
@@ -206,9 +215,11 @@ bool simd_quad_intel_spine(const uint16_t *carr, const uint16_t *spine,
     int32_t base = 0;
     int32_t n = num_blocks;
 
-    // Pull the whole spine into L1 up front. For n=4096 this is 4 lines;
-    // for n=1024 it is 1 line. The HW streamer will pick up the rest if
-    // the first line triggers it.
+    // Prefetch the first line of the spine (one line, not "the whole
+    // spine": at n=4096 the spine is 4 lines when line-aligned, 5 when
+    // not, and the first-tier probes spine[32], spine[64], spine[96] all
+    // sit outside the prefetched line; a single line does not train the
+    // streamer).
     _mm_prefetch((const char *)spine, _MM_HINT_T0);
 
     while (n > 3) {

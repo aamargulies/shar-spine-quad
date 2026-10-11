@@ -11,19 +11,23 @@
  *
  *   - Block size is 64 u16 = one 128-byte cache line. "One block = one line"
  *     is the same structural argument we made on Pi 5, re-tuned for M4's
- *     line size. Halves the interpolation depth again vs. the Pi 5 gap=32.
+ *     line size, and it holds only when carr is 128-byte aligned, which
+ *     neither this file nor the harnesses enforce (std::vector gives
+ *     16-byte alignment, so seven of eight blocks straddle two lines in
+ *     the archived measurements; Text/corrections_2026-10.md, section 5).
+ *     Halves the interpolation depth again vs. the Pi 5 gap=32.
  *   - The block check uses two vld1q_u16_x4 (eight paired 128-bit loads),
  *     which the three load AGUs can overlap freely. All four "a" loads and
  *     all four "b" loads are independent, so the core can pipeline the
  *     whole 128-byte block in a few cycles.
  *   - AArch64/NEON only; Apple silicon has no SVE/SVE2, and SSE2 never
  *     applied.
- *   - No speculative __builtin_prefetch in the interpolation loop. On the
- *     Pi 5 it bought 10-25% cold because the A76 has limited MLP and the
- *     data-dependent middle-probe pattern is opaque to the HW prefetcher.
- *     On the M4 the OoO window is wide enough that the miss already
- *     overlaps with other in-flight loads, and the prefetch instruction
- *     just costs an issue slot. We drop it here and rely on the spine
+ *   - No speculative __builtin_prefetch in the interpolation loop. The M1
+ *     A/B (m1_runs/pf_run{1..5}.txt) showed it costs +3% warm, 0/5 wins.
+ *     CORRECTION 2026-10-11: earlier versions of this comment justified
+ *     the decision by contrast with a "10-25% cold win" on the Pi 5; the
+ *     Pi 5 archive actually shows that prefetch to be a net loss there
+ *     too (Text/corrections_2026-10.md, section 5). We rely on the spine
  *     variant for the cold-cache win.
  *   - Extra small-size fast path for 32 <= n < 64 (new tier introduced by
  *     the larger block): a vld1q_u16_x4 covers the first 32 elements and

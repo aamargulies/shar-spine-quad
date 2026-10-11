@@ -7,15 +7,26 @@
  *
  * Differences from the reference simd_quad.c:
  *   - Block size is 32 u16 = one 64-byte cache line, so a block hit touches
- *     exactly one line. This halves the number of blocks vs. gap=16 and
- *     therefore shortens the interpolation.
+ *     exactly one line *provided carr is 64-byte aligned*. Nothing in this
+ *     file or in the benchmark harnesses aligns carr (std::vector gives
+ *     16-byte alignment), so in the archived measurements about three of
+ *     four blocks straddle two lines; the measured cold penalty for that
+ *     is +14-30% at n=4096 (Text/corrections_2026-10.md, section 5). A
+ *     Roaring integration should align container arrays and spines.
+ *     Halving the number of blocks vs. gap=16 still shortens the
+ *     interpolation regardless of alignment.
  *   - The block load uses vld1q_u16_x2 (two paired 128-bit loads), which
  *     maps well to A76's two load AGUs.
  *   - AArch64/NEON only; the SSE2 fallback from the reference is gone.
- *   - Speculative prefetch inside the quaternary loop (Eytzinger-inspired):
- *     at the end of each iteration we prefetch the next iter's middle probe
- *     and the current candidate final-block line. These misses then overlap
- *     with the in-flight k1/k2/k3 loads instead of serializing behind them.
+ *   - One speculative __builtin_prefetch per quaternary iteration, aimed at
+ *     the start of block base + n/2. CORRECTION 2026-10-11: the project's
+ *     own archived data show this prefetch is a net loss, not the "10-25%
+ *     cold win" earlier versions of this comment claimed. simd_quad_graviton
+ *     is this kernel minus the prefetch line, so the pi5 vs graviton columns
+ *     of the Pi 5 main bench are an A/B: the prefetch kernel is slower cold
+ *     at 13 of 14 sizes from n=128 up and slower warm at 13 of 14. The
+ *     prefetch is kept only until a dedicated kernel A/B is run; see
+ *     Text/corrections_2026-10.md, section 5.
  */
 bool simd_quad_pi5(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
     enum { gap = 32 };
@@ -66,11 +77,15 @@ bool simd_quad_pi5(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
         int32_t c3 = (k3 < pos);
         base += (c1 + c2 + c3) * quarter;
         n -= 3 * quarter;
-        // Eytzinger-inspired speculative prefetch: the next iteration's
-        // middle probe is deterministic from (base, n), so issue its
-        // prefetch now. Its miss will overlap with c1/c2/c3 already in
-        // flight instead of serializing behind them. Saves ~10-20% on
-        // cold-cache queries for n >= 1024; near-free when warm.
+        // Speculative prefetch of the START of block base + n/2. Note two
+        // problems (Text/corrections_2026-10.md, section 5): (1) the next
+        // middle probe reads the END of a block, so this address is in the
+        // same cache line only when carr is 64-byte aligned and n % 4 is 0
+        // or 1; (2) the address depends on the just-updated `base`, so it
+        // becomes computable at the same dependency depth as the next
+        // iteration's demand loads and cannot run ahead of them. Measured
+        // (pi5 vs graviton columns, 2026-05-12 archive): net loss at 13 of
+        // 14 sizes cold and warm. Kept pending a dedicated kernel A/B.
         __builtin_prefetch(carr + (base + (n >> 1)) * gap);
     }
     while (n > 1) {
@@ -165,8 +180,12 @@ bool simd_quad_pi5_spine(const uint16_t *carr, const uint16_t *spine,
     int32_t base = 0;
     int32_t n = num_blocks;
 
-    // Kick the whole spine into L1 right away. For n=4096 this is 4 lines;
-    // for n=1024 it is 1 line. Cheap insurance on cold queries.
+    // Prefetch the first line of the spine (one line, not "the whole
+    // spine": at n=4096 the spine is 4 lines when line-aligned, 5 when
+    // not, and the first-tier probes spine[32], spine[64], spine[96] all
+    // sit outside the prefetched line). Cheap; the real cold win of the
+    // spine is that the descent reads a contiguous 256 B instead of
+    // chasing through the 8 KB array.
     __builtin_prefetch(spine);
 
     while (n > 3) {

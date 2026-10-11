@@ -16,7 +16,8 @@
 // Granite Rapids):
 //   g++ -O3 -march=sapphirerapids -std=c++20 \
 //       bench.cpp simd_quad_intel.c -o bench
-//   (or: -march=icelake-server / -march=x86-64-v4 / -march=native)
+//   (or: -march=icelake-server / -march=native on an Ice Lake-SP-or-newer host;
+//    note -march=x86-64-v4 does NOT define __AVX512VBMI2__ and builds the AVX2 path)
 //
 // Build (Skylake-SP/X -- has AVX-512BW but no VBMI2; the zmm block check is
 // intentionally gated off on this uarch due to AVX-512 frequency downclock;
@@ -64,8 +65,8 @@ void simd_quad_pi5_build_spine(const uint16_t *carr, int32_t cardinality,
                                uint16_t *spine);
 // _spine_4096 is the hybrid (3 quat + branchless 2-probe finish). The prior
 // 3-quat + binary step + final-lo unroll was retired 2026-05-12 after the
-// hybrid-vs-unroll A/B (hybrid -16.9% warm monotone across 5/5 runs, cold
-// within noise) -- same call pattern as EMR/GV4/M1.
+// hybrid-vs-unroll A/B (hybrid -16.9% warm by ratio of medians, -31.0% paired
+// per-run median, faster in 5/5 runs; cold within noise) -- same call pattern as EMR/GV4/M1.
 bool simd_quad_pi5_spine_4096(const uint16_t *carr, const uint16_t *spine,
                               uint16_t pos);
 // Compile-time spine specializations (port of the GV4 set). High-foot sizes
@@ -303,6 +304,15 @@ static double bench_warm(Fn q, size_t num_arrays,
     return ns / (double)(num_arrays * repeats);
 }
 
+// "cold" column caveat (Text/corrections_2026-10.md, section 5): there is
+// no cache flush here. Arrays are visited in allocation order, each with
+// the same target the previous algorithm just used on it, and at the
+// canonical 4000 arrays the per-size footprint (~35 MB at n=4096, 2 MB at
+// n=256) fits the LLC of every host except the Pi 5. So this column is a
+// DRAM miss on the Pi 5 at large n, an L3/SLC hit on Apple / EMR / GV4 /
+// SKX, and L2/L3-resident everywhere at n <= 256. Cross-host comparisons
+// of this column compare cache levels, not cores. Within one host the
+// column is still a fair A/B between algorithms at the same size.
 template <typename Fn>
 static double bench_cold(Fn q, size_t num_arrays,
                          const std::vector<uint16_t> &targets) {
@@ -521,10 +531,15 @@ int main(int argc, char **argv) {
                         size, w[8], size, w_n, c[8], size, c_n);
         }
 
-        // Pi 5 compile-time spine specializations. Same shape as the GV4
-        // set (shared gap=32 / 64-B line / paired vld1q_u16_x2 block
-        // check). Prints a per-size A/B vs the general-n pi5_spine so the
-        // warm sawtooth vs straight-line unroll is visible.
+        // Pi 5 compile-time spine specializations. Identical code to the
+        // GV4 set (every simd_quad_pi5_spine* function matches its
+        // simd_quad_graviton_spine* twin after comment stripping), so on
+        // one host the two rows differ only by measurement noise and
+        // order. Prints a per-size A/B vs the general-n pi5_spine so the
+        // warm sawtooth vs straight-line unroll is visible. Note that at
+        // n=4096 simd_quad_pi5_spine_4096 is also timed in the cross-host
+        // block further down, so archives carry two rows for it per run;
+        // aggregators should use the first.
         if (size == 256 || size == 512 || size == 1024 ||
             size == 2048 || size == 4096) {
             double w_pin = 0, c_pin = 0;

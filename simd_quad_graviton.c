@@ -15,29 +15,33 @@
  *   - 128-bit NEON and 128-bit SVE2. On V2 the SVE vector length is 128
  *     bits, so there is no width advantage over NEON for this algorithm;
  *     we stay on NEON for ISA portability with the other two ARM hosts.
- *   - 4 load AGUs. Two more than the A76, one more than the M4. Combined
- *     with a very wide OoO window (ROB ~320 entries) and an aggressive
- *     stride prefetcher, it is the most memory-level-parallel ARM host
- *     in this project.
+ *   - Three load-capable pipelines (two load/store + one load-only), one
+ *     more than the A76 and the same count as Apple's P-cores; earlier
+ *     versions of this comment said four. Combined with a wide OoO window
+ *     it is the most memory-level-parallel ARM host in this project.
  *
  * Differences from the reference simd_quad.c SSE2 path:
  *   - Block size is 32 u16 = one 64-byte cache line. Same "one block =
- *     one line" structural argument as the Pi 5 variant. The cache line
- *     drives gap, not the SIMD register width.
+ *     one line" structural argument as the Pi 5 variant, with the same
+ *     caveat: it holds only for a 64-byte-aligned carr, which the
+ *     harnesses do not enforce (Text/corrections_2026-10.md, section 5).
+ *     The cache line drives gap, not the SIMD register width.
  *   - The block check uses vld1q_u16_x2 (two paired 128-bit loads) with
- *     the four comparisons ORed together. With 4 load AGUs the paired
- *     load is trivial to issue; using a wider vld1q_u16_x4 would buy
+ *     the four comparisons ORed together. With three load-capable pipes
+ *     the paired load is trivial to issue; using a wider vld1q_u16_x4 would buy
  *     nothing because we only need 32 u16 = 64 B per block.
  *   - AArch64/NEON only; the reference SSE2 fallback is gone.
  *   - No speculative __builtin_prefetch inside the interpolation loop.
- *     The A76 kept it (10-25% cold win) because two load AGUs and a
- *     narrow OoO window leave room for a SW hint to pay off. On V2
- *     the ROB is deep enough and the L1/L2 streamers aggressive enough
- *     that the miss already overlaps with the current iteration's
- *     loads -- same regime as the M4 Max and Emerald Rapids, where the
- *     hint was a measurable regression. Measured on Graviton 4
- *     (2026-05-01): removing the in-loop prefetch is within noise at
- *     every size and slightly faster at n >= 1024 cold. We drop it.
+ *     Measured on Graviton 4 (2026-05-01, gv4_runs/ab_summary.txt): keeping
+ *     the prefetch is slower warm at every n >= 128 (+1.9% to +10.8%) and
+ *     slower cold at every n >= 128 except n=2048 (+0.7% to +5.6%; -2.5%
+ *     at 2048); within noise below n=128. We drop it. CORRECTION 2026-10-11: earlier versions of this
+ *     comment said the A76 kept the prefetch for a "10-25% cold win";
+ *     the Pi 5 archive shows it is a net loss there too (this kernel is
+ *     the Pi 5 kernel minus that one line, so the Pi 5 bench's pi5 vs
+ *     gv4 columns are the A/B; Text/corrections_2026-10.md, section 5).
+ *     Every simd_quad_graviton_spine* function below is identical to its
+ *     simd_quad_pi5_spine* counterpart.
  *   - Small-size fast paths for [8,16) and [16,32), same structure as
  *     the Pi 5 variant. No [32,64) tier because gap=32.
  */
@@ -131,9 +135,10 @@ bool simd_quad_graviton(const uint16_t *carr, int32_t cardinality,
  *   n=2048 ->  64 spine keys -> 128 B = 2 cache lines
  *   n=1024 ->  32 spine keys ->  64 B = 1 cache line
  *
- * The V2's stride prefetcher picks up the sequential spine scan
- * immediately, and the 4 load AGUs let the quaternary iteration issue
- * all three probe loads in the same cycle. The final SIMD block check
+ * The spine descent reads a contiguous 256 B -- too short to train a
+ * stride prefetcher, but its few lines fetch with memory-level
+ * parallelism -- and the three load pipes let the quaternary iteration
+ * issue all three probe loads in the same cycle. The final SIMD block check
  * still loads from carr.
  *
  * num_blocks <= 3 fallback is identical to the NEON siblings: at tiny
@@ -184,9 +189,12 @@ bool simd_quad_graviton_spine(const uint16_t *carr, const uint16_t *spine,
     int32_t base = 0;
     int32_t n = num_blocks;
 
-    // Kick the whole spine into L1 right away. For n=4096 this is 4 lines;
-    // for n=1024 it is 1 line. The V2 streamer picks up the rest as soon
-    // as the first line triggers it.
+    // Prefetch the first line of the spine (one line, not "the whole
+    // spine": at n=4096 the spine is 4 lines when line-aligned, 5 when
+    // not, and the first-tier probes spine[32], spine[64], spine[96] all
+    // sit outside the prefetched line). A single line does not train a
+    // stride prefetcher; the spine's cold win is the contiguous 256 B
+    // descent itself.
     __builtin_prefetch(spine);
 
     while (n > 3) {
@@ -238,22 +246,10 @@ void simd_quad_graviton_build_spine(const uint16_t *carr, int32_t cardinality,
 }
 
 /*
- * Compile-time n=4096 specialization, Graviton 4 edition.
- *
- * Same shape as simd_quad_intel_spine_4096: at gap=32 and n=4096,
- * num_blocks is exactly 128 and the quaternary descent runs exactly
- * three iterations (n=128 -> 32 -> 8 -> 2), then one binary step,
- * then the final lo pick. All the probe offsets materialize as
- * constants and the compiler can straight-line the whole thing.
- *
- * On EMR this was a 22-30% win over the general-n spine. The
- * expected mechanism (one fewer backward branch per probe tier plus
- * fully register-scheduled offsets) is architecture-independent, so
- * the V2 should benefit too; the open question is how much, given
- * that V2's branch predictor is already very good.
- *
- * 4096 % 32 == 0 so there is no tail sweep: lo == num_blocks means
- * "past the end" and we return false.
+ * (A comment block describing the retired 3-quat + binary-step + final-lo
+ * n=4096 unroll used to sit here. The shipped simd_quad_graviton_spine_4096
+ * is the hybrid -- 3 quat iterations + branchless 2-probe finish -- and is
+ * documented with the rest of the compile-time family further down.)
  */
 /*
  * Padded-descent spine variant.
@@ -264,9 +260,12 @@ void simd_quad_graviton_build_spine(const uint16_t *carr, int32_t cardinality,
  * V2) relative to the neighboring n where the quaternary descent lands on
  * a pure power-of-4 count and the binary loop runs zero times. On GV4
  * warm this shows up as an alternation: n=128 cheap, n=256 expensive,
- * n=512 cheap, etc. V2 has 4 load AGUs + deep OoO, so the three quat
+ * n=512 cheap, etc. V2 has three load pipes + deep OoO, so the three quat
  * probes issue in one load-use round; the serial binary tail is the
- * outlier.
+ * outlier. (The ~5 ns figure and the per-n sawtooth were read off 22-size
+ * curves that have no archived source for GV4 -- only the ten power-of-two
+ * sizes are archived; see Text/experiments.md and Text/corrections_2026-10.md
+ * section 4.)
  *
  * Fix: pad the spine with two sentinel u16 0xFFFF entries past num_blocks,
  * then replace the binary-tail loop + final lo pick with a single 3-probe
@@ -421,8 +420,10 @@ void simd_quad_graviton_build_spine_padded(const uint16_t *carr,
  *   n=1024: warm -63%  cold -31%   (vs _spine_padded: -25% / -35%)
  *   n=2048: warm -22%  cold +17%   (cold regression; unroll clusters tier
  *                                   probes before block load, denying OoO
- *                                   overlap. Same mechanism as the M4
- *                                   _spine_4096 cold regression.)
+ *                                   overlap. The M4 _spine_4096 cold
+ *                                   regression it was likened to is now a
+ *                                   measurement-order hypothesis, see
+ *                                   Text/corrections_2026-10.md section 5.)
  *   n=4096: warm -57%  cold -15%   (vs _spine_padded: -18% / -19%)
  *
  * Every num_blocks is a multiple of 32 so gap=32 gives no tail sweep:
