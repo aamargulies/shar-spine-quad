@@ -15,15 +15,35 @@ simd_quad_intel auto-selects the 2x 256-bit AVX2 block check and avoids
 the AVX-512 frequency downclock. On Ice Lake-SP / Sapphire Rapids /
 Emerald Rapids / Granite Rapids, __AVX512VBMI2__ is set and the zmm
 single-compare path kicks in.
+
+Data provenance (2026-10-11 audit): the pi5_* dicts carry all 22 sweep
+sizes (pi5_runs/rebench_run{1..5}.txt). The m4/m1/skx/emr/gv4 dicts carry
+only the 10 power-of-two sizes present in their archived
+{host}_runs/rebench_run{1..5}.txt files; each dict is paired with its own
+size list (m4_sizes, ...) and the plotting / table code indexes by that
+list. See the PROVENANCE comment above each dict.
 """
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Master size grid: the 22-point sweep that `./bench 4000 5000` prints
+# today. Only the Pi 5 dataset below covers all 22 sizes. Every other
+# host's archived data (2026-05-01 rebench) was taken with the 10-size
+# power-of-two sweep, so each host dict is paired with its own size list
+# and the plotting / table code indexes by that list, never by `sizes`.
 sizes = [8, 11, 16, 23, 32, 47, 64, 89, 128, 177,
          256, 333, 512, 617, 1001, 1024, 1234, 1777,
          2048, 2999, 3967, 4096]
+pow2_sizes = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+
+pi5_sizes = sizes
+m4_sizes  = pow2_sizes
+m1_sizes  = pow2_sizes
+skx_sizes = pow2_sizes
+emr_sizes = pow2_sizes
+gv4_sizes = pow2_sizes
 
 # The sweep has 22 log-spaced sizes, but labeling all 22 on a log x-axis
 # produces overlapping tick labels. Label only powers of two (plus 4096)
@@ -38,6 +58,8 @@ label_strs  = [str(s) for s in label_sizes]
 # binary, simd ref, pi5, pi5+spine, m4, m4+spine, gv4, gv4+spine) since the
 # m4 and gv4 variants both compile on A76 and are useful for cross-host
 # comparison at the "m4 variant" / "gv4 variant" row.
+# Verified 2026-10-11: all 396 cells (22 sizes x 9 columns x warm/cold)
+# reproduce exactly as per-cell medians of pi5_runs/rebench_run{1..5}.txt.
 pi5_warm = {
     "linear (std::find)":          [   8.90,    8.50,   18.30,   21.90,   25.20,   34.50,   37.70,   50.30,  104.00,   96.60,  138.30,  178.60,  272.00,  403.90,  552.00,  546.00,  649.90,  961.10, 1090.80, 1558.00, 2208.70, 2195.80],
     "binary (std::binary_search)": [  20.60,   25.20,   32.10,   33.50,   33.00,   36.50,   33.40,   35.70,   55.60,   42.40,   45.80,   47.80,   57.30,   53.40,   68.60,   57.50,   59.10,   62.10,   63.30,   66.60,   68.50,   68.60],
@@ -74,27 +96,35 @@ pi5_cold = {
 # *beats* m4+spine on this host (5.1 vs 6.5), because gap=32 touches half
 # the cache lines per block check and M4's 128-B line is oversized for
 # the data.
+#
+# PROVENANCE: m4_runs/rebench_run{1..5}.txt (2026-05-01), 10 sizes
+# (powers of two 8..4096 = m4_sizes), per-cell median of the 5 runs,
+# identical to the output of m4_runs/compute_medians.py. 22-size values
+# previously here had no archived source and were removed 2026-10-11.
+# [NOTE 2026-10-11: the byte-identical pi5+spine kernel reads 11.6 ns cold on the same host, so
+#  this ordering is measurement order in an unflushed cold column, not line count;
+#  Text/corrections_2026-10.md section 5.]
 m4_warm = {
-    "linear (std::find)":          [   1.60,    2.30,    2.80,    4.20,    5.20,    7.90,   10.30,   14.30,   20.30,   27.70,   39.90,   51.70,   87.00,  102.60,  162.80,  166.80,  198.80,  280.90,  327.00,  462.20,  609.10,  628.50],
-    "binary (std::binary_search)": [   4.60,    6.70,    4.50,    8.00,    5.00,    9.20,    5.50,   11.50,    6.20,   13.50,    7.10,   15.20,    8.10,   14.90,    9.60,    9.30,   16.10,   13.00,   10.80,   19.20,   12.60,   12.20],
-    "simd_quad (reference)":       [   2.10,    2.90,    1.40,    5.00,    1.60,    6.60,    2.10,    4.00,    2.50,    3.90,    3.30,    4.60,    3.80,    5.70,    5.60,    4.80,    5.40,    5.90,    5.50,    6.50,    6.60,    6.60],
-    "simd_quad_pi5":               [   1.50,    3.80,    1.30,    4.60,    2.00,    6.40,    2.00,    7.00,    2.40,    4.90,    2.80,    4.70,    3.80,    5.90,    5.90,    4.40,    6.50,    6.00,    5.70,    7.00,    7.10,    6.40],
-    "simd_quad_pi5 + spine":       [   1.50,    3.80,    1.20,    4.60,    2.50,    6.90,    2.50,    7.40,    2.10,    4.30,    2.30,    3.70,    2.80,    4.30,    4.30,    3.40,    5.00,    4.30,    4.10,    5.30,    5.30,    4.70],
-    "simd_quad_m4":                [   1.70,    4.00,    1.50,    4.90,    1.50,    5.70,    2.10,    6.60,    2.20,    7.90,    2.70,    3.80,    3.00,    5.10,    6.00,    3.70,    5.40,    5.70,    4.40,    5.70,    5.60,    5.30],
-    "simd_quad_m4 + spine":        [   1.70,    4.00,    1.50,    4.90,    1.30,    5.50,    2.60,    6.80,    2.70,    8.20,    2.40,    3.60,    2.90,    4.60,    5.30,    3.30,    4.80,    5.00,    3.80,    4.90,    4.80,    4.50],
-    "simd_quad_graviton":          [   1.50,    3.70,    1.30,    4.70,    2.00,    6.30,    2.00,    6.90,    2.20,    4.60,    2.60,    4.30,    3.40,    5.30,    5.20,    3.90,    5.90,    5.30,    5.00,    6.40,    6.50,    5.60],
-    "simd_quad_graviton + spine":  [   1.50,    3.70,    1.30,    4.60,    2.50,    6.70,    2.50,    7.30,    2.20,    4.30,    2.40,    3.80,    2.80,    4.40,    4.30,    3.30,    5.00,    4.30,    4.10,    5.40,    5.40,    4.80],
+    "linear (std::find)":          [   1.50,    2.70,    5.10,    9.70,   19.20,   37.70,   81.30,  157.10,  304.00,  593.30],
+    "binary (std::binary_search)": [   4.30,    4.20,    4.60,    5.10,    5.80,    6.60,    7.60,    8.60,    9.90,   11.10],
+    "simd_quad (reference)":       [   2.00,    1.40,    1.60,    2.10,    2.50,    3.20,    3.70,    4.70,    5.30,    6.30],
+    "simd_quad_pi5":               [   1.40,    1.20,    1.90,    2.00,    2.40,    2.80,    3.80,    4.30,    5.60,    6.20],
+    "simd_quad_pi5 + spine":       [   1.40,    1.20,    2.40,    2.40,    2.10,    2.30,    2.80,    3.30,    4.00,    4.60],
+    "simd_quad_m4":                [   1.60,    1.40,    1.40,    2.10,    2.10,    2.60,    3.00,    3.60,    4.20,    5.00],
+    "simd_quad_m4 + spine":        [   1.60,    1.40,    1.20,    2.50,    2.60,    2.30,    2.80,    3.20,    3.70,    4.30],
+    "simd_quad_graviton":          [   1.40,    1.20,    1.90,    1.90,    2.20,    2.60,    3.40,    3.90,    4.90,    5.50],
+    "simd_quad_graviton + spine":  [   1.40,    1.20,    2.40,    2.40,    2.10,    2.30,    2.80,    3.30,    4.00,    4.60],
 }
 m4_cold = {
-    "linear (std::find)":          [   4.90,    5.40,    6.10,    7.10,    7.90,    9.10,   11.80,   14.30,   19.60,   26.30,   34.20,   47.10,   70.40,   83.70,  128.20,  148.10,  155.10,  225.00,  257.40,  373.10,  484.80,  523.70],
-    "binary (std::binary_search)": [   4.60,    5.60,    4.50,    7.20,    4.30,    7.70,    4.60,   10.20,    5.50,   12.90,    7.90,   18.10,   13.80,   24.60,   22.30,   33.10,   42.50,   48.80,   44.00,   76.70,   63.60,   81.50],
-    "simd_quad (reference)":       [   5.30,    6.20,    1.50,    5.00,    1.60,    7.00,    2.10,    4.00,    2.60,    3.90,    4.20,    6.30,    6.40,   10.80,   10.10,   15.60,   18.70,   27.60,   17.50,   41.60,   29.60,   39.00],
-    "simd_quad_pi5":               [   1.20,    5.50,    1.10,    6.00,    1.90,    6.90,    1.90,    6.70,    2.70,    5.60,    4.10,    6.80,    6.10,    9.40,    8.70,    8.00,   20.20,   26.60,   11.70,   17.70,   17.10,   20.60],
-    "simd_quad_pi5 + spine":       [   1.30,    5.60,    1.10,    5.90,    2.40,    7.40,    2.40,    7.40,    2.50,    5.30,    2.70,    4.20,    3.80,    5.00,    5.10,    4.30,    6.20,    8.70,    6.20,    8.40,    9.90,    6.20],
-    "simd_quad_m4":                [   1.60,    5.60,    1.30,    6.20,    1.30,    8.00,    2.10,    6.20,    2.60,    8.60,    4.20,    5.70,    5.10,    7.40,    9.90,    8.10,   21.20,   24.80,   11.30,   34.70,   16.20,   20.40],
-    "simd_quad_m4 + spine":        [   1.60,    5.20,    1.30,    6.40,    1.40,    7.90,    2.50,    6.50,    2.70,    8.80,    3.30,    4.50,    3.60,    6.00,    6.20,    4.30,    5.70,    6.60,    5.00,    6.80,    7.80,    7.70],
-    "simd_quad_graviton":          [   1.30,    5.00,    1.00,    6.40,    1.90,    7.00,    1.90,    7.20,    2.40,    5.30,    4.10,    6.40,    5.30,    7.60,    7.70,    6.40,    9.70,   13.70,    8.70,   15.20,   13.70,   17.40],
-    "simd_quad_graviton + spine":  [   1.50,    5.40,    1.00,    6.50,    2.40,    7.30,    2.40,    7.80,    2.30,    5.10,    2.60,    4.20,    3.10,    5.10,    4.60,    3.70,    5.70,    5.80,    6.20,    8.80,    9.50,   10.20],
+    "linear (std::find)":          [   4.50,    6.10,    7.10,   11.60,   19.00,   33.90,   68.20,  130.70,  240.10,  481.10],
+    "binary (std::binary_search)": [   4.80,    4.40,    3.90,    4.60,    5.40,    7.10,   12.60,   22.10,   43.20,   66.60],
+    "simd_quad (reference)":       [   5.40,    1.40,    1.40,    2.10,    2.50,    4.10,    5.70,    9.20,   16.10,   31.50],
+    "simd_quad_pi5":               [   1.20,    1.00,    1.70,    1.90,    2.50,    3.80,    6.00,    7.00,   10.40,   15.20],
+    "simd_quad_pi5 + spine":       [   1.30,    1.10,    2.20,    2.40,    2.40,    2.60,    3.10,    5.80,    4.10,   11.60],
+    "simd_quad_m4":                [   1.40,    1.20,    1.20,    2.10,    2.50,    4.10,    5.10,    6.70,   10.40,   16.80],
+    "simd_quad_m4 + spine":        [   1.70,    1.30,    1.20,    2.30,    2.70,    3.30,    3.50,    6.00,    4.20,    6.50],
+    "simd_quad_graviton":          [   1.50,    1.30,    1.70,    1.70,    2.40,    3.70,    5.40,    5.80,    8.70,   11.70],
+    "simd_quad_graviton + spine":  [   1.20,    1.00,    2.30,    2.30,    2.30,    2.30,    3.40,    3.70,    5.10,    5.10],
 }
 
 # Intel Skylake-SP (Xeon Platinum 8175M, family 6 model 85).
@@ -111,21 +141,26 @@ m4_cold = {
 # computed by skx_runs/compute_medians.py. Warm columns are within ~2-10%
 # of the 2026-04-30 run; cold columns at large n came out ~25-30% quieter
 # this session (shared EC2 tenancy drift, same caveat EMR has).
+#
+# PROVENANCE: skx_runs/rebench_run{1..5}.txt (2026-05-01), 10 sizes
+# (powers of two 8..4096 = skx_sizes), per-cell median of the 5 runs,
+# identical to the output of skx_runs/compute_medians.py. 22-size values
+# previously here had no archived source and were removed 2026-10-11.
 skx_warm = {
-    "linear (std::find)":          [  16.10,   18.00,   20.40,   23.60,   17.40,   23.30,   18.80,   21.80,   21.90,   25.70,   27.40,   32.80,   39.50,   49.10,   63.00,   64.50,   85.20,  105.70,  116.50,  167.40,  208.10,  214.40],
-    "binary (std::binary_search)": [  25.10,   27.20,   29.90,   32.30,   36.20,   38.80,   43.90,   46.30,   51.60,   54.60,   59.30,   60.60,   67.00,   66.80,   71.40,   71.30,   72.90,   77.00,   76.70,   80.90,   82.30,   82.60],
-    "simd_quad (reference)":       [  17.80,   20.10,   15.80,   23.20,   17.00,   26.80,   17.20,   22.30,   18.50,   23.80,   21.50,   24.50,   23.60,   30.00,   29.40,   27.00,   29.30,   32.40,   29.60,   32.70,   33.90,   33.20],
-    "simd_quad_intel":             [  12.90,   18.00,   12.90,   21.80,   14.70,   23.60,   15.40,   27.80,   17.70,   23.10,   19.10,   24.00,   22.60,   29.60,   29.40,   25.40,   32.30,   28.60,   29.30,   34.40,   34.50,   31.60],
-    "simd_quad_intel + spine":     [  12.40,   17.80,   12.10,   20.10,   14.80,   23.30,   15.50,   26.00,   16.60,   20.90,   17.30,   22.80,   19.70,   25.30,   25.50,   22.40,   27.70,   25.30,   25.60,   30.50,   30.50,   27.90],
+    "linear (std::find)":          [  15.60,   19.70,   16.60,   17.80,   21.40,   25.40,   37.10,   49.50,  106.40,  166.90],
+    "binary (std::binary_search)": [  24.90,   29.50,   36.50,   44.70,   52.60,   61.30,   64.70,   70.20,   76.90,   82.30],
+    "simd_quad (reference)":       [  16.70,   14.90,   16.20,   18.50,   18.90,   22.60,   23.90,   27.00,   29.30,   33.00],
+    "simd_quad_intel":             [  13.10,   12.30,   14.00,   15.10,   18.00,   19.70,   23.10,   25.30,   29.40,   31.60],
+    "simd_quad_intel + spine":     [  12.90,   12.90,   15.70,   16.00,   17.50,   18.70,   20.00,   21.40,   25.20,   26.80],
 }
 skx_cold = {
-    "linear (std::find)":          [  23.60,   24.40,   27.20,   30.80,   31.90,   38.00,   36.80,   41.60,   45.10,   53.00,   62.60,   75.40,  106.20,  121.60,  182.90,  185.90,  221.20,  300.70,  333.10,  465.10,  598.50,  599.80],
-    "binary (std::binary_search)": [  28.40,   30.80,   33.20,   37.90,   38.70,   42.20,   48.00,   51.00,   60.00,   65.40,   79.40,   89.40,  137.60,  125.70,  159.70,  169.20,  171.10,  198.30,  230.50,  236.80,  268.70,  272.00],
-    "simd_quad (reference)":       [  20.00,   21.70,   14.60,   22.00,   15.60,   24.80,   15.80,   21.40,   20.20,   31.30,   39.40,   44.30,   87.40,   78.80,   95.80,   94.30,  111.10,  164.00,  138.30,  208.40,  232.20,  193.10],
-    "simd_quad_intel":             [  11.90,   18.30,   11.60,   23.00,   12.70,   21.90,   13.90,   25.30,   17.80,   23.50,   26.80,   40.00,   64.30,   71.90,   99.40,   79.80,  126.30,  139.50,  128.00,  153.10,  201.90,  179.10],
-    "simd_quad_intel + spine":     [  11.00,   17.30,   10.80,   20.50,   12.50,   20.60,   13.90,   24.60,   19.20,   25.10,   26.60,   34.30,   48.60,   53.90,   69.70,   63.60,   84.00,   94.30,   98.00,  155.90,  139.00,  131.90],
+    "linear (std::find)":          [  21.20,   23.40,   26.60,   31.30,   41.90,   62.00,  102.80,  177.90,  326.50,  582.50],
+    "binary (std::binary_search)": [  30.00,   35.10,   41.00,   50.00,   60.60,   84.70,  117.30,  162.30,  205.10,  276.80],
+    "simd_quad (reference)":       [  19.40,   12.90,   14.00,   16.30,   19.00,   39.80,   63.10,   84.60,  141.10,  171.50],
+    "simd_quad_intel":             [  11.50,   11.00,   12.20,   14.10,   16.70,   25.80,   42.10,   75.50,  127.90,  180.90],
+    "simd_quad_intel + spine":     [  11.70,   11.50,   13.60,   17.40,   17.70,   24.60,   42.80,   60.50,   93.80,  132.70],
 }
-have_skx = all(skx_warm["simd_quad_intel"][i] is not None for i in range(len(sizes)))
+have_skx = len(skx_warm["simd_quad_intel"]) == len(skx_sizes)
 
 # Intel Emerald Rapids (Xeon Platinum 8559C, family 6 model 207, EC2 bare-metal
 # neighbor). Per-cell median across 5 runs of `./bench 4000 5000`, GCC with
@@ -142,47 +177,60 @@ have_skx = all(skx_warm["simd_quad_intel"][i] is not None for i in range(len(siz
 # observation from memory "EMR warm is near-identical across runs" still
 # holds); cold-cache columns at n>=1024 shifted up a bit in this session
 # (noisier EC2 neighbors, most likely - same caveat the SKX measurements had).
+#
+# PROVENANCE: emr_runs/rebench_run{1..5}.txt (2026-05-01), 10 sizes
+# (powers of two 8..4096 = emr_sizes), per-cell median of the 5 runs,
+# identical to the output of emr_runs/compute_rebench.py. 22-size values
+# previously here had no archived source and were removed 2026-10-11.
 emr_warm = {
-    "linear (std::find)":          [   2.50,    3.40,    4.00,    5.00,    6.50,    8.50,   11.50,   15.70,   21.50,   30.00,   42.70,   54.50,   83.00,  114.80,  174.40,  177.30,  210.80,  299.00,  339.70,  489.90,  637.20,  656.10],
-    "binary (std::binary_search)": [  14.60,   16.30,   18.60,   20.70,   23.00,   25.20,   27.60,   29.70,   33.40,   35.30,   39.40,   40.90,   45.20,   46.20,   50.30,   50.20,   51.60,   54.60,   55.50,   58.70,   61.00,   61.00],
-    "simd_quad (reference)":       [   2.90,    3.70,    3.20,    9.40,    3.20,   10.30,    4.90,    7.50,   10.80,    7.90,    7.50,   11.20,   15.10,   11.40,   11.30,   10.20,   13.60,   18.50,   18.90,   13.60,   13.70,   13.60],
-    "simd_quad_intel":             [   2.50,    6.20,    2.50,    7.70,    3.10,   10.20,    3.20,   10.20,    4.70,    7.50,   10.30,    8.50,    7.60,   10.40,   10.20,   15.20,   11.20,   10.20,    9.90,   17.40,   19.70,   19.40],
-    "simd_quad_intel + spine":     [   2.50,    6.30,    2.50,    7.80,    3.90,   11.00,    4.10,   11.10,    4.40,    7.10,   10.20,    7.40,    6.50,    9.40,    9.20,   14.70,    9.70,    9.30,    9.10,   15.90,   18.10,   17.90],
+    "linear (std::find)":          [   2.80,    3.90,    6.50,   12.20,   24.40,   45.40,   86.10,  179.10,  343.80,  655.40],
+    "binary (std::binary_search)": [  14.60,   18.50,   22.90,   27.40,   32.80,   38.90,   44.70,   49.80,   55.00,   60.60],
+    "simd_quad (reference)":       [   2.80,    3.30,    3.10,    5.00,   10.70,    7.50,   15.10,   10.30,   18.90,   13.80],
+    "simd_quad_intel":             [   2.50,    2.80,    3.10,    3.30,    4.70,   10.30,    7.60,   15.50,   10.10,   19.50],
+    "simd_quad_intel + spine":     [   2.50,    2.50,    3.50,    3.70,    4.40,   10.30,    6.60,   14.70,    9.00,   18.00],
 }
 emr_cold = {
-    "linear (std::find)":          [   8.40,    9.10,    9.90,   11.20,   12.20,   14.40,   16.70,   19.10,   23.40,   31.40,   40.20,   56.20,   75.50,   94.90,  140.20,  142.30,  169.90,  232.70,  275.10,  377.80,  487.70,  498.30],
-    "binary (std::binary_search)": [  17.50,   18.90,   22.00,   22.90,   25.80,   28.00,   31.00,   32.30,   37.20,   38.10,   45.30,   49.80,   61.50,   66.60,   79.40,   79.60,   85.20,   94.70,  108.20,  109.40,  119.40,  119.40],
-    "simd_quad (reference)":       [   8.30,    9.40,    3.40,    9.80,    3.00,   10.60,    5.00,    7.80,   11.90,   10.60,   15.60,   23.40,   33.30,   40.20,   48.20,   46.10,   51.10,   57.50,   68.80,   69.00,   73.50,   73.70],
-    "simd_quad_intel":             [   2.50,    8.20,    2.50,   10.50,    3.00,   10.50,    3.20,   10.70,    5.50,    8.90,   15.10,   19.40,   25.60,   37.30,   45.00,   39.50,   48.80,   48.80,   59.50,   63.20,   69.50,   66.90],
-    "simd_quad_intel + spine":     [   2.50,    8.20,    2.50,    9.70,    4.20,   10.90,    3.90,   11.40,    5.40,    8.90,   12.90,   15.40,   15.90,   22.30,   24.50,   23.90,   26.10,   27.10,   32.20,   33.90,   38.90,   37.20],
+    "linear (std::find)":          [   8.20,   10.00,   12.00,   17.00,   23.50,   42.30,   82.00,  140.90,  298.90,  493.60],
+    "binary (std::binary_search)": [  17.50,   22.20,   28.10,   32.00,   36.60,   45.50,   62.40,   77.50,   98.70,  117.60],
+    "simd_quad (reference)":       [   8.20,    3.20,    3.30,    5.00,   11.80,   16.60,   36.80,   43.80,   56.60,   71.00],
+    "simd_quad_intel":             [   2.50,    2.50,    3.10,    3.20,    5.20,   15.40,   28.00,   38.00,   47.20,   64.90],
+    "simd_quad_intel + spine":     [   2.50,    2.50,    3.50,    3.70,    5.10,   13.20,   16.70,   23.40,   25.90,   37.20],
 }
-have_emr = all(emr_warm["simd_quad_intel"][i] is not None for i in range(len(sizes)))
+have_emr = len(emr_warm["simd_quad_intel"]) == len(emr_sizes)
 
 # AWS Graviton 4 (Arm Neoverse V2, CPU part 0xd4f). r8g EC2 instance.
 # Per-cell median across 5 runs of `./bench 4000 5000`, GCC 11.5 with
 # -O3 -mcpu=neoverse-v2. Re-measured 2026-05-01 from gv4_runs/rebench_run{1..5}.txt
 # (the original gv4_runs/baseline_run*.txt was the prefetch A/B control set).
 #
-# V2 is a 64-byte-line 128-bit-NEON ARM core with 4 load AGUs and a deep
+# V2 is a 64-byte-line 128-bit-NEON ARM core with 3 load-capable pipes (earlier
+# text here said 4) and a deep
 # OoO window, so simd_quad_graviton uses gap=32 (cache-line sized) and
 # drops the A76's speculative __builtin_prefetch inside the interpolation
 # loop. Polarity matches M4 Max and Emerald Rapids ("hint is pure
 # dispatch waste on wide-OoO cores").
+#
+# PROVENANCE: gv4_runs/rebench_run{1..5}.txt (2026-05-01), 10 sizes
+# (powers of two 8..4096 = gv4_sizes), per-cell median of the 5 runs,
+# identical to the output of gv4_runs/compute_medians.py.
+# The dict keeps 5 of the bench's 9 ARM columns (linear, binary, simd
+# reference, gv4, gv4+spine), as that aggregator emits. 22-size values
+# previously here had no archived source and were removed 2026-10-11.
 gv4_warm = {
-    "linear (std::find)":          [   3.10,    4.10,    5.10,    7.20,    8.60,   11.60,   15.80,   21.50,   30.30,   40.80,   69.30,   75.70,  116.90,  139.20,  233.20,  235.40,  283.40,  410.90,  464.40,  676.60,  889.10,  903.90],
-    "binary (std::binary_search)": [  11.70,   13.10,   14.90,   16.60,   18.30,   20.10,   21.90,   23.40,   25.60,   27.20,   29.80,   31.00,   34.50,   35.50,   39.00,   39.00,   39.70,   42.80,   43.80,   45.40,   48.20,   48.40],
-    "simd_quad (reference)":       [   3.60,    4.70,    3.20,    8.00,    3.20,    8.60,    4.90,    7.10,    9.60,    8.60,    7.80,   11.50,   15.30,   12.30,   12.20,   11.20,   14.50,   19.50,   19.90,   15.10,   15.20,   15.20],
-    "simd_quad_graviton":          [   2.90,    5.40,    2.90,    6.60,    3.30,    8.90,    3.50,    8.80,    5.10,    7.60,    9.80,    8.80,    7.90,   11.40,   11.20,   15.60,   12.20,   11.30,   11.10,   18.20,   20.50,   20.00],
-    "simd_quad_graviton + spine":  [   2.80,    5.50,    2.80,    6.80,    3.80,    9.30,    4.00,    9.50,    4.50,    6.50,    8.60,    7.10,    6.20,    8.20,    8.00,   13.40,    8.60,    8.10,    7.90,   13.30,   16.40,   16.30],
+    "linear (std::find)":          [   3.20,    5.00,    9.30,   15.80,   31.50,   72.80,  115.40,  236.50,  462.70,  906.50],
+    "binary (std::binary_search)": [  11.70,   15.00,   18.40,   21.90,   25.30,   29.20,   33.40,   37.70,   42.40,   47.10],
+    "simd_quad (reference)":       [   3.60,    3.30,    3.20,    4.90,    9.60,    7.80,   15.20,   11.10,   19.90,   15.20],
+    "simd_quad_graviton":          [   2.90,    2.90,    3.30,    3.50,    5.10,    9.80,    7.90,   15.50,   11.10,   20.00],
+    "simd_quad_graviton + spine":  [   2.80,    2.90,    3.90,    4.10,    4.50,    8.70,    6.20,   13.40,    7.90,   16.20],
 }
 gv4_cold = {
-    "linear (std::find)":          [   6.50,    6.50,    8.50,    8.90,   11.00,   13.70,   16.80,   21.00,   29.20,   38.00,   54.50,   69.30,  101.20,  120.30,  197.00,  207.70,  243.80,  352.60,  419.60,  621.50,  798.50,  812.90],
-    "binary (std::binary_search)": [  13.70,   15.10,   17.20,   19.20,   21.70,   23.50,   26.20,   27.80,   31.40,   33.00,   36.50,   38.20,   42.60,   45.70,   55.10,   57.40,   61.50,   77.10,   86.20,  105.90,  130.70,  129.50],
-    "simd_quad (reference)":       [   6.20,    6.80,    3.10,    7.80,    3.30,    8.70,    5.30,    8.00,   10.80,   11.20,   11.30,   16.40,   22.30,   25.30,   36.20,   36.00,   39.70,   52.80,   58.80,   69.60,   84.90,   97.30],
-    "simd_quad_graviton":          [   2.60,    6.60,    2.60,    8.70,    3.50,    9.30,    4.00,    9.60,    6.80,   10.10,   13.40,   13.70,   16.70,   22.20,   32.50,   32.20,   37.50,   42.50,   43.20,   56.40,   64.10,   62.70],
-    "simd_quad_graviton + spine":  [   2.60,    6.60,    2.60,    8.30,    3.90,    9.50,    4.40,   10.00,    6.10,    9.00,   10.60,   12.00,   16.50,   20.20,   18.80,   19.00,   19.80,   24.30,   23.20,   32.00,   37.10,   37.50],
+    "linear (std::find)":          [   6.60,    8.60,   11.40,   17.00,   29.40,   54.70,  102.40,  203.90,  403.10,  835.10],
+    "binary (std::binary_search)": [  14.40,   18.30,   22.70,   26.80,   31.90,   37.30,   43.30,   56.60,   78.60,  119.80],
+    "simd_quad (reference)":       [   6.20,    3.20,    3.40,    5.20,   10.60,   10.80,   21.40,   33.20,   55.90,   81.70],
+    "simd_quad_graviton":          [   2.60,    2.60,    3.30,    3.90,    6.30,   12.60,   16.20,   31.00,   43.90,   65.00],
+    "simd_quad_graviton + spine":  [   2.60,    2.80,    3.90,    4.40,    5.90,   10.40,   15.40,   17.40,   22.60,   34.60],
 }
-have_gv4 = all(gv4_warm["simd_quad_graviton"][i] is not None for i in range(len(sizes)))
+have_gv4 = len(gv4_warm["simd_quad_graviton"]) == len(gv4_sizes)
 
 # Apple M1 Pro (Firestorm P-core). Per-cell median across 5 runs of
 # `./bench 4000 5000`, 2026-05-01, Apple clang 21 with -O3 -mcpu=apple-m1.
@@ -201,36 +249,66 @@ have_gv4 = all(gv4_warm["simd_quad_graviton"][i] is not None for i in range(len(
 # clang. Relative structure is identical: m4 variant + spine is the fastest
 # among the cross-host variants, gv4 variant (gap=32) comes in slightly
 # behind at large-n warm, pi5 variant third.
+#
+# PROVENANCE: m1_runs/rebench_run{1..5}.txt (2026-05-01), 10 sizes
+# (powers of two 8..4096 = m1_sizes), per-cell median of the 5 runs,
+# identical to the output of m1_runs/compute_medians.py. 22-size values
+# previously here had no archived source and were removed 2026-10-11.
 m1_warm = {
-    "linear (std::find)":          [   2.30,    3.20,    3.90,    5.60,    7.10,   10.40,   13.60,   18.80,   26.60,   36.50,   52.80,   77.70,  112.90,  134.00,  211.30,  215.40,  257.30,  368.70,  418.90,  605.60,  791.80,  815.70],
-    "binary (std::binary_search)": [   8.10,    9.40,    7.30,   11.10,    7.50,   13.00,    8.20,   16.10,    9.30,   18.40,   10.70,   20.90,   12.30,   20.10,   14.30,   14.00,   22.40,   18.80,   15.70,   26.50,   18.40,   17.70],
-    "simd_quad (reference)":       [   3.40,    4.40,    2.70,    7.50,    2.70,    9.80,    3.10,    6.20,    3.60,    5.70,    4.70,    6.70,    5.40,    8.10,    8.00,    6.90,    7.80,    8.50,    7.80,    9.40,    9.50,    9.40],
-    "simd_quad_pi5":               [   2.50,    5.40,    2.50,    6.50,    2.70,    9.00,    2.90,    9.90,    3.80,    7.20,    4.50,    7.00,    6.00,    8.90,    8.80,    6.80,    9.70,    8.90,    8.70,   10.50,   10.70,    9.50],
-    "simd_quad_pi5 + spine":       [   2.50,    5.50,    2.50,    6.50,    3.20,    9.40,    3.20,   10.10,    3.10,    6.20,    3.60,    5.30,    4.10,    6.10,    6.00,    4.80,    6.80,    6.00,    5.70,    7.40,    7.40,    6.50],
-    "simd_quad_m4":                [   2.50,    5.60,    2.50,    6.70,    2.50,    7.80,    3.10,    8.80,    3.60,   11.30,    4.10,    5.80,    4.80,    7.70,    8.60,    5.60,    7.90,    8.30,    6.50,    8.20,    8.30,    7.70],
-    "simd_quad_m4 + spine":        [   2.60,    6.00,    2.50,    7.20,    2.50,    8.00,    3.70,    9.50,    3.70,   11.50,    3.90,    5.40,    4.40,    7.10,    7.70,    4.90,    6.70,    7.30,    5.70,    7.00,    7.00,    6.40],
-    "simd_quad_graviton":          [   2.50,    5.50,    2.50,    6.40,    2.70,    9.00,    2.90,    9.90,    3.40,    6.80,    4.10,    6.30,    5.20,    7.70,    7.70,    6.00,    8.60,    7.80,    7.50,    9.30,    9.50,    8.40],
-    "simd_quad_graviton + spine":  [   2.50,    5.50,    2.40,    6.50,    3.20,    9.40,    3.20,   10.20,    3.10,    6.30,    3.70,    5.40,    4.20,    6.10,    6.00,    5.00,    7.10,    6.10,    5.70,    7.50,    7.50,    6.70],
+    "linear (std::find)":          [   2.20,    3.80,    7.10,   13.40,   26.40,   51.50,  111.10,  211.90,  413.80,  803.70],
+    "binary (std::binary_search)": [   8.00,    7.30,    7.30,    8.10,    9.20,   10.40,   12.30,   13.80,   15.40,   17.40],
+    "simd_quad (reference)":       [   3.40,    2.60,    2.60,    3.10,    3.60,    4.60,    5.30,    6.70,    7.70,    9.20],
+    "simd_quad_pi5":               [   2.50,    2.40,    2.70,    2.80,    3.70,    4.30,    5.80,    6.70,    8.50,    9.40],
+    "simd_quad_pi5 + spine":       [   2.50,    2.40,    3.20,    3.10,    3.00,    3.50,    4.10,    4.80,    5.60,    6.40],
+    "simd_quad_m4":                [   2.40,    2.40,    2.40,    3.10,    3.60,    4.00,    4.70,    5.50,    6.40,    7.50],
+    "simd_quad_m4 + spine":        [   2.40,    2.40,    2.50,    3.40,    3.70,    3.80,    4.40,    4.90,    5.60,    6.30],
+    "simd_quad_graviton":          [   2.40,    2.40,    2.70,    2.90,    3.40,    4.00,    5.10,    5.90,    7.40,    8.20],
+    "simd_quad_graviton + spine":  [   2.40,    2.40,    3.20,    3.10,    3.10,    3.40,    4.00,    4.80,    5.70,    6.30],
 }
 m1_cold = {
-    "linear (std::find)":          [   6.70,    7.10,    7.80,    9.00,   10.00,   13.10,   15.90,   19.40,   24.60,   34.50,   47.90,   62.80,   92.10,  109.90,  168.20,  198.40,  211.40,  303.80,  333.60,  474.90,  641.70,  683.20],
-    "binary (std::binary_search)": [   7.80,    8.60,    6.80,   10.10,    6.60,   12.50,    7.20,   15.40,    8.40,   17.80,   11.80,   23.80,   17.20,   26.90,   34.40,   44.60,   69.50,  105.50,   69.20,  122.70,  138.30,  154.10],
-    "simd_quad (reference)":       [   8.40,    9.10,    2.50,    7.10,    2.60,    9.40,    3.10,    6.30,    3.70,    5.90,    5.60,    9.00,    9.20,   11.90,   16.00,   24.60,   34.50,   46.30,   26.40,   56.90,   51.50,   62.90],
-    "simd_quad_pi5":                [  2.60,    7.20,    2.50,    8.30,    2.60,    9.10,    2.90,    9.70,    3.80,    7.60,    5.60,    9.10,    8.30,   12.70,   12.80,   12.80,   34.60,   42.70,   22.00,   34.50,   28.40,   34.90],
-    "simd_quad_pi5 + spine":       [   2.60,    7.40,    2.50,    8.40,    3.10,    9.40,    3.20,    9.90,    3.60,    7.30,    4.30,    6.40,    5.70,    7.90,    9.80,    9.80,   10.50,   15.10,   13.50,   26.80,   21.60,   23.60],
-    "simd_quad_m4":                [   2.70,    7.40,    2.50,    8.70,    2.50,   10.40,    3.10,    8.90,    3.90,   11.30,    5.60,    7.90,    7.60,   10.80,   13.40,   13.50,   37.50,   51.30,   22.70,   54.70,   29.70,   38.00],
-    "simd_quad_m4 + spine":        [   2.70,    7.70,    2.50,    8.80,    2.50,   10.30,    3.30,    9.20,    4.00,   11.40,    4.70,    6.20,    5.20,    8.00,    9.00,    6.00,    8.40,   10.80,    8.70,    9.50,   10.40,   10.30],
-    "simd_quad_graviton":          [   2.60,    7.30,    2.50,    8.30,    2.60,    9.10,    2.80,    9.60,    3.50,    7.50,    5.50,    8.60,    7.50,   11.50,   11.90,   10.50,   20.50,   37.10,   21.90,   36.00,   25.90,   35.10],
-    "simd_quad_graviton + spine":  [   2.50,    7.10,    2.50,    8.30,    3.10,    9.50,    3.30,    9.90,    3.40,    6.80,    3.90,    6.00,    4.90,    7.00,    6.80,    5.80,    8.40,   10.60,   10.70,   14.20,   16.40,   16.90],
+    "linear (std::find)":          [   6.30,    7.80,   10.00,   15.20,   25.50,   47.00,   87.30,  167.20,  327.70,  648.40],
+    "binary (std::binary_search)": [   7.30,    6.70,    6.60,    7.10,    8.80,   11.80,   15.90,   23.40,   83.30,  161.00],
+    "simd_quad (reference)":       [   7.60,    2.60,    2.60,    3.00,    3.80,    5.60,    8.10,   15.60,   30.10,   58.20],
+    "simd_quad_pi5":               [   2.50,    2.50,    2.60,    2.80,    3.90,    5.50,    7.90,   10.20,   23.10,   33.80],
+    "simd_quad_pi5 + spine":       [   2.50,    2.50,    3.10,    3.10,    4.40,    4.80,    9.30,    9.10,   12.60,   23.20],
+    "simd_quad_m4":                [   2.50,    2.40,    2.50,    3.00,    4.00,    5.40,    7.20,   10.00,   20.30,   37.10],
+    "simd_quad_m4 + spine":        [   2.60,    2.50,    2.50,    3.40,    4.10,    4.60,    5.10,    8.50,    8.30,   11.10],
+    "simd_quad_graviton":          [   2.40,    2.40,    2.60,    2.80,    3.60,    5.60,    7.10,    9.70,   19.80,   27.10],
+    "simd_quad_graviton + spine":  [   2.40,    2.40,    3.10,    3.20,    3.50,    3.90,    4.90,    5.80,   11.40,   15.40],
 }
-have_m1 = all(m1_warm["simd_quad_m4"][i] is not None for i in range(len(sizes)))
+have_m1 = len(m1_warm["simd_quad_m4"]) == len(m1_sizes)
+
+# Guard: every value list must be exactly as long as its host's size list.
+# (Prevents a 22-point list being pasted next to a 10-point size list again.)
+for _host, _xs, _w, _c in [("pi5", pi5_sizes, pi5_warm, pi5_cold),
+                           ("m4",  m4_sizes,  m4_warm,  m4_cold),
+                           ("m1",  m1_sizes,  m1_warm,  m1_cold),
+                           ("skx", skx_sizes, skx_warm, skx_cold),
+                           ("emr", emr_sizes, emr_warm, emr_cold),
+                           ("gv4", gv4_sizes, gv4_warm, gv4_cold)]:
+    for _d in (_w, _c):
+        for _k, _v in _d.items():
+            assert len(_v) == len(_xs), \
+                f"{_host}[{_k!r}] has {len(_v)} values for {len(_xs)} sizes"
 
 # n=4096 compile-time specialization (simd_quad_intel_spine_4096), median of 5
 # ./bench 4000 5000 runs on EMR 2026-05-01. Isolated from the main table
 # because it only exists at n=4096. Warm/cold are the two numbers.
+# PROVENANCE (established 2026-10-11): emr_runs/shipped_run{1..5}.txt
+# (2026-05-12, post-hybrid-promotion ./bench 4000 5000 x5), 4096* row
+# intel_spine_4096, medians via emr_runs/compute_shipped.py ->
+# emr_runs/shipped_summary.txt / hybrid_summary.txt ("warm 6.50 cold
+# 24.36"). The "2026-05-01" above is stale: the 2026-05-01 rebench rows
+# measured the retired unroll (14.02 warm in rebench_run1.txt).
 emr_spine_4096 = {"warm": 6.50, "cold": 24.36}
 # Same structure for Graviton 4 (simd_quad_graviton_spine_4096), measured
 # on the same r8g host 2026-05-01 (median of 5 runs from rebench_run{1..5}).
+# PROVENANCE (established 2026-10-11): gv4_runs/fullsweep_run{1..5}.txt
+# (2026-05-12, 22-size sweep), 4096* row gv4_spine_4096, medians via
+# gv4_runs/compute_fullsweep_medians.py -> gv4_runs/fullsweep_summary.txt
+# ("gv4_spine_4096: warm 7.00 cold 27.24"). The "2026-05-01 ... from
+# rebench_run{1..5}" above is stale: those rows measured the retired
+# unroll (median 14.67 warm / 29.15 cold).
 gv4_spine_4096 = {"warm": 7.00, "cold": 27.24}
 # Same structure for SKX (simd_quad_intel_spine_4096 on the AVX2 block-check
 # path), measured on Xeon 8175M 2026-05-01 (median of 5 runs). Warm is a
@@ -238,6 +316,16 @@ gv4_spine_4096 = {"warm": 7.00, "cold": 27.24}
 # scalar interpolation loop already runs at AVX-512 license L2 so the
 # branch-removal effect is smaller than EMR's; cold is noise (131.9 vs
 # 131.1 median, hidden by shared-tenant memory variance).
+# NOTE 2026-10-11: the paragraph above describes the retired unroll (27.5 -> 27.1).
+# The shipped hybrid below is 18.92 warm / 185.01 cold (skx_runs/hybrid_summary.txt):
+# -32% warm 5/5, but +40% cold against a general-n control stable to +-0.6% in the
+# same runs (Text/corrections_2026-10.md section 2.3). The 'license L2' rationale is
+# wrong: light zmm ops trip L1, and the gated SKX build executes no zmm at all.
+# PROVENANCE (established 2026-10-11): skx_runs/hybrid_run{1..5}.txt
+# (2026-05-12 hybrid-vs-unroll A/B), 4096* row intel_spine_4096 (= the
+# hybrid), medians per skx_runs/hybrid_summary.txt ("warm 18.92 cold
+# 185.01"). The "2026-05-01" and "27.5 -> 27.1" above are stale: they
+# describe the retired unroll measured in rebench_run{1..5}.txt.
 skx_spine_4096 = {"warm": 18.92, "cold": 185.01}
 # Same structure for M4 Max (simd_quad_m4_spine_4096, gap=64 -> 64 spine
 # entries -> 128 B = 1 M4 cache line, quaternary descent of exactly three
@@ -259,6 +347,16 @@ skx_spine_4096 = {"warm": 18.92, "cold": 185.01}
 # nothing sequential to engage on. Conclusion: ship the specialization
 # for the warm case, but callers that do a lot of first-touch lookups
 # should prefer simd_quad_m4_spine.
+# PROVENANCE (established 2026-10-11): m4_runs/hybrid_run{1..5}.txt
+# (2026-05-12 hybrid-vs-unroll A/B), 4096* row m4_spine_4096_hybrid,
+# medians via m4_runs/compute_hybrid.py -> m4_runs/hybrid_summary.txt
+# ("hybrid: warm 3.71 cold 21.94"). The "Measured 2026-05-01" and the
+# 4.34 -> 3.65 / 6.47 -> 18.65 figures above describe the retired unroll
+# measured in rebench_run{1..5}.txt (2026-05-01), not these values.
+# [NOTE 2026-10-11: the 'structural' reading is now a hypothesis. The spine kernel's cold pass
+#  runs right after the non-spine pass with identical targets (L2 hit) while the 4096* row runs
+#  after its own 32 MB sweep; the same asymmetry reproduces on the Pi 5. Untested with a flush on
+#  Apple hardware. Text/corrections_2026-10.md section 5.]
 m4_spine_4096 = {"warm": 3.71, "cold": 21.94}
 # Pi 5 (Cortex-A76) simd_quad_pi5_spine_4096, gap=32 -> 128 spine entries ->
 # 256 B = 4 cache lines. Shape is the 2026-05-12 hybrid (3-iter quaternary
@@ -266,7 +364,8 @@ m4_spine_4096 = {"warm": 3.71, "cold": 21.94}
 # Measured on the Pi 5 4-core A76, median of 5 runs from
 # pi5_runs/hybrid_run{1..5}.txt.
 #
-# The hybrid-vs-unroll A/B gave warm 23.36 -> 19.42 (-16.9%, monotone
+# The hybrid-vs-unroll A/B gave warm 23.36 -> 19.42 (-16.9% by ratio of medians;
+# paired per-run median -31.0%, Text/corrections_2026-10.md section 2.3; monotone
 # across 5/5 runs) with cold 132.1 -> 140.9 (+6.7%, inside the 107-214 ns
 # cold variance band). That refutes the 2026-05-01 "GCC 15 already hoists
 # loop control so branch-removal is a wash on Pi 5" hypothesis: the
@@ -275,6 +374,13 @@ m4_spine_4096 = {"warm": 3.71, "cold": 21.94}
 # hybrid's warm median is 17.75 (-27.6%) and cold 136.75 (-7.2%). Unroll
 # retired; simd_quad_pi5_spine_4096 IS the hybrid. Prior-unroll numbers
 # for historical comparison: warm 23.78, cold 142.10.
+# PROVENANCE (established 2026-10-11): pi5_runs/rebench_run{1..5}.txt
+# (2026-05-12), the LAST "4096* | pi5_spine=.. pi5_spine_4096=.." row of
+# each file (each run prints that A/B row twice; pi5_runs/compute_medians.py
+# keeps the last match), per-cell median: warm 15.98, cold 111.85. The
+# "pi5_runs/hybrid_run{1..5}.txt" above is stale as the source of these two
+# numbers: the hybrid A/B rows give 19.42 warm / 140.94 cold (see
+# pi5_runs/hybrid_summary.txt).
 pi5_spine_4096 = {"warm": 15.98, "cold": 111.85}
 # M1 Pro simd_quad_m4_spine_4096 (same compile-time specialization that
 # ships on M4 Max — shared Apple-silicon gap=64 / 128-B-line variant).
@@ -297,6 +403,14 @@ pi5_spine_4096 = {"warm": 15.98, "cold": 111.85}
 # Ship recommendation on M1 Pro: same as M4 Max -- ship the compile-time
 # specialization for narrow-API callers; callers doing first-touch lookups
 # should prefer simd_quad_m4_spine.
+# PROVENANCE (established 2026-10-11): m1_runs/hybrid_run{1..5}.txt
+# (2026-05-12 hybrid-vs-unroll A/B), 4096* row m4_spine_4096_hybrid,
+# per-cell median of the 5 runs: warm 6.05 (6.10 6.05 6.02 6.06 6.05),
+# cold 32.12 (32.54 32.12 29.48 33.42 31.65). The "Measured 2026-05-01"
+# and "6.31 -> 6.16" above describe the retired unroll measured in
+# rebench_run{1..5}.txt (median 6.16 warm / 32.70 cold), not these values.
+# [NOTE 2026-10-11: same caveat as the M4 block: a measurement-order hypothesis, untested with a
+#  flush; the +194% is +196% from the 4096* rows (openevolve_m4_spine_4096/README.md note).]
 m1_spine_4096 = {"warm": 6.05, "cold": 32.12}
 
 # Intel Emerald Rapids two-level spine micro-bench, median of 5 runs
@@ -341,6 +455,15 @@ m1_spine_4096 = {"warm": 6.05, "cold": 32.12}
 #
 # Ship recommendation on EMR: F for hot throughput everywhere; D is a
 # reasonable cold-serial alternate for tight dep-chain workloads.
+# NOTE (2026-10-11): the dict below holds the 2026-05-18 re-bench levels
+# (A-I + Lem). The delta tables in the comment above are ratios of
+# per-cell medians; because each variant's median can come from a
+# different run they are not reliable comparisons -- paired per-run
+# comparisons live in emr_runs/twolevel_paired.txt. H/I were measured
+# with the mis-aimed Eytzinger prefetch (fixed in bench_twolevel.cpp
+# 2026-10-11, not yet re-benchmarked).
+# No archived run supports the 2026-05-13 delta tables in the comments above: commit 5fdbb0a
+# overwrote those files in place (Text/corrections_2026-10.md section 2.3).
 emr_twolevel = {
     # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run medians 2026-05-18 (H/I re-bench).
     "A  bsearch outer + general-n inner":          (136.62, 113.12, 262.28, 446.37),
@@ -350,8 +473,8 @@ emr_twolevel = {
     "E  Shar branchless outer + general-n inner":  ( 67.91,  69.32, 311.29, 518.94),
     "F  Shar branchless outer + n=4096 inner":     ( 55.43,  58.12, 240.31, 512.30),
     "G  Shar outer + Shar inner (no spine)":       (267.22, 143.00, 448.36, 923.46),
-    "H  Eytzinger outer + 4-deep PF + general-n inner":   ( 66.75,  70.72, 363.50, 631.33),
-    "I  Eytzinger outer + 4-deep PF + n=4096 inner":      ( 55.05,  62.17, 315.77, 607.45),
+    "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner":   ( 66.75,  70.72, 363.50, 631.33),
+    "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner":      ( 55.05,  62.17, 315.77, 607.45),
     "Lem  Lemire reference (bsearch + simd_quad)": (178.70, 148.98, 428.60, 666.15),
 }
 # SKX two-level spine micro-bench, median of 5 runs 2026-05-13 on Xeon 8175M
@@ -411,9 +534,18 @@ emr_twolevel = {
 # workloads (tight dep chains on fresh data) D is competitive, but F
 # loses by only a small margin on cold and wins by a wide margin on
 # hot; F remains the default.
+# NOTE (2026-10-11): the dict below holds the 2026-05-18 re-bench levels
+# (A-I + Lem). The delta tables in the comment above are ratios of
+# per-cell medians; because each variant's median can come from a
+# different run they are not reliable comparisons -- paired per-run
+# comparisons live in skx_runs/twolevel_paired.txt. H/I were measured
+# with the mis-aimed Eytzinger prefetch (fixed in bench_twolevel.cpp
+# 2026-10-11, not yet re-benchmarked).
+# No archived run supports the 2026-05-13 delta tables in the comments above: commit 5fdbb0a
+# overwrote those files in place (Text/corrections_2026-10.md section 2.3).
 skx_twolevel = {
     # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run medians 2026-05-18 under
-    # full A-I + Lem 10-variant harness (H/I = Eytzinger outer + 4-deep PF
+    # full A-I + Lem 10-variant harness (H/I = Eytzinger outer + K&M PF (pre-fix)
     # per Khuong & Morin 2017 Listing 6).
     # Lem is the published Lemire reference (bsearch outer + simd_quad.c
     # inner, gap=16, no spine). Same outer as A (what CRoaring ships);
@@ -427,8 +559,8 @@ skx_twolevel = {
     "E  Shar branchless outer + general-n inner":  ( 86.62,  88.17, 947.75, 962.42),
     "F  Shar branchless outer + n=4096 inner":     ( 84.42,  83.72, 594.47, 826.85),
     "G  Shar outer + Shar inner (no spine)":       (304.27, 299.74, 781.71,1215.71),
-    "H  Eytzinger outer + 4-deep PF + general-n inner":   (100.65, 109.12,1052.16,1067.39),
-    "I  Eytzinger outer + 4-deep PF + n=4096 inner":      ( 88.79, 101.20, 718.71, 941.36),
+    "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner":   (100.65, 109.12,1052.16,1067.39),
+    "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner":      ( 88.79, 101.20, 718.71, 941.36),
     "Lem  Lemire reference (bsearch + simd_quad)": (258.17, 270.41, 951.47, 953.71),
 }
 # M4 Max two-level spine micro-bench (bench_twolevel, 200 sets x 200 hot reps,
@@ -465,15 +597,29 @@ skx_twolevel = {
 #
 # F vs Lem (how much our stack improves on the published Lemire baseline):
 #   hot_bat  -80.6%   hot_ser  -79.8%   cold_bat -36.6%   cold_ser -48.4%
+# NOTE (2026-10-11): the dict below holds the 2026-05-18 re-bench levels
+# (A-I + Lem). The delta tables in the comment above are ratios of
+# per-cell medians; because each variant's median can come from a
+# different run they are not reliable comparisons -- paired per-run
+# comparisons live in m4_runs/twolevel_paired.txt. H/I were measured
+# with the mis-aimed Eytzinger prefetch (fixed in bench_twolevel.cpp
+# 2026-10-11, not yet re-benchmarked).
+# No archived run supports the 2026-05-13 delta tables in the comments above: commit 5fdbb0a
+# overwrote those files in place (Text/corrections_2026-10.md section 2.3).
 m4_twolevel = {
     # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run medians 2026-05-18 under the
     # 4-mode harness, 10-variant binary (A-I + Lem; H/I = Eytzinger outer +
-    # 4-deep PF, Khuong & Morin 2017 Listing 6). Raw in m4_runs/twolevel_run{1..5}.txt.
+    # K&M PF (pre-fix), Khuong & Morin 2017 Listing 6). Raw in m4_runs/twolevel_run{1..5}.txt.
     # Uses the M4 Max build (default ARM gap=64 path, simd_quad_m4_spine /
     # simd_quad_m4_spine_4096 as inner).
     #
     # Deltas vs F (the project's primary recommendation for hot):
     #   I vs F:   +0.5%  +13.5%   +3.5% +103.9%   (no win; F strict-best every mode)
+    #   [RETRACTED 2026-10-11: ratios of medians. Paired I vs F on M4 (m4_runs/twolevel_paired.txt):
+    #    hot_bat -0.4% tie, hot_ser +16.0% (I faster 0/5), cold_bat +13.3% (1/5), cold_ser +26.4%
+    #    (I slower 5/5; per-run +26.3 +119.4 +77.1 +22.9 +26.4). F ties E in cold_bat and loses
+    #    cold_ser to B, D and E; 'F strict-best every mode' and the 'settled slow-inner pattern'
+    #    below are retracted (Text/corrections_2026-10.md section 2.3).]
     #   H vs F:  +28.2%  +47.8%  +32.2%  +58.9%   (H underperforms I as elsewhere)
     #
     # Falsifies the pre-registered "I hot_bat-win mirroring GV4 (3 AGUs at full
@@ -490,26 +636,41 @@ m4_twolevel = {
     "E  Shar branchless outer + general-n inner":  ( 15.12,  18.36, 158.96, 235.62),
     "F  Shar branchless outer + n=4096 inner":     ( 13.25,  16.33, 161.88, 281.67),
     "G  Shar outer + Shar inner (no spine)":       ( 73.81,  87.82, 231.66, 644.38),
-    "H  Eytzinger outer + 4-deep PF + general-n inner":   ( 16.99,  24.13, 213.96, 447.50),
-    "I  Eytzinger outer + 4-deep PF + n=4096 inner":      ( 13.32,  18.53, 167.50, 574.38),
+    "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner":   ( 16.99,  24.13, 213.96, 447.50),
+    "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner":      ( 13.32,  18.53, 167.50, 574.38),
     "Lem  Lemire reference (bsearch + simd_quad)": ( 85.17,  86.28, 263.33, 546.04),
 }
 # Raspberry Pi 5 (Cortex-A76) two-level spine micro-bench, median of 5 runs
 # 2026-05-18 under the 4-mode harness (hot_bat/hot_ser/cold_bat/cold_ser),
-# 10-variant binary (A-I + Lem; H/I = Eytzinger outer + 4-deep PF, Khuong &
+# 10-variant binary (A-I + Lem; H/I = Eytzinger outer + K&M PF (pre-fix), Khuong &
 # Morin 2017 Listing 6). Raw in pi5_runs/twolevel_run{1..5}.txt.
 # Uses the Pi 5 build of bench_twolevel.cpp (`-DQUADSEARCH_ARM_PI5`, gap=32
 # outer+inner, simd_quad_pi5_spine / simd_quad_pi5_spine_4096 as inner).
 # Per-run variance on this Pi 5 sweep is wide (F hot_ser ranges 216-482 ns
-# across 5 runs, ~2.2x spread; cold spreads similar). Both governor hops
-# and the inserted H/I kernels reshuffling cache state explain part of it;
-# medians are taken over 5 runs to compress that. Relative I-vs-F deltas
-# below are still clean because both kernels run under identical per-run
-# conditions.
+# across 5 runs, ~2.2x spread; cold spreads similar; the run-level
+# geometric mean drifts 1.5-1.6x between runs, mostly governor hops).
+# The per-cell medians in the dict are LEVELS only: each variant's median
+# can come from a different run, so differencing medians across variants
+# can invert the ordering that every individual run shows. Variant
+# comparisons must come from the paired per-run analysis in
+# pi5_runs/twolevel_paired.txt (compute_twolevel_paired.py), which pairs
+# X and Y within each run and reports the median paired delta plus a
+# sign count (WIN = faster in >= 80% of runs AND |median| >= 3%).
 #
-# Deltas vs F (the project's primary recommendation for hot):
-#   I vs F:   -0.7%  -22.5%  +18.9%  +30.3%   (hot_ser WIN; both colds lose)
-#   H vs F:   +6.7%  -23.1%  +47.9%  +70.3%   (H underperforms I as elsewhere)
+# I vs F, paired per run (hot_bat / hot_ser / cold_bat / cold_ser):
+#   I vs F:  +2.6% TIE (I faster 2/5) | +5.8% WIN for F (I faster 1/5;
+#            per-run +5.8 +12.0 -49.2 +1.2 +6.6) | +34.6% WIN for F (0/5)
+#            | +30.0% WIN for F (0/5)
+#   H vs E:  +1.7% TIE | +3.3% WIN for E (0/5) | +31.3% WIN for E (0/5)
+#            | +23.0% WIN for E (1/5)
+# The earlier "-22.5% hot_ser win for I" was a ratio of medians picked
+# from different runs; I is slower than F on hot_ser in 4 of 5 runs, and
+# the one run where I is faster (run 3) is the run where F itself spiked
+# (F vs D +107% in that run, vs -5..-10% in the other four). H/I were
+# also measured with the mis-aimed Eytzinger prefetch (bench_twolevel.cpp
+# prefetched node i+1's line instead of node i's descendants; fixed
+# 2026-10-11, not yet re-benchmarked), so these H/I levels are the
+# pre-fix kernels.
 #
 # Deltas vs A (hot_bat / hot_ser / cold_bat / cold_ser):
 #   B vs A:   -2.7%   -7.1%  -13.0%  +21.6%
@@ -522,43 +683,57 @@ m4_twolevel = {
 #   I vs A:   +1.9%  -10.4%  +14.7%  +22.0%
 #   Lem vs A:+58.4%  +54.3%  +25.7%  +12.6%
 #
-# **Pi 5 confirms the M1-Pro-style I `hot_ser` win.** Pre-registered (per
-# `KhuongMorin.md` §"Hosts pending"): "Pi 5 is the *one* remaining host
+# **Pi 5 does NOT confirm the M1-Pro-style I `hot_ser` win.** Pre-registered
+# (per `KhuongMorin.md` §"Hosts pending"): "Pi 5 is the *one* remaining host
 # where the narrow-OoO + slow-inner story still has a plausible critical-
 # path stall (slowest NEON inner across the bench + 2-AGU OoO + only host
 # where inner is critical-path under batched dispatch -- possible hot_bat
-# *and* hot_ser win, or full SKX-like falsification)." Result: clean
-# `hot_ser` win (I -22.5% vs F, slightly larger than M1 Pro's -19.8%);
-# `hot_bat` is a tie (I -0.7% vs F, within run-to-run noise). Confirms
-# the model: 2 AGUs + slowest paired-x2 NEON inner = enough critical-path
-# stall on dep-chained outer for explicit prefetch to act as runahead.
-# Cold modes regress as expected (I bandwidth-contention with demand
-# block-load, paper §4 `WL > log B` regime). The "narrow-OoO + slow-inner
-# ⇒ I hot_ser win" half of the model now stands at 1/2 (M1 Pro and Pi 5
-# both confirm; SKX and EMR falsify on the inner-speed axis).
+# *and* hot_ser win, or full SKX-like falsification)." Paired result
+# (pi5_runs/twolevel_paired.txt): hot_ser I vs F +5.8% median, I faster in
+# only 1/5 runs -> WIN for F; hot_bat I vs F +2.6%, I faster 2/5 -> TIE.
+# The best hot_ser variant by mean rank is E (Shar outer + general-n
+# inner), which beats I 5/5 (+6.4%) and ties F (F vs E +1.1%, E faster
+# 4/5 but below the 3% threshold). Cold modes: I loses to F in 5/5 runs
+# in both (cold_bat +34.6%, cold_ser +30.0%), consistent with prefetch /
+# demand-load bandwidth contention (paper §4 `WL > log B` regime). The
+# interpretation is provisional until H/I are re-benchmarked with the
+# fixed prefetch.
 #
-# **Cold matrix relative ordering shifted from the 2026-05-13 baseline.**
-# F now wins cold_ser (vs D +4.2% in prior run, -13.6% now) but D still
-# wins cold_bat (F +29.1% vs D). The full F-cold-reversal pattern noted
-# in the prior CLAUDE.md ship recommendation is partially eroded under
-# this 10-variant sweep; given Pi 5 thermal variance, treat the cold
-# ordering as "C/D best cold_bat, F competitive cold_ser, all within
-# governor-hop noise" rather than a structural shift.
+# **Cold matrix (paired, pi5_runs/twolevel_paired.txt).** cold_bat: D is
+# the fastest variant in 5/5 runs; F vs D +31.8% (WIN for D), F vs C
+# +4.9% (WIN for C, F faster 1/5). cold_ser: F is best by mean rank, but
+# D vs F +0.4% and C vs F +1.0% are both TIEs (F faster 3/5), while F
+# beats A/B/E/G/H/I/Lem 5/5. So the cold picture is "D clearly best
+# cold_bat; C/D/F indistinguishable cold_ser" -- a partial erosion of the
+# full F-cold-reversal noted in the earlier CLAUDE.md ship recommendation,
+# within governor-hop noise.
 #
 # G (Shar inner for n=4096) catastrophic as elsewhere (+82% / +93% hot vs A).
 #
 # F vs Lem (how much our stack improves on the published Lemire baseline):
 #   hot_bat  -35.2%   hot_ser  -25.1%   cold_bat -23.3%   cold_ser -16.8%
 #
-# Ship: F for hot_bat / cold modes; **I for hot_ser** -- I beats F by
-# -22.5% on dep-chained hot, losing both colds 19-30%. C remains the
-# cold_bat-best alternate; D the all-around cold alternate.
-# Aggregator: pi5_runs/compute_twolevel.py; summary: pi5_runs/twolevel_summary.txt.
+# Ship (paired analysis): F for hot_bat (best by mean rank; beats D 4/5)
+# and hot_ser (ties E, beats I 4/5); D for cold_bat (fastest 5/5, F +31.8%
+# vs D); cold_ser is a C/D/F tie. I does not beat F on any mode on Pi 5
+# under the paired analysis, so the earlier "I for hot_ser" recommendation
+# is withdrawn (pending a re-bench with the fixed prefetch).
+# Aggregator (levels): pi5_runs/compute_twolevel.py -> pi5_runs/twolevel_summary.txt.
+# Paired comparisons: compute_twolevel_paired.py pi5 -> pi5_runs/twolevel_paired.txt.
+# NOTE 2026-10-11 (repaired harness, 10 runs, pi5_runs/twolevel_paired_v2.txt): the re-bench is
+# done. D is the Pi 5 ship (fastest in 7/10 hot_bat, 8/10 hot_ser, 7/10 cold_bat); F ties D hot
+# (+2.7% / +2.0%) and loses cold_bat (+44.7%, F faster 0/10); I vs F +7.3% / +8.6% hot (F faster
+# 8/10). The 'Deltas vs A' and 'F vs Lem' lines in this block are ratios of per-cell medians
+# (paired F vs Lem: -35.2 / -39.3 / -28.4 / -16.7; paired F vs A hot_ser -11.4%).
+# [RETRACTED 2026-10-11: the runahead / WL > log B mechanism explained numbers produced by the
+#  mis-aimed prefetch; see KhuongMorin.md banner and Text/corrections_2026-10.md section 1.]
 pi5_twolevel = {
-    # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run medians 2026-05-18,
-    # 10-variant binary (adds H/I = Eytzinger outer + 4-deep PF, Khuong &
-    # Morin 2017 Listing 6). I beats F by -22.5% on hot_ser (dep-chained
-    # critical path), confirming the narrow-OoO + slow-inner runahead win.
+    # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run per-cell medians
+    # 2026-05-18, 10-variant binary (adds H/I = Eytzinger outer + K&M PF (pre-fix),
+    # Khuong & Morin 2017 Listing 6; H/I measured with the pre-fix,
+    # mis-aimed prefetch). Levels only -- see pi5_runs/twolevel_paired.txt
+    # for variant comparisons (I does not beat F on hot_ser there: +5.8%,
+    # I faster in 1/5 runs).
     "A  bsearch outer + general-n inner":          (238.20, 284.13,1650.36,1652.31),
     "B  two-level spine outer + general-n inner":  (231.84, 264.09,1436.01,2009.15),
     "C  bsearch outer + n=4096 inner":             (233.78, 282.78,1367.12,1471.38),
@@ -566,8 +741,8 @@ pi5_twolevel = {
     "E  Shar branchless outer + general-n inner":  (256.48, 245.58,1931.18,2038.13),
     "F  Shar branchless outer + n=4096 inner":     (244.40, 328.50,1591.57,1547.03),
     "G  Shar outer + Shar inner (no spine)":       (432.88, 547.26,1739.06,2015.27),
-    "H  Eytzinger outer + 4-deep PF + general-n inner":   (260.82, 252.48,2354.24,2635.44),
-    "I  Eytzinger outer + 4-deep PF + n=4096 inner":      (242.76, 254.65,1892.39,2015.35),
+    "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner":   (260.82, 252.48,2354.24,2635.44),
+    "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner":      (242.76, 254.65,1892.39,2015.35),
     "Lem  Lemire reference (bsearch + simd_quad)": (377.30, 438.38,2075.36,1859.70),
 }
 
@@ -599,8 +774,12 @@ pi5_twolevel = {
 #   F vs Lem: -65.3% -73.3% -27.7%  -6.2%
 #
 # F (Shar outer + compile-time n=4096 inner) wins every mode on GV4,
-# including both cold modes. Confirms the pre-registered prediction: GV4
-# is the widest-OoO host in the project (4 load AGUs Neoverse V2 vs 3 on
+# including both cold modes. [SUPERSEDED 2026-10-11: paired analysis
+# (gv4_runs/twolevel_paired.txt) gives C both cold modes 5/5 and I hot_bat 5/5;
+# see the NOTE below.] Confirms the pre-registered prediction: GV4
+# is the widest-OoO host in the project (Neoverse V2 has 3 load pipes, like
+# M4 / M1 and EMR -- earlier text here said 4 -- vs 2 on Pi 5 / SKX; the old
+# comparison read: 4 load AGUs Neoverse V2 vs 3 on
 # M4 / M1, 2 on Pi 5 / SKX, 3 on EMR), so the 9-deep Shar cmov chain's
 # dep-chain latency gets hidden even on cold_ser where every other host
 # either reverses (SKX, Pi 5 full; EMR, M1 Pro partial) or ties (M4 Max).
@@ -613,11 +792,20 @@ pi5_twolevel = {
 # on the last host -- 12 dependent loads on 8 KB working set with jumping
 # addresses denies the streamer on every uarch, confirmed.
 #
-# Ship: F unconditionally on GV4. No cold-serial alt needed.
+# [SUPERSEDED 2026-10-11: C wins both cold modes 5/5, I hot_bat 5/5 (pre-fix)] Ship: F unconditionally on GV4. No cold-serial alt needed.
 # Aggregator: gv4_runs/compute_twolevel.py; summary: gv4_runs/twolevel_summary.txt.
+# NOTE (2026-10-11): the dict below holds the 2026-05-18 re-bench levels
+# (A-I + Lem). The delta tables in the comment above are ratios of
+# per-cell medians; because each variant's median can come from a
+# different run they are not reliable comparisons -- paired per-run
+# comparisons live in gv4_runs/twolevel_paired.txt. H/I were measured
+# with the mis-aimed Eytzinger prefetch (fixed in bench_twolevel.cpp
+# 2026-10-11, not yet re-benchmarked).
+# No archived run supports the 2026-05-13 delta tables in the comments above: commit 5fdbb0a
+# overwrote those files in place (Text/corrections_2026-10.md section 2.3).
 gv4_twolevel = {
     # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run medians 2026-05-18,
-    # 10-variant binary (A-I + Lem). H/I = Eytzinger outer + 4-deep PF.
+    # 10-variant binary (A-I + Lem). H/I = Eytzinger outer + K&M PF (pre-fix).
     "A  bsearch outer + general-n inner":          (161.29, 102.72, 382.74, 418.51),
     "B  two-level spine outer + general-n inner":  (148.54,  94.73, 345.80, 498.63),
     "C  bsearch outer + n=4096 inner":             ( 91.94,  95.44, 255.04, 406.23),
@@ -625,8 +813,8 @@ gv4_twolevel = {
     "E  Shar branchless outer + general-n inner":  ( 80.11,  58.16, 325.26, 498.94),
     "F  Shar branchless outer + n=4096 inner":     ( 65.37,  50.34, 268.45, 486.13),
     "G  Shar outer + Shar inner (no spine)":       (149.60, 130.06, 359.41, 597.22),
-    "H  Eytzinger outer + 4-deep PF + general-n inner":   ( 64.71,  63.18, 370.72, 635.46),
-    "I  Eytzinger outer + 4-deep PF + n=4096 inner":      ( 57.49,  58.38, 311.10, 619.95),
+    "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner":   ( 64.71,  63.18, 370.72, 635.46),
+    "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner":      ( 57.49,  58.38, 311.10, 619.95),
     "Lem  Lemire reference (bsearch + simd_quad)": (181.62, 196.19, 366.88, 519.73),
 }
 
@@ -647,37 +835,51 @@ gv4_twolevel = {
 # Deltas vs D (outer spine + n=4096 inner):
 #   F vs D:  -23.1%  -43.9%  -14.4%   +9.5%  (F best hot, partial cold reversal)
 #
-# Cold reversal is PARTIAL on M1 Pro: F vs D cold_bat -14.4% (F wins),
-# cold_ser +9.5% (F loses). Not the strict SKX/A76 shape (F loses both
-# cold modes) and not the strict M4 shape (F ties/wins both). M1 Pro is
-# a 3-AGU wide-OoO Apple core like M4 but runs ~2x slower absolute, so
-# dep-chain stalls have more wall-clock room to matter -- plausibly why
-# cold_ser reverses even with wide OoO. Hot win is unambiguous in both
-# modes (F vs D -23% / -44%).
+# Paired per-run F vs D (m1_runs/twolevel_paired.txt, 2026-05-18 runs):
+# hot_bat -32.4% (F faster 5/5), hot_ser -38.9% (5/5), cold_bat -10.6%
+# (5/5), cold_ser +5.7% (F faster 2/5 -> TIE). So F wins both hot modes
+# and cold_bat outright; cold_ser is a tie with D rather than a clean
+# reversal. cold_ser is the one mode where F is not best: A is best by
+# mean rank there, E beats F 4/5 (F vs E +8.5%, WIN for E) and A beats F
+# 4/5 (F vs A +26.3%, WIN for A). M1 Pro is a 3-AGU wide-OoO Apple core
+# like M4 but runs ~1.4x slower absolute (clock ~0.72x M4 Max), so dep-chain stalls have more
+# wall-clock room to matter -- plausibly why the Shar outer gives back
+# its advantage on cold_ser even with wide OoO.
 #
 # G (Shar inner for n=4096) catastrophic as elsewhere.
 #
 # F vs Lem: hot_bat -56.5%, hot_ser -66.5%, cold_bat -36.4%, cold_ser -23.7%.
 # Between M4 (steeper Lem deltas) and SKX (shallower) as expected.
 #
-# Ship: F for hot_bat + cold modes; **I (Eytzinger outer + 4-deep PF
-# + n=4096 inner) for hot_ser** -- I beats F by -19.8% on hot_ser
-# (5-run median, 2026-05-18 10-variant binary), losing both cold modes
-# by 12-18%. Mechanism per Khuong & Morin 2017 §4: explicit prefetch
-# delivers runahead-via-software during dep-chained outer descent (the
-# K=512 / 1 KB outer is too short for hardware streamers to help), but
-# the same prefetches contend with demand block-loads when cold-mode
-# bandwidth saturates. See KhuongMorin.md for the full result writeup
-# and per-host predictions. Prior legacy 2-mode "A->F cold -77%" was
-# pre-fix; superseded. Aggregator: m1_runs/compute_twolevel.py.
+# Ship (paired analysis, m1_runs/twolevel_paired.txt): F for hot_bat and
+# cold_bat (best by mean rank in both; I vs F hot_bat -0.3%, I faster 3/5
+# -> TIE; I vs F cold_bat +17.9%, F faster 5/5). **I (Eytzinger outer +
+# K&M PF (pre-fix) + n=4096 inner) for hot_ser**: I vs F -10.9% median paired
+# delta, I faster in 4/5 runs (per-run -5.2 -10.9 -15.5 -19.8 +22.3) ->
+# WIN for I. The "-19.8%" quoted earlier was a ratio of medians (it happens
+# to equal the single best run), not the paired median. cold_ser: F is
+# NOT best (A by mean rank; E beats F 4/5); I vs F +16.3%, F faster 5/5.
+# Mechanism per Khuong & Morin 2017 §4: explicit prefetch delivers
+# runahead-via-software during the dep-chained outer descent (the K=512 /
+# 1 KB outer is too short for hardware streamers to help), but the same
+# prefetches contend with demand block-loads when cold-mode bandwidth
+# saturates. Caveat: H/I were measured with the mis-aimed Eytzinger
+# prefetch (bench_twolevel.cpp fixed 2026-10-11, not yet re-benchmarked).
+# See KhuongMorin.md for the full writeup. Prior legacy 2-mode "A->F cold
+# -77%" was pre-fix; superseded. Aggregator (levels):
+# m1_runs/compute_twolevel.py; paired: compute_twolevel_paired.py m1.
+# [RETRACTED 2026-10-11: the runahead mechanism explained numbers produced by the mis-aimed
+#  prefetch; the M1 I hot_ser edge (-10.9%, 4/5) is pre-fix and pending re-measurement.]
 m1_twolevel = {
-    # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run medians 2026-05-18,
-    # 10-variant binary (adds H/I = Eytzinger outer + 4-deep PF, Khuong &
-    # Morin 2017 Listing 6). I beats F by -19.8% on hot_ser (dep-chained
-    # critical path); F still strict-best on both cold modes (the cold-
-    # bandwidth-saturation regime where explicit prefetches contend with
-    # demand loads). Hot_bat is a tie (F 45.88 vs I 47.71). Prior 2026-05-13
-    # 8-variant baseline overwritten in m1_runs/twolevel_run{1..5}.txt.
+    # (hot_bat, hot_ser, cold_bat, cold_ser). 5-run per-cell medians
+    # 2026-05-18, 10-variant binary (adds H/I = Eytzinger outer + K&M PF (pre-fix),
+    # Khuong & Morin 2017 Listing 6; H/I measured with the pre-fix,
+    # mis-aimed prefetch). Levels only -- variant comparisons come from
+    # m1_runs/twolevel_paired.txt: I beats F on hot_ser (-10.9% paired
+    # median, I faster 4/5); hot_bat I vs F is a tie; F is best on cold_bat
+    # but NOT on cold_ser (A best by mean rank, E beats F 4/5, F vs D tie).
+    # Prior 2026-05-13 8-variant baseline overwritten in
+    # m1_runs/twolevel_run{1..5}.txt.
     "A  bsearch outer + general-n inner":          (394.99,  98.62, 819.38, 613.54),
     "B  two-level spine outer + general-n inner":  (112.64, 147.04, 338.54, 677.09),
     "C  bsearch outer + n=4096 inner":             ( 54.85,  75.52, 263.54, 644.38),
@@ -685,8 +887,8 @@ m1_twolevel = {
     "E  Shar branchless outer + general-n inner":  ( 55.53,  76.05, 268.75, 630.21),
     "F  Shar branchless outer + n=4096 inner":     ( 45.88,  79.26, 278.54, 776.46),
     "G  Shar outer + Shar inner (no spine)":       (158.26, 158.17, 356.88, 888.75),
-    "H  Eytzinger outer + 4-deep PF + general-n inner":   ( 68.93,  74.33, 385.62, 826.66),
-    "I  Eytzinger outer + 4-deep PF + n=4096 inner":      ( 47.71,  63.57, 328.33, 869.79),
+    "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner":   ( 68.93,  74.33, 385.62, 826.66),
+    "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner":      ( 47.71,  63.57, 328.33, 869.79),
     "Lem  Lemire reference (bsearch + simd_quad)": (141.82, 200.30, 365.62, 876.66),
 }
 
@@ -709,10 +911,13 @@ styles = {
     "simd_quad_graviton + spine": dict(marker=">", linestyle="-",  color="#7f7f7f", linewidth=2.2, markersize=9),
 }
 
-def lineplot(data, title, out):
+def lineplot(xs, data, title, out):
+    """xs is the host's own size list (22 points for Pi 5, 10 for the rest);
+    every value list in `data` is exactly len(xs) long, so lines connect
+    across all archived points with no gaps."""
     fig, ax = plt.subplots(figsize=(8, 5))
     for name, ys in data.items():
-        ax.plot(sizes, ys, label=name, **styles[name])
+        ax.plot(xs, ys, label=name, **styles[name])
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xticks(label_sizes)
@@ -726,22 +931,22 @@ def lineplot(data, title, out):
     fig.savefig(out, dpi=130)
     print(f"wrote {out}")
 
-lineplot(pi5_warm, "Raspberry Pi 5 (Cortex-A76) - warm cache", "bench_warm.png")
-lineplot(pi5_cold, "Raspberry Pi 5 (Cortex-A76) - cold cache", "bench_cold.png")
-lineplot(m4_warm,  "Apple M4 Max (P-core) - warm cache",       "bench_m4_warm.png")
-lineplot(m4_cold,  "Apple M4 Max (P-core) - cold cache",       "bench_m4_cold.png")
+lineplot(pi5_sizes, pi5_warm, "Raspberry Pi 5 (Cortex-A76) - warm cache", "bench_warm.png")
+lineplot(pi5_sizes, pi5_cold, "Raspberry Pi 5 (Cortex-A76) - cold cache", "bench_cold.png")
+lineplot(m4_sizes, m4_warm,  "Apple M4 Max (P-core) - warm cache",       "bench_m4_warm.png")
+lineplot(m4_sizes, m4_cold,  "Apple M4 Max (P-core) - cold cache",       "bench_m4_cold.png")
 if have_m1:
-    lineplot(m1_warm, "Apple M1 Pro (P-core) - warm cache", "bench_m1_warm.png")
-    lineplot(m1_cold, "Apple M1 Pro (P-core) - cold cache", "bench_m1_cold.png")
+    lineplot(m1_sizes, m1_warm, "Apple M1 Pro (P-core) - warm cache", "bench_m1_warm.png")
+    lineplot(m1_sizes, m1_cold, "Apple M1 Pro (P-core) - cold cache", "bench_m1_cold.png")
 if have_skx:
-    lineplot(skx_warm, "Intel Skylake-SP (Xeon 8175M) - warm cache", "bench_skx_warm.png")
-    lineplot(skx_cold, "Intel Skylake-SP (Xeon 8175M) - cold cache", "bench_skx_cold.png")
+    lineplot(skx_sizes, skx_warm, "Intel Skylake-SP (Xeon 8175M) - warm cache", "bench_skx_warm.png")
+    lineplot(skx_sizes, skx_cold, "Intel Skylake-SP (Xeon 8175M) - cold cache", "bench_skx_cold.png")
 if have_emr:
-    lineplot(emr_warm, "Intel Emerald Rapids - warm cache", "bench_emr_warm.png")
-    lineplot(emr_cold, "Intel Emerald Rapids - cold cache", "bench_emr_cold.png")
+    lineplot(emr_sizes, emr_warm, "Intel Emerald Rapids - warm cache", "bench_emr_warm.png")
+    lineplot(emr_sizes, emr_cold, "Intel Emerald Rapids - cold cache", "bench_emr_cold.png")
 if have_gv4:
-    lineplot(gv4_warm, "AWS Graviton 4 (Arm Neoverse V2) - warm cache", "bench_gv4_warm.png")
-    lineplot(gv4_cold, "AWS Graviton 4 (Arm Neoverse V2) - cold cache", "bench_gv4_cold.png")
+    lineplot(gv4_sizes, gv4_warm, "AWS Graviton 4 (Arm Neoverse V2) - warm cache", "bench_gv4_warm.png")
+    lineplot(gv4_sizes, gv4_cold, "AWS Graviton 4 (Arm Neoverse V2) - cold cache", "bench_gv4_cold.png")
 
 
 # --- Cross-machine comparison: a faceted view (one subplot per host, all
@@ -752,17 +957,17 @@ if have_gv4:
 # (~32 lines). It was unreadable. Facets are cleaner, and the tuned-only
 # plot is the one you actually want when comparing hosts directly.
 
-# Each host defines (label, warm-dict, cold-dict, color for the tuned plot).
-hosts = [("Pi 5 (A76)",    pi5_warm, pi5_cold, "#1f77b4"),
-         ("M4 Max",         m4_warm,  m4_cold, "#d62728")]
+# Each host defines (label, sizes, warm-dict, cold-dict, color for the tuned plot).
+hosts = [("Pi 5 (A76)",    pi5_sizes, pi5_warm, pi5_cold, "#1f77b4"),
+         ("M4 Max",         m4_sizes,  m4_warm,  m4_cold, "#d62728")]
 if have_m1:
-    hosts.append(("M1 Pro",         m1_warm,   m1_cold,   "#9467bd"))
+    hosts.append(("M1 Pro",         m1_sizes,  m1_warm,   m1_cold,   "#9467bd"))
 if have_skx:
-    hosts.append(("Intel Skylake",  skx_warm,  skx_cold, "#17becf"))
+    hosts.append(("Intel Skylake",  skx_sizes, skx_warm,  skx_cold, "#17becf"))
 if have_emr:
-    hosts.append(("Intel Emerald",  emr_warm,  emr_cold, "#ff7f0e"))
+    hosts.append(("Intel Emerald",  emr_sizes, emr_warm,  emr_cold, "#ff7f0e"))
 if have_gv4:
-    hosts.append(("Graviton 4",     gv4_warm,  gv4_cold, "#2ca02c"))
+    hosts.append(("Graviton 4",     gv4_sizes, gv4_warm,  gv4_cold, "#2ca02c"))
 
 # Which algorithms get plotted in the per-host facet. Only the ones that
 # apply to each host - per-arch variants are skipped if the host has no
@@ -795,11 +1000,11 @@ def faceted_compare(regime, out):
     fig, axes = plt.subplots(rows, cols, figsize=(6*cols, 4.5*rows),
                              sharex=True, sharey=True)
     axes_flat = np.array(axes).reshape(-1)
-    for ax, (label, warm, cold, _color) in zip(axes_flat, hosts):
+    for ax, (label, xs, warm, cold, _color) in zip(axes_flat, hosts):
         src = warm if regime == "warm" else cold
         for a in facet_algos:
             if a in src and all(v is not None for v in src[a]):
-                ax.plot(sizes, src[a], label=a, **styles[a])
+                ax.plot(xs, src[a], label=a, **styles[a])
         ax.set_xscale("log", base=2)
         ax.set_yscale("log")
         ax.set_xticks(label_sizes)
@@ -848,19 +1053,19 @@ host_tuned_name = {
 
 def tuned_compare(regime, out):
     fig, ax = plt.subplots(figsize=(9, 5.5))
-    for label, warm, cold, color in hosts:
+    for label, xs, warm, cold, color in hosts:
         src = warm if regime == "warm" else cold
         a = host_tuned_name[label]
         if a in src and all(v is not None for v in src[a]):
-            ax.plot(sizes, src[a], label=f"{label}  ({a})",
+            ax.plot(xs, src[a], label=f"{label}  ({a})",
                     color=color, linewidth=2.0, marker="o", markersize=6)
     # Also include std::binary_search on each host, thin/dashed, as a
     # reference point so readers can see what "the baseline" costs per host.
-    for label, warm, cold, color in hosts:
+    for label, xs, warm, cold, color in hosts:
         src = warm if regime == "warm" else cold
         if "binary (std::binary_search)" in src and \
            all(v is not None for v in src["binary (std::binary_search)"]):
-            ax.plot(sizes, src["binary (std::binary_search)"],
+            ax.plot(xs, src["binary (std::binary_search)"],
                     label=f"{label}  (std::binary_search)",
                     color=color, linewidth=1.0, linestyle="--",
                     marker="s", markersize=4, alpha=0.6)
@@ -905,18 +1110,19 @@ host_tuned = {
     "Intel Emerald":  ("simd_quad_intel",    "simd_quad_intel + spine"),
     "Graviton 4":     ("simd_quad_graviton", "simd_quad_graviton + spine"),
 }
+# host -> (sizes, warm-dict, cold-dict)
 host_src = {
-    "Pi 5 (A76)":    (pi5_warm, pi5_cold),
-    "M4 Max":        (m4_warm,  m4_cold),
+    "Pi 5 (A76)":    (pi5_sizes, pi5_warm, pi5_cold),
+    "M4 Max":        (m4_sizes,  m4_warm,  m4_cold),
 }
 if have_m1:
-    host_src["M1 Pro"]        = (m1_warm,  m1_cold)
+    host_src["M1 Pro"]        = (m1_sizes,  m1_warm,  m1_cold)
 if have_skx:
-    host_src["Intel Skylake"] = (skx_warm, skx_cold)
+    host_src["Intel Skylake"] = (skx_sizes, skx_warm, skx_cold)
 if have_emr:
-    host_src["Intel Emerald"] = (emr_warm, emr_cold)
+    host_src["Intel Emerald"] = (emr_sizes, emr_warm, emr_cold)
 if have_gv4:
-    host_src["Graviton 4"]    = (gv4_warm, gv4_cold)
+    host_src["Graviton 4"]    = (gv4_sizes, gv4_warm, gv4_cold)
 
 summary_hosts = list(host_src.keys())
 host_colors   = {"Pi 5 (A76)":    "#1f77b4",
@@ -931,7 +1137,7 @@ x = np.arange(len(bar_cols))
 w = 0.8 / max(1, len(summary_hosts))
 
 def vals_for(host, regime):
-    warm, cold = host_src[host]
+    _xs, warm, cold = host_src[host]
     src = warm if regime == "warm" else cold
     plain_name, spine_name = host_tuned[host]
     return [pick(src, "binary (std::binary_search)"),
@@ -975,15 +1181,15 @@ print("wrote bench_summary.png")
 
 other_hosts = []
 if any(True for _ in [m4_warm]):
-    other_hosts.append(("M4 Max",        m4_warm,   m4_cold,   "#d62728"))
+    other_hosts.append(("M4 Max",        m4_sizes,  m4_warm,   m4_cold,   "#d62728"))
 if have_m1:
-    other_hosts.append(("M1 Pro",        m1_warm,   m1_cold,   "#9467bd"))
+    other_hosts.append(("M1 Pro",        m1_sizes,  m1_warm,   m1_cold,   "#9467bd"))
 if have_skx:
-    other_hosts.append(("Intel Skylake", skx_warm,  skx_cold,  "#17becf"))
+    other_hosts.append(("Intel Skylake", skx_sizes, skx_warm,  skx_cold,  "#17becf"))
 if have_emr:
-    other_hosts.append(("Intel Emerald", emr_warm,  emr_cold,  "#ff7f0e"))
+    other_hosts.append(("Intel Emerald", emr_sizes, emr_warm,  emr_cold,  "#ff7f0e"))
 if have_gv4:
-    other_hosts.append(("Graviton 4",    gv4_warm,  gv4_cold,  "#2ca02c"))
+    other_hosts.append(("Graviton 4",    gv4_sizes, gv4_warm,  gv4_cold,  "#2ca02c"))
 
 fig, (ax_w, ax_c) = plt.subplots(1, 2, figsize=(14, 5.5))
 
@@ -992,27 +1198,30 @@ def ratio_plot(ax, regime, title):
     # algos (binary, simd reference) and that host's tuned+spine.
     pi_src = pi5_warm if regime == "warm" else pi5_cold
     # Linestyles: portable algos solid-thin, tuned+spine thick.
-    for name, warm, cold, color in other_hosts:
+    for name, xs, warm, cold, color in other_hosts:
         src = warm if regime == "warm" else cold
+        # The Pi 5 sweep covers every size the other host has; index the
+        # Pi 5 22-point lists by size so the ratio is taken at the same n.
+        pi_idx = [pi5_sizes.index(s) for s in xs]
         # portable: binary
         a = "binary (std::binary_search)"
-        r = [pi_src[a][i] / src[a][i] for i in range(len(sizes))]
-        ax.plot(sizes, r, label=f"{name}  binary",
+        r = [pi_src[a][k] / src[a][j] for j, k in enumerate(pi_idx)]
+        ax.plot(xs, r, label=f"{name}  binary",
                 color=color, linestyle=":", marker="s", markersize=5,
                 linewidth=1.2, alpha=0.75)
         # portable: simd reference
         a = "simd_quad (reference)"
-        r = [pi_src[a][i] / src[a][i] for i in range(len(sizes))]
-        ax.plot(sizes, r, label=f"{name}  simd_quad ref",
+        r = [pi_src[a][k] / src[a][j] for j, k in enumerate(pi_idx)]
+        ax.plot(xs, r, label=f"{name}  simd_quad ref",
                 color=color, linestyle="--", marker="^", markersize=5,
                 linewidth=1.2, alpha=0.75)
         # each host's own tuned+spine vs Pi 5 pi5+spine
         host_tuned = host_tuned_name[name]
         pi_tuned   = "simd_quad_pi5 + spine"
         if host_tuned in src and all(v is not None for v in src[host_tuned]):
-            r = [pi_src[pi_tuned][i] / src[host_tuned][i]
-                 for i in range(len(sizes))]
-            ax.plot(sizes, r, label=f"{name}  tuned+spine",
+            r = [pi_src[pi_tuned][k] / src[host_tuned][j]
+                 for j, k in enumerate(pi_idx)]
+            ax.plot(xs, r, label=f"{name}  tuned+spine",
                     color=color, linestyle="-", marker="o", markersize=7,
                     linewidth=2.2)
     ax.axhline(1.0, color="#444", linestyle=":", linewidth=1)
@@ -1042,11 +1251,11 @@ print("wrote bench_speedup.png")
 
 host_spine_4096 = {
     "Pi 5 (A76)":    pi5_spine_4096,   # hybrid shipped 2026-05-12 (-28% warm / -7% cold vs general-n)
-    "M4 Max":        m4_spine_4096,    # measured 2026-05-01 (warm win, cold regression)
-    "M1 Pro":        m1_spine_4096,    # measured 2026-05-01 (warm wash, cold regression -- same as M4)
-    "Intel Skylake": skx_spine_4096,   # measured 2026-05-01 (AVX2 block-check path)
-    "Intel Emerald": emr_spine_4096,   # measured 2026-05-01
-    "Graviton 4":    gv4_spine_4096,   # measured 2026-05-01
+    "M4 Max":        m4_spine_4096,    # 2026-05-12 hybrid A/B (warm win, cold regression)
+    "M1 Pro":        m1_spine_4096,    # 2026-05-12 hybrid A/B (warm wash, cold regression -- same as M4)
+    "Intel Skylake": skx_spine_4096,   # 2026-05-12 hybrid A/B (AVX2 block-check path)
+    "Intel Emerald": emr_spine_4096,   # 2026-05-12 shipped_run{1..5}
+    "Graviton 4":    gv4_spine_4096,   # 2026-05-12 fullsweep_run{1..5}
 }
 
 def spine_4096_bar():
@@ -1058,7 +1267,7 @@ def spine_4096_bar():
                               (ax_c, "cold", "n=4096, cold cache")]:
         gen_vals, unr_vals = [], []
         for host in hosts_present:
-            warm, cold = host_src[host]
+            _xs, warm, cold = host_src[host]
             src = warm if regime == "warm" else cold
             spine_key = (
                 "simd_quad_pi5 + spine"      if host == "Pi 5 (A76)" else
@@ -1075,7 +1284,7 @@ def spine_4096_bar():
         unr_plot = [v if v is not None else 0 for v in unr_vals]
         bars2 = ax.bar(x + w/2, unr_plot, w, color=colors,
                        edgecolor="black", linewidth=1.0,
-                       label="compile-time n=4096 unroll")
+                       label="compile-time n=4096 hybrid")
         for i, (b, v) in enumerate(zip(bars2, unr_vals)):
             if v is None:
                 ax.text(b.get_x() + b.get_width()/2, 0.3,
@@ -1115,7 +1324,12 @@ spine_4096_bar()
 # G + Lem were added 2026-05-13 together with the bench_cold targets[si][1]
 # fix and the 4-mode harness. All six hosts (SKX, M4 Max, Pi 5, M1 Pro, EMR,
 # GV4) are now on the new harness with A-G + Lem (GV4 ported 2026-05-13 this
-# session).
+# session). H/I (Eytzinger outer + Khuong & Morin prefetch, depth log2(B)) were
+# added 2026-05-18 on all six hosts; every H/I level in the *_twolevel
+# dicts was measured with the mis-aimed prefetch (bench_twolevel.cpp fixed
+# 2026-10-11, not yet re-benchmarked), so the chart labels them
+# "pre-fix PF". Bars are per-cell medians (levels); variant comparisons
+# belong to {host}_runs/twolevel_paired.txt.
 
 # Hosts whose cold data predates the 2026-05-13 bench_cold fix. All six
 # hosts are now on the 4-mode harness, so this set is empty; kept for
@@ -1139,8 +1353,8 @@ def twolevel_bar():
                 "E  Shar branchless outer + general-n inner",
                 "F  Shar branchless outer + n=4096 inner",
                 "G  Shar outer + Shar inner (no spine)",
-                "H  Eytzinger outer + 4-deep PF + general-n inner",
-                "I  Eytzinger outer + 4-deep PF + n=4096 inner",
+                "H  Eytzinger outer + K&M PF (pre-fix) + general-n inner",
+                "I  Eytzinger outer + K&M PF (pre-fix) + n=4096 inner",
                 "Lem  Lemire reference (bsearch + simd_quad)"]
     short    = ["A\nbsearch\n+ general-n",
                 "B\nouter spine\n+ general-n",
@@ -1149,8 +1363,8 @@ def twolevel_bar():
                 "E\nShar outer\n+ general-n",
                 "F\nShar outer\n+ n=4096",
                 "G\nShar outer\n+ Shar inner",
-                "H\nEytz PF\n+ general-n",
-                "I\nEytz PF\n+ n=4096",
+                "H (pre-fix PF)\nEytz PF\n+ general-n",
+                "I (pre-fix PF)\nEytz PF\n+ n=4096",
                 "Lemire ref\nbsearch\n+ simd_quad"]
     hosts_present = [h for h in summary_hosts if h in host_twolevel]
 
@@ -1224,9 +1438,16 @@ def twolevel_bar():
         ax.grid(axis="y", linestyle=":", alpha=0.4)
         ax.legend(loc="upper right", fontsize=6.5)
     fig.suptitle("Two-level spine micro-bench (512 containers x inner_n=4096, ~4 MB per set). "
-                 "All six hosts on 4-mode harness (2026-05-13).",
+                 "All six hosts on 4-mode harness; 5-run per-cell medians, 2026-05-18. "
+                 "H/I = pre-fix PF.",
                  fontsize=11)
-    fig.tight_layout()
+    fig.text(0.5, 0.004,
+             "H / I (Eytzinger outer + Khuong & Morin prefetch, depth log2(B)) were measured with the "
+             "mis-aimed prefetch (node i+1's line instead of node i's descendants;\n"
+             "fixed in bench_twolevel.cpp 2026-10-11, not yet re-benchmarked). Bars are per-cell "
+             "medians (levels); compare variants with {host}_runs/twolevel_paired.txt, not by differencing bars.",
+             ha="center", va="bottom", fontsize=8, color="#444444")
+    fig.tight_layout(rect=[0, 0.045, 1, 1])
     fig.savefig("bench_twolevel.png", dpi=130)
     print("wrote bench_twolevel.png")
 
@@ -1284,7 +1505,7 @@ def twolevel_bar_f_vs_lem():
         ax.legend(loc="upper right", fontsize=8)
     fig.suptitle("Two-level spine: variant F (shipped) vs Lemire reference "
                  "(512 containers x inner_n=4096, ~4 MB per set). "
-                 "All six hosts on 4-mode harness (2026-05-13).",
+                 "All six hosts on 4-mode harness; 5-run per-cell medians, 2026-05-18.",
                  fontsize=11)
     fig.tight_layout()
     fig.savefig("bench_twolevel_f_vs_lem.png", dpi=130)
@@ -1302,7 +1523,7 @@ twolevel_bar_f_vs_lem()
 # a dashed line, so you can see the structural advance at each n.
 
 def best_line(host, regime):
-    warm, cold = host_src[host]
+    _xs, warm, cold = host_src[host]
     src = warm if regime == "warm" else cold
     _, spine_key = host_tuned[host]
     base = list(src[spine_key])
@@ -1314,7 +1535,7 @@ def best_line(host, regime):
     return base
 
 def reference_line(host, regime):
-    warm, cold = host_src[host]
+    _xs, warm, cold = host_src[host]
     src = warm if regime == "warm" else cold
     return list(src["simd_quad (reference)"])
 
@@ -1322,11 +1543,12 @@ def best_vs_reference(regime, out, title):
     fig, ax = plt.subplots(figsize=(9, 6))
     for host in summary_hosts:
         color = host_colors[host]
-        ax.plot(sizes, reference_line(host, regime),
+        xs = host_src[host][0]
+        ax.plot(xs, reference_line(host, regime),
                 linestyle="--", marker="o", markersize=4,
                 color=color, alpha=0.55, linewidth=1.2,
                 label=f"{host} - simd_quad (reference)")
-        ax.plot(sizes, best_line(host, regime),
+        ax.plot(xs, best_line(host, regime),
                 linestyle="-",  marker="s", markersize=6,
                 color=color, linewidth=2.0,
                 label=f"{host} - best strategy")
@@ -1357,16 +1579,17 @@ def has_data(d, key):
     return key in d and all(v is not None for v in d[key])
 
 def table_text():
-    table_hosts = [("Pi 5",         pi5_warm,  pi5_cold)]
-    table_hosts.append(("M4 Max",   m4_warm,   m4_cold))
+    # (label, sizes, warm, cold); cells at sizes a host did not sweep print "-".
+    table_hosts = [("Pi 5",         pi5_sizes, pi5_warm,  pi5_cold)]
+    table_hosts.append(("M4 Max",   m4_sizes,  m4_warm,   m4_cold))
     if have_m1:
-        table_hosts.append(("M1 Pro", m1_warm, m1_cold))
+        table_hosts.append(("M1 Pro", m1_sizes, m1_warm, m1_cold))
     if have_skx:
-        table_hosts.append(("SKX",  skx_warm,  skx_cold))
+        table_hosts.append(("SKX",  skx_sizes, skx_warm,  skx_cold))
     if have_emr:
-        table_hosts.append(("EMR",  emr_warm,  emr_cold))
+        table_hosts.append(("EMR",  emr_sizes, emr_warm,  emr_cold))
     if have_gv4:
-        table_hosts.append(("GV4",  gv4_warm,  gv4_cold))
+        table_hosts.append(("GV4",  gv4_sizes, gv4_warm,  gv4_cold))
 
     algos_ordered = [
         "linear (std::find)",
@@ -1383,6 +1606,10 @@ def table_text():
     ]
 
     lines = []
+    lines.append("Per-cell medians of 5 runs of ./bench 4000 5000. '-' = size not in that "
+                 "host's archived sweep: M4 Max / M1 Pro / SKX / EMR / GV4 "
+                 "rebench_run{1..5}.txt (2026-05-01) cover only the 10 power-of-two sizes; "
+                 "Pi 5 (2026-05-12) covers all 22.")
     for regime_name, regime in [("WARM", "warm"), ("COLD", "cold")]:
         lines.append(f"\n=== {regime_name} CACHE (ns/query) ===")
         header = f"{'algorithm':32s}  {'machine':8s}" + "".join(f"{s:>7d}" for s in sizes)
@@ -1390,10 +1617,13 @@ def table_text():
         lines.append("-" * len(header))
         for a in algos_ordered:
             emitted = False
-            for label, warm, cold in table_hosts:
+            for label, xs, warm, cold in table_hosts:
                 src = warm if regime == "warm" else cold
                 if has_data(src, a):
-                    row = f"{a:32s}  {label:8s}" + "".join(f"{v:>7.1f}" for v in src[a])
+                    by_size = dict(zip(xs, src[a]))
+                    row = f"{a:32s}  {label:8s}" + "".join(
+                        f"{by_size[s]:>7.1f}" if s in by_size else f"{'-':>7s}"
+                        for s in sizes)
                     lines.append(row)
                     emitted = True
             if emitted:
@@ -1401,13 +1631,13 @@ def table_text():
 
     # Compile-time n=4096 unroll: pulled out separately because it only
     # applies at that single size.
-    lines.append("=== compile-time n=4096 unroll (ns/query) ===")
-    lines.append(f"{'host':16s}  {'general-n warm':>14s}  {'unroll warm':>12s}  "
-                 f"{'general-n cold':>14s}  {'unroll cold':>12s}")
+    lines.append("=== compile-time n=4096 hybrid (ns/query; replaced the retired unroll 2026-05-12) ===")
+    lines.append(f"{'host':16s}  {'general-n warm':>14s}  {'hybrid warm':>12s}  "
+                 f"{'general-n cold':>14s}  {'hybrid cold':>12s}")
     for host in ["Pi 5 (A76)", "M4 Max", "M1 Pro", "Intel Skylake", "Intel Emerald", "Graviton 4"]:
         if host not in host_src:
             continue
-        warm, cold = host_src[host]
+        _xs, warm, cold = host_src[host]
         spine_key = (
             "simd_quad_pi5 + spine"      if host == "Pi 5 (A76)" else
             "simd_quad_m4 + spine"       if host in ("M4 Max", "M1 Pro") else
