@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
-"""Aggregate m4_runs/twolevel_run*.txt medians for variants A-G + Lem
+"""Aggregate m4_runs/twolevel_run*.txt per-cell medians for variants A-I + Lem
 across the four measurement modes: hot_bat, hot_ser, cold_bat, cold_ser.
+
+LEVELS ONLY. These are medians taken independently per variant across runs;
+whole runs drift 1.4-2.2x on some hosts, so differencing two of these medians
+can invert the ordering that every individual run shows. For any X-vs-Y
+comparison use the paired per-run deltas from compute_twolevel_paired.py
+(writes m4_runs/twolevel_paired.txt).
 
 Harness semantics (see bench_twolevel.cpp):
   hot_bat  - 200 reps per set, independent queries, hot caches (OoO
