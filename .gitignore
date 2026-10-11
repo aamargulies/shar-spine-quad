@@ -26,3 +26,16 @@ Thumbs.db
 
 # Private task brief
 requirements.text
+
+# Compiled benchmark binaries (build them locally; see README)
+bench_profile_m4
+bench_sweep
+bench_sweep_f_vs_lem
+check_pfC
+
+# Logs rewritten by reproduce.sh on every run
+reproduce_bench.log
+reproduce_twolevel.log
+
+# OpenEvolve run output
+openevolve_output/

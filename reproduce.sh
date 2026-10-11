@@ -19,10 +19,9 @@
 # thermal event) cannot land on the same variant each time.
 #
 # Logs: reproduce_bench.log and reproduce_twolevel.log, overwritten on
-# every invocation, one "--- run N ---" block per run. Logs produced before
-# 2026-05-13 -- including the checked-in copies dated 2026-05-08 -- use the
-# retired 2-column (warm/cold) two-level format; the parser below reports
-# '-' for them instead of a number.
+# every invocation, one "--- run N ---" block per run; both are gitignored.
+# Logs produced before 2026-05-13 use the retired 2-column (warm/cold)
+# two-level format; the parser below reports '-' for them instead of a number.
 #
 # Exit 0 on success (benches run, correctness ok). Any failure prints a
 # diagnostic. The script does not try to "pass" a pattern match against
@@ -415,9 +414,8 @@ if host in PRE_HYBRID_4096:
     print("    fresh warm number there is the expected win, not a regression.")
 print("  - Visible aliasing bumps in the per-n curves are real and expected;")
 print("    see Text/aliasing_investigation.md.")
-print("  - Logs produced before 2026-05-13 (including the checked-in")
-print("    reproduce_bench.log / reproduce_twolevel.log dated 2026-05-08) use the")
-print("    retired 2-column (warm/cold) two-level format, whose cold path never ran")
+print("  - Logs produced before 2026-05-13 use the retired 2-column (warm/cold)")
+print("    two-level format, whose cold path never ran")
 print("    the inner search; the two-level rows show '-' for such a log.")
 print("  - Parsing of the bench table is heuristic; if a row shows '-', open")
 print("    reproduce_bench.log / reproduce_twolevel.log and read the table.")
