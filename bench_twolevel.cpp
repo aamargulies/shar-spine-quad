@@ -11,21 +11,29 @@
 // spine trick to the outer search too, so the cold-cache pointer chase
 // through container keys becomes a contiguous streaming read.
 //
-// This micro-bench compares:
-//   A. std::binary_search over keys      +  general-n spine inner
-//   B. spine over keys                   +  general-n spine inner
-//   C. std::binary_search over keys      +  compile-time-n=4096 spine inner
-//   D. spine over keys                   +  compile-time-n=4096 spine inner
-//   E. Shar branchless binary over keys  +  general-n spine inner
-//   F. Shar branchless binary over keys  +  compile-time-n=4096 spine inner
+// This micro-bench compares (outer search x inner search):
+//   A.   std::lower_bound over keys       +  general-n spine inner
+//   B.   spine over keys                  +  general-n spine inner
+//   C.   std::lower_bound over keys       +  compile-time-n=4096 spine inner
+//   D.   spine over keys                  +  compile-time-n=4096 spine inner
+//   E.   Shar branchless binary over keys +  general-n spine inner
+//   F.   Shar branchless binary over keys +  compile-time-n=4096 spine inner
+//   G.   Shar branchless binary over keys +  Shar branchless inner (no spine)
+//   H.   Eytzinger layout + K&M prefetch  +  general-n spine inner
+//   I.   Eytzinger layout + K&M prefetch  +  compile-time-n=4096 spine inner
+//   Lem. std::lower_bound over keys       +  Lemire's simd_quad (gap 16, no spine)
 //
 // The difference between A and B isolates the outer-spine win; the
 // difference between A and C isolates the compile-time-n-inner win; D
 // combines both. E/F replace the outer search with Shar's 1971 branchless
-// binary search (cmov chain, step halving). Interesting because it needs
-// no side structure: on hosts where the outer-spine win is thin (M4's
-// 128-B line makes the 1-line spine useless to the streamer) the
-// cmov-chain approach may be competitive.
+// binary search: a single pointer plus step halving where every step is
+// `if (begin[step] < key) begin += step;`, compiled to a cmov. Note that
+// this is a *serial* chain (each load's address depends on the previous
+// cmov), not a set of independent loads; it wins because it has no branch
+// mispredicts and no side structure, not because the loads overlap.
+// H/I use Khuong & Morin's (2017) Eytzinger layout with an explicit
+// prefetch of the descendant cache line log2(kGap) levels down. Lem is
+// the published reference the whole stack is measured against.
 //
 // Build (Intel / AMD):
 //   g++ -O3 -march=native -std=c++20 bench_twolevel.cpp simd_quad_intel.c -o bench_twolevel
@@ -41,15 +49,31 @@
 //   g++ -O3 -mcpu=neoverse-v2 -std=c++20 -DQUADSEARCH_ARM_GV4 \
 //       bench_twolevel.cpp simd_quad_graviton.c -o bench_twolevel
 //
-// Run: ./bench_twolevel [num_sets] [hot_reps]
-//   Defaults: num_sets=200, hot_reps=200. Each "set" is 512 containers
-//   of cardinality 4096 -- ~4 MB of keys per set, large enough to blow
-//   out L2.
+// Run: ./bench_twolevel [num_sets] [hot_reps] [mode] [order_seed]
+//   Defaults: num_sets=200, hot_reps=200, mode=all, order_seed=0.
+//   Each "set" is 512 containers of cardinality 4096 -- ~4 MB of
+//   container data per set. mode selects hb / hs / cb / cs / all.
+//   order_seed != 0 shuffles the order in which the variants are timed
+//   within each mode pass (rows are still printed A..Lem); drivers should
+//   pass a different seed per run so that a transient (governor hop,
+//   interrupt, thermal event) cannot land on the same variant every run.
 //
 // Four measurement modes, crossing two axes:
-//   axis 1: cache state.  hot = same set reused for hot_reps queries,
-//                                so after the first few reps the keys /
-//                                containers / spines are in L1/L2.
+//   axis 1: cache state.  hot = same set reused for hot_reps queries.
+//                                The 1 KB outer key array (and its spine /
+//                                Eytzinger copy) is reused on every rep
+//                                and is genuinely hot. The ~100 crafted
+//                                hits per set land in ~91 distinct
+//                                containers, so most *inner* spine/block
+//                                loads are first touches; whether they
+//                                hit LLC or DRAM depends on the host's
+//                                cache size (at 200 sets the per-pass
+//                                footprint is ~7 MB: fits Apple/EMR/GV4
+//                                L2/L3, exceeds Pi 5 and SKX LLC). Read
+//                                "hot" as "outer hot, inner first-touch".
+//                                Half of the hot queries are random u32
+//                                values that miss at the outer and never
+//                                reach the inner search.
 //                         cold = one query per set, advancing across
 //                                num_sets sets in sequence; each set is
 //                                4 MB and we sweep 200 * 4 MB = 800 MB
@@ -74,10 +98,9 @@
 //   hot_ser  - latency with hot caches. Shows the true per-query
 //              dependent critical path, no MLP / ILP hiding.
 //   cold_bat - throughput with cold caches. Here MLP helps a lot: many
-//              independent DRAM misses can be in flight, so ns/q can
-//              actually be *lower* than hot_bat on hosts where the hot
-//              path is bottlenecked on a downclocked scalar loop
-//              (e.g. Skylake-SP with AVX-512 license L2).
+//              independent DRAM misses can be in flight. Every cold query
+//              is a crafted hit (outer + inner end-to-end); see the note
+//              above bench_cold_batched for why.
 //   cold_ser - latency with cold caches. Each query's cold misses
 //              serialize behind the previous query's return. Usually
 //              the worst of the four for any variant.
@@ -215,9 +238,11 @@ using clock_type = std::chrono::steady_clock;
 
 // LLC-thrash scratch: written to before each cold-mode measurement so
 // the caches are actually cold regardless of which mode ran before.
-// Sized larger than any expected LLC (host LLCs top out around 100 MB
-// on Xeon; 256 MB evicts even multi-socket shared L3s).
-static constexpr size_t kThrashBytes = 256u * 1024u * 1024u;
+// Sized larger than any LLC on the target list: Emerald Rapids 8559C has
+// a 260 MB L3 (top EMR SKUs 320 MB), so the previous 256 MB did not
+// guarantee eviction there. 512 MB covers every current single-socket L3.
+// The sweep also flushes the TLBs, so cold queries pay page walks too.
+static constexpr size_t kThrashBytes = 512u * 1024u * 1024u;
 static void thrash_llc() {
     static std::vector<uint8_t> scratch;
     if (scratch.empty()) scratch.assign(kThrashBytes, 0);
@@ -238,6 +263,7 @@ struct ContainerSet {
     std::vector<uint16_t> keys;            // outer keys, sorted
     std::vector<uint16_t> keys_spine;      // spine over `keys` (for B/D)
     std::vector<uint16_t> keys_eytz;       // Eytzinger BFS layout (for H/I); slot 0 unused, trailing pad guards prefetch
+    size_t                eytz_off = 0;    // element offset of slot 0 inside keys_eytz (cache-line aligned)
     std::vector<uint16_t> eytz_to_sorted;  // BFS slot -> original sorted index
     std::vector<Container> containers;     // containers[i] matches keys[i]
 };
@@ -290,14 +316,31 @@ static ContainerSet make_set(std::mt19937 &rng, int num_containers,
         s.keys_spine.resize(outer_blocks);
         build_spine(s.keys.data(), num_containers, s.keys_spine.data());
     }
-    // Eytzinger layout for variants H, I. Pad past the worst-case prefetch
-    // reach so out-of-bounds prefetches stay inside our allocation
-    // (Khuong & Morin 2017 §5.3 portability hazard on some Intel CPUs).
-    int eytz_pad = kGap * 16;
-    s.keys_eytz.assign((size_t)num_containers + 1 + eytz_pad, 0);
+    // Eytzinger layout for variants H, I (1-based: root at slot 1, children
+    // 2k / 2k+1). Two layout requirements make the Khuong & Morin prefetch
+    // work as designed:
+    //  * slot 0 must start a cache line, so that node i's kGap descendants
+    //    log2(kGap) levels down, slots [kGap*i, kGap*i + kGap - 1], occupy
+    //    exactly one line. std::vector only guarantees 16-B alignment, so
+    //    we over-allocate by one line and record the element offset.
+    //  * the array must extend past the furthest prefetch address,
+    //    kGap*i + kGap/2 for i up to num_containers, so that no prefetch
+    //    leaves the allocation (paper section 5.3: out-of-bounds prefetches
+    //    are slow on some CPUs). That is kGap*(num_containers+1) zero slots
+    //    of pad; the pre-2026-10 pad of kGap*16 covered <1/15 of the reach.
+    {
+        const size_t line_elems = (size_t)kGap;    // kGap u16 = one cache line
+        const size_t slots = (size_t)num_containers + 1
+                           + (size_t)kGap * ((size_t)num_containers + 1);
+        s.keys_eytz.assign(slots + line_elems, 0);
+        const uintptr_t line_bytes = line_elems * sizeof(uint16_t);
+        const uintptr_t p = (uintptr_t)s.keys_eytz.data();
+        s.eytz_off = (size_t)(((line_bytes - (p % line_bytes)) % line_bytes)
+                              / sizeof(uint16_t));
+    }
     s.eytz_to_sorted.assign((size_t)num_containers + 1, 0);
     build_eytzinger(s.keys.data(), num_containers,
-                    s.keys_eytz.data(), s.eytz_to_sorted.data());
+                    s.keys_eytz.data() + s.eytz_off, s.eytz_to_sorted.data());
     return s;
 }
 
@@ -409,10 +452,23 @@ static inline int find_container_shar(const ContainerSet &s, uint16_t key) {
 }
 
 // Eytzinger branch-free search with explicit prefetch (Khuong & Morin 2017,
-// Listing 6 + index recovery from Listings 4-5). At each step the prefetch
-// fetches the great-great-grandchild block of the current node; on a 9-level
-// descent this keeps ~4 cache lines in flight at once, exploiting MLP
-// where the K=512 outer is too short for hardware streamers to help.
+// Listing 6 + index recovery from Listings 4-5), adapted to this harness's
+// 1-based layout (root at slot 1, children 2i / 2i+1; the paper's listing is
+// 0-based with children 2i+1 / 2i+2).
+//
+// At each step we prefetch the cache line holding node i's descendants
+// log2(kGap) levels down (5 levels at gap 32, 6 at gap 64): slots
+// [kGap*i, kGap*i + kGap - 1], exactly one line because make_set aligns
+// slot 0 to a line. kPrefOff points at the middle of that line.
+//
+// NOTE: the paper's constant (3B/2 - 1) belongs to its 0-based layout,
+// where the descendants are [B*i + B - 1, B*i + 2B - 2]. Applied to a
+// 1-based layout it prefetches node i+1's line instead, so no prefetch ever
+// covered a node on the search path. Every H/I number recorded before
+// 2026-10-11 was measured with that mis-aimed prefetch; see KhuongMorin.md.
+// The K=512 descent is 10 levels deep; the first 10 - log2(kGap) prefetches
+// target real nodes, the remainder land in the zero pad (wasted bandwidth,
+// as in the paper, in exchange for a branch-free loop).
 //
 // Index recovery: the loop terminates with i > n, where i's path-encoding
 // has trailing 1-bits for each consecutive "go-right" step taken from the
@@ -421,11 +477,11 @@ static inline int find_container_shar(const ContainerSet &s, uint16_t key) {
 // BFS layout back to the sorted-index that c.containers[] expects.
 static inline int find_container_eytz_pf(const ContainerSet &s,
                                          uint16_t key) {
-    constexpr int kPrefMul = kGap;                  // u16 per cache line
-    constexpr int kPrefOff = (3 * kGap / 2) - 1;    // (3B/2) - 1 in u16
+    constexpr int kPrefMul = kGap;         // u16 per cache line
+    constexpr int kPrefOff = kGap / 2;     // middle of node i's descendant line (1-based layout)
     int n = (int)s.keys.size();
     if (n == 0) return -1;
-    const uint16_t *a = s.keys_eytz.data();
+    const uint16_t *a = s.keys_eytz.data() + s.eytz_off;
     int i = 1;
     while (i <= n) {
         __builtin_prefetch(a + kPrefMul * i + kPrefOff);
@@ -511,10 +567,15 @@ static bool lookup_Lemire(const ContainerSet &s, uint32_t v) {
 
 // Hot + batched: reuse the same set for hot_reps independent queries.
 // Queries are independent (no dep chain between them), so the OoO engine
-// can keep several in flight. Measures throughput with hot caches.
-// At hot_reps=200 the first rep on each set pays a cold miss, then the
-// remaining ~199 reps run hot (the set's keys + spines fit in L2); the
-// reported ns/q is dominated by the hot tail.
+// can keep several in flight. Measures throughput with a hot *outer*:
+// the 1 KB key array (plus its spine / Eytzinger copy) is reused on every
+// rep, but the ~100 crafted hits per set land in ~91 distinct containers,
+// so most inner spine/block loads are first touches within the pass.
+// Across variants the same sets and targets are replayed, so a variant
+// finds in cache whatever the previous variant's pass left there -- which
+// at 200 sets (~7 MB touched per pass) is nothing on Pi 5 / SKX and most
+// of it on Apple / EMR / GV4. See the header; measured on Pi 5: F hot_bat
+// 61 ns at 12 sets vs 213 ns at 200 sets.
 template <typename Fn>
 static double bench_hot_batched(const std::vector<ContainerSet> &sets,
                                 const std::vector<std::vector<uint32_t>> &targets,
@@ -569,8 +630,15 @@ static double bench_hot_serial(const std::vector<ContainerSet> &sets,
 // Uses targets[si][1]: targets[k] with k odd is a crafted hit, so we
 // exercise outer-search + inner-search end-to-end. Index 0 is a random
 // u32 that almost always misses the outer keys (~1% hit rate), which
-// would hide the inner cost entirely. See 2026-05-13 fix note in
-// CLAUDE.md.
+// would hide the inner cost entirely.
+//
+// HISTORY (2026-05-13 fix): the original 2-mode harness used
+// targets[si][0] here and had no thrash_llc() between variants, so its
+// "cold" numbers measured an outer miss on L2-warm keys and never ran
+// the inner search. Every two-level cold number dated before 2026-05-13
+// (README "~12.9x cold", presentation, Show HN draft, reproduce.sh
+// baselines) comes from that harness and is not comparable to anything
+// this file produces.
 template <typename Fn>
 static double bench_cold_batched(const std::vector<ContainerSet> &sets,
                                  const std::vector<std::vector<uint32_t>> &targets,
@@ -619,17 +687,21 @@ int main(int argc, char **argv) {
     // has swept the data the LLC/TLB state is no longer pristine for
     // the other cold modes.
     const char *mode = (argc > 3) ? argv[3] : "all";
+    // Optional timing-order seed (argv[4]). 0 or absent = canonical A..Lem
+    // order; anything else shuffles the order in which variants are timed
+    // within each mode pass (rows are still printed in canonical order).
+    unsigned order_seed = (argc > 4) ? (unsigned)std::strtoul(argv[4], nullptr, 10) : 0u;
 
     constexpr int num_containers = 512;
     constexpr int inner_n        = 4096;
 
     std::printf("two-level spine micro-bench\n");
-    std::printf("num_sets=%d hot_reps=%d num_containers=%d inner_n=%d mode=%s\n",
-                num_sets, hot_reps, num_containers, inner_n, mode);
+    std::printf("num_sets=%d hot_reps=%d num_containers=%d inner_n=%d mode=%s order_seed=%u gap=%d\n",
+                num_sets, hot_reps, num_containers, inner_n, mode, order_seed, kGap);
     std::printf("per set: %d B of keys + %d B of container data + %d B of spines\n",
                 num_containers * 2,
                 num_containers * inner_n * 2,
-                num_containers * (inner_n / 32) * 2);
+                num_containers * (inner_n / kGap) * 2);
 
     std::mt19937 rng(0xB17F17);
     std::vector<ContainerSet> sets;
@@ -686,66 +758,86 @@ int main(int argc, char **argv) {
 
     struct Row { const char *var; const char *desc;
                  double hb, hs, cb, cs; };
-    // Measurement order matters: a cold-cache bench is only cold on its
-    // first pass. When running all four modes in one process, run both
-    // cold modes before the hot modes so neither cold mode benefits
-    // from the LLC being warm from the other. For strict cold numbers,
-    // run each cold mode in its own process via the mode-filter argv[3]
+    // Mode selection. Each mode runs in its own pass over all variants so
+    // we can place thrash_llc() precisely: before every cold measurement
+    // (keeping it actually cold) and never before a hot measurement. Because
+    // every cold cell is preceded by its own thrash, the order of the four
+    // passes does not matter; for the strictest cold numbers run each cold
+    // mode in a fresh process via the mode-filter argv[3]
     // (`./bench_twolevel N R cb`, `./bench_twolevel N R cs`).
     bool run_cs = mode[0]=='a' || (mode[0]=='c' && mode[1]=='s');
     bool run_cb = mode[0]=='a' || (mode[0]=='c' && mode[1]=='b');
     bool run_hb = mode[0]=='a' || (mode[0]=='h' && mode[1]=='b');
     bool run_hs = mode[0]=='a' || (mode[0]=='h' && mode[1]=='s');
     auto NaN = std::numeric_limits<double>::quiet_NaN();
-    // Each mode runs in its own pass over all variants so we can place
-    // thrash_llc() precisely: before every cold measurement (keeping it
-    // actually cold) and never before a hot measurement (the set data
-    // doesn't fit in LLC anyway, but we don't want to evict TLB / i-cache
-    // / the ambient state the hot path naturally settles into).
-    auto measure = [&](const char *var, const char *desc, auto fn) {
-        Row r;
-        r.var  = var;
-        r.desc = desc;
-        r.hb = r.hs = r.cb = r.cs = NaN;
-        return r;
-    };
     constexpr int NVAR = 10;
     Row result[NVAR] = {
-        measure("A",   "bsearch outer + general-n spine inner",                  lookup_A),
-        measure("B",   "two-level spine + general-n spine inner",                lookup_B),
-        measure("C",   "bsearch outer + compile-time n=4096 inner",              lookup_C),
-        measure("D",   "two-level spine + compile-time n=4096 inner",            lookup_D),
-        measure("E",   "Shar branchless outer + general-n spine inner",          lookup_E),
-        measure("F",   "Shar branchless outer + compile-time n=4096 inner",      lookup_F),
-        measure("G",   "Shar outer + Shar inner (n=4096, no spine)",             lookup_G),
-        measure("H",   "Eytzinger outer + 4-deep PF + general-n spine inner",    lookup_H),
-        measure("I",   "Eytzinger outer + 4-deep PF + compile-time n=4096 inner",lookup_I),
-        measure("Lem", "Lemire reference (bsearch outer + simd_quad inner)",     lookup_Lemire),
+        {"A",   "bsearch outer + general-n spine inner",                 NaN, NaN, NaN, NaN},
+        {"B",   "two-level spine + general-n spine inner",               NaN, NaN, NaN, NaN},
+        {"C",   "bsearch outer + compile-time n=4096 inner",             NaN, NaN, NaN, NaN},
+        {"D",   "two-level spine + compile-time n=4096 inner",           NaN, NaN, NaN, NaN},
+        {"E",   "Shar branchless outer + general-n spine inner",         NaN, NaN, NaN, NaN},
+        {"F",   "Shar branchless outer + compile-time n=4096 inner",     NaN, NaN, NaN, NaN},
+        {"G",   "Shar outer + Shar inner (n=4096, no spine)",            NaN, NaN, NaN, NaN},
+        {"H",   "Eytzinger outer + K&M PF + general-n spine inner",      NaN, NaN, NaN, NaN},
+        {"I",   "Eytzinger outer + K&M PF + compile-time n=4096 inner",  NaN, NaN, NaN, NaN},
+        {"Lem", "Lemire reference (bsearch outer + simd_quad inner)",    NaN, NaN, NaN, NaN},
     };
     auto lookups = std::array<bool(*)(const ContainerSet&, uint32_t), NVAR>{
         lookup_A, lookup_B, lookup_C, lookup_D,
         lookup_E, lookup_F, lookup_G, lookup_H, lookup_I, lookup_Lemire,
     };
+    // Per-pass timing order: canonical, or shuffled from order_seed (with a
+    // per-mode salt so the four passes get different orders).
+    auto make_order = [&](unsigned salt) {
+        std::array<int, NVAR> ord{};
+        for (int i = 0; i < NVAR; i++) ord[i] = i;
+        if (order_seed != 0) {
+            std::mt19937 g(order_seed * 1000003u + salt);
+            std::shuffle(ord.begin(), ord.end(), g);
+        }
+        return ord;
+    };
+    auto print_order = [&](const char *m, const std::array<int, NVAR> &ord) {
+        std::printf("timing order %s:", m);
+        for (int i : ord) std::printf(" %s", result[i].var);
+        std::printf("\n");
+    };
+    // Untimed warm-up before the hot passes. Without it the first variant
+    // timed pays every first-touch TLB / cache miss for the whole working
+    // set and all "vs A" hot deltas inherit the bias (A was always first).
+    if (run_hb || run_hs) {
+        (void)bench_hot_batched(sets, targets, hot_reps, lookup_A);
+    }
     if (run_hb) {
-        for (int i = 0; i < NVAR; i++)
+        auto ord = make_order(1);
+        print_order("hot_bat", ord);
+        for (int i : ord)
             result[i].hb = bench_hot_batched(sets, targets, hot_reps, lookups[i]);
     }
     if (run_hs) {
-        for (int i = 0; i < NVAR; i++)
+        auto ord = make_order(2);
+        print_order("hot_ser", ord);
+        for (int i : ord)
             result[i].hs = bench_hot_serial(sets, targets, hot_reps, lookups[i]);
     }
     if (run_cb) {
-        for (int i = 0; i < NVAR; i++) {
+        auto ord = make_order(3);
+        print_order("cold_bat", ord);
+        for (int i : ord) {
             thrash_llc();
             result[i].cb = bench_cold_batched(sets, targets, lookups[i]);
         }
     }
     if (run_cs) {
-        for (int i = 0; i < NVAR; i++) {
+        auto ord = make_order(4);
+        print_order("cold_ser", ord);
+        for (int i : ord) {
             thrash_llc();
             result[i].cs = bench_cold_serial(sets, targets, lookups[i]);
         }
     }
+    std::printf("\n");
     std::printf("%-4s  %-56s  %10s  %10s  %10s  %10s\n",
                 "var", "description",
                 "hot_bat", "hot_ser", "cold_bat", "cold_ser");
@@ -762,6 +854,10 @@ int main(int argc, char **argv) {
 
     auto dv = [](double x, double base) { return (x / base - 1) * 100; };
 
+    // These per-run paired deltas are the numbers to aggregate across runs
+    // (median of per-run deltas + sign count), NOT ratios of per-variant
+    // medians: whole runs drift 1.4-2.2x on some hosts, and taking each
+    // variant's median independently mixes runs. See compute_twolevel_paired.py.
     std::printf("\ndeltas vs A (hot_bat  hot_ser  cold_bat  cold_ser):\n");
     for (int i = 1; i < NVAR; i++) {
         auto &r = result[i];
