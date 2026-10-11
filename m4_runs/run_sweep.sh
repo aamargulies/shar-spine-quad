@@ -6,6 +6,14 @@
 # Output layout:
 #   m4_runs/sweep_n${N}_${mode}_run${R}.txt   -- raw bench_sweep stdout
 #
+# After a campaign the per-cell files are folded into m4_runs/sweep_raw.txt
+# (one '### <basename>' header per file, then its lines verbatim) with
+#   python3 consolidate_sweep.py m4_runs sweep --delete
+# from the repo root; m4_runs/compute_sweep.py reads either form. The resume
+# check below only sees per-cell files, so re-running this driver after
+# consolidation re-measures every cell; the consolidator then merges the new
+# files into the existing raw file, replacing same-named entries.
+#
 # Resume-friendly: skips outputs that already exist (so `kill` + rerun is
 # safe). To force a fresh run, delete the relevant files first.
 #

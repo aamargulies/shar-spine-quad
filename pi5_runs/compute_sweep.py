@@ -8,6 +8,13 @@ bench_sweep), takes the per-cell median across the 5 runs, and prints:
     2. A "paste into plot.py" block: pi5_sweep = {N: {mode: (F, Fstar)}}.
 
 Modes: hb hot_bat / hs hot_ser / cb cold_bat / cs cold_ser.
+
+Archive: after the campaign the 1,800 per-cell files were folded into
+pi5_runs/sweep_raw.txt with `python3 consolidate_sweep.py pi5_runs sweep --delete`
+(repo root). Each entry there is a '### <basename>' header followed by that
+file's lines verbatim. parse_one() reads the per-cell file when it exists and
+otherwise the matching raw-file entry, so a fresh campaign works before
+consolidation and the archive works after it.
 """
 import os, re, sys
 
@@ -25,12 +32,39 @@ RESULT_RE = re.compile(
     r"^RESULT\s+inner_n=(\d+)\s+mode=(\w+)\s+F=([\d.]+)\s+Fstar=([\d.]+)\s*$"
 )
 
+RAW = os.path.join(HERE, "sweep_raw.txt")
+_raw_entries = None
+
+def raw_entries():
+    """basename -> list of lines, loaded once from RAW ({} if it is absent)."""
+    global _raw_entries
+    if _raw_entries is None:
+        _raw_entries = {}
+        if os.path.exists(RAW):
+            with open(RAW) as f:
+                cur = None
+                for line in f:
+                    if line.startswith("### "):
+                        cur = _raw_entries[line[4:].rstrip("\r\n")] = []
+                    elif cur is not None:
+                        cur.append(line)
+    return _raw_entries
+
+def file_lines(path):
+    """Lines of the per-cell file if it exists, else of its raw-file entry, else None."""
+    if os.path.exists(path):
+        with open(path) as f:
+            return f.readlines()
+    return raw_entries().get(os.path.basename(path))
+
 def parse_one(path):
-    with open(path) as f:
-        for line in f:
-            m = RESULT_RE.match(line)
-            if m:
-                return float(m.group(3)), float(m.group(4))
+    lines = file_lines(path)
+    if lines is None:
+        return None
+    for line in lines:
+        m = RESULT_RE.match(line)
+        if m:
+            return float(m.group(3)), float(m.group(4))
     return None
 
 def main():
@@ -43,7 +77,7 @@ def main():
         for m in MODES:
             for r in RUNS:
                 p = os.path.join(HERE, f"sweep_n{n}_{m}_run{r}.txt")
-                v = parse_one(p) if os.path.exists(p) else None
+                v = parse_one(p)
                 if v is None:
                     missing.append(p)
                 else:

@@ -113,7 +113,10 @@ result wouldn't change the ship recommendation.
 ## Files
 
 - `pi5_runs/sweep_n_list.txt` - 90 log-spaced N values (mirrors m4_runs).
-- `pi5_runs/sweep_n<N>_<mode>_run<R>.txt` - 1800 raw bench_sweep outputs.
+- `pi5_runs/sweep_raw.txt` - the 1800 raw bench_sweep outputs, one
+  `### sweep_n<N>_<mode>_run<R>.txt` entry each (per-cell files consolidated
+  2026-10-11 with `consolidate_sweep.py`; `compute_sweep.py` reads either
+  form).
 - `pi5_runs/run_sweep.sh` - driver (resume-friendly).
 - `pi5_runs/compute_sweep.py` - aggregator; emits `sweep_summary.txt` plus
   paste-ready `pi5_sweep` dict.

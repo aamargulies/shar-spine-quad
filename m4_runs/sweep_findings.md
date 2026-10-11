@@ -9,7 +9,7 @@
 - 90 log-spaced N from 64 to 4096. n<64 skipped — at gap=64 the M4 inner short-circuits to small-fastpath before reaching the spine descent, so F == F* trivially.
 - 4-mode harness (hot_bat / hot_ser / cold_bat / cold_ser), 5 runs of 200 sets × 200 hot reps each, per-cell median. Same harness shape as `bench_twolevel.cpp`.
 
-  > Correction 2026-10-11: per-cell medians across runs are the aggregation defect of `Text/corrections_2026-10.md` §2 — whole runs drift (1.2–1.5× between `bench_twolevel` runs on the M4 Max, `Text/corrections_2026-10.md` §2.1), so differencing the medians of two variants can invert the ordering that every single run shows. The F vs F\* deltas below have not been re-analysed as paired per-run deltas; `m4_runs/sweep_summary.txt` holds only the medians, the per-run values are in `m4_runs/sweep_n<N>_<mode>_run<R>.txt`. TODO(review): paired per-run re-analysis of the sweep.
+  > Correction 2026-10-11: per-cell medians across runs are the aggregation defect of `Text/corrections_2026-10.md` §2 — whole runs drift (1.2–1.5× between `bench_twolevel` runs on the M4 Max, `Text/corrections_2026-10.md` §2.1), so differencing the medians of two variants can invert the ordering that every single run shows. The F vs F\* deltas below have not been re-analysed as paired per-run deltas; `m4_runs/sweep_summary.txt` holds only the medians, the per-run values are in `m4_runs/sweep_raw.txt` (one `### sweep_n<N>_<mode>_run<R>.txt` entry per cell; the 1800 per-cell files were folded into it on 2026-10-11 with `consolidate_sweep.py`). TODO(review): paired per-run re-analysis of the sweep.
 
 ## Results
 
@@ -23,7 +23,7 @@ cold_ser  F* − F:  −20.0%   −54 .. +37%    77 / 1 / 12
 
 F\* wins on every n in both hot modes and on the strong majority of n in both cold modes.
 
-> Correction 2026-10-11: "win/tie/loss (per N)" counts the sign of the median-of-medians delta at each N; it is not a per-run sign count and not a sign test (`Text/corrections_2026-10.md` §2, defect 2). TODO(review): recompute paired per-run deltas and sign counts per N from `m4_runs/sweep_n<N>_<mode>_run<R>.txt`.
+> Correction 2026-10-11: "win/tie/loss (per N)" counts the sign of the median-of-medians delta at each N; it is not a per-run sign count and not a sign test (`Text/corrections_2026-10.md` §2, defect 2). TODO(review): recompute paired per-run deltas and sign counts per N from the per-cell entries of `m4_runs/sweep_raw.txt`.
 
 ## What this means
 
@@ -61,7 +61,7 @@ First cold measurement in a fresh process pays one-time TLB warmup / page-fault 
 - `gen_m4_spine_family.py` — codegen script.
 - `m4_runs/sweep_n_list.txt` — 90 log-spaced N values.
 - `m4_runs/run_sweep.sh` — driver (resume-friendly).
-- `m4_runs/sweep_n<N>_<mode>_run<R>.txt` — 1800 raw run outputs.
+- `m4_runs/sweep_raw.txt` — the 1800 raw run outputs, one `### sweep_n<N>_<mode>_run<R>.txt` entry each (the per-cell files were consolidated into this file on 2026-10-11 with `consolidate_sweep.py`; `compute_sweep.py` reads either form).
 - `m4_runs/compute_sweep.py` — aggregator → `m4_runs/sweep_summary.txt`.
 - `m4_sweep_data.py` — `m4_sweep` dict for plotting (extracted from `sweep_summary.txt`).
 - `plot_m4_sweep.py` → `bench_m4_sweep.png` (4-panel) + `bench_m4_sweep_delta.png` (overlay).
