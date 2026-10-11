@@ -1,0 +1,57 @@
+two-level spine micro-bench
+num_sets=100 hot_reps=200 num_containers=512 inner_n=4096 mode=all
+per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
+AB outer-index check: 102400 checked, 0 mismatches
+keys_eytz.data() % 64 histogram (0/16/32/48 B): 25 23 30 22
+correctness: ok
+
+var   description                                                  hot_bat     hot_ser    cold_bat    cold_ser
+----  --------------------------------------------------------  ----------  ----------  ----------  ----------
+A     bsearch outer + general-n spine inner                         230.83      238.25     1112.58     1013.88
+B     two-level spine + general-n spine inner                       208.41      202.68      886.29     1431.84
+C     bsearch outer + compile-time n=4096 inner                     225.36      232.99      848.70     1364.99
+D     two-level spine + compile-time n=4096 inner                   202.01      199.10    29120.82     1879.80
+E     Shar branchless outer + general-n spine inner                 214.17      201.72     1072.77     2144.80
+F     Shar branchless outer + compile-time n=4096 inner             215.82      200.20     1568.51     1200.17
+G     Shar outer + Shar inner (n=4096, no spine)                    359.81      351.86     1333.51     1697.02
+H     Eytzinger outer + 4-deep PF + general-n spine inner           222.30      226.78     1915.53     1758.13
+I     Eytzinger outer + 4-deep PF + compile-time n=4096 inner       222.10      224.26     1379.06     2325.34
+Lem   Lemire reference (bsearch outer + simd_quad inner)            339.11      345.46     1722.76     2222.57
+I2    AB: Eytzinger outer, NO prefetch + n=4096 inner               209.37      211.80     1246.66     1898.87
+I3    AB: Eytzinger outer, FIXED pf (aligned, off=B/2, gated)       210.75      211.51      894.62     1040.36
+I4    AB: Eytzinger outer, FIXED pf (aligned, off=B/2, masked)      208.43      213.82     1060.55     1129.25
+I5    AB: Eytzinger outer, repo pf formula on aligned base          213.10      218.32     1491.28     1614.43
+
+deltas vs A (hot_bat  hot_ser  cold_bat  cold_ser):
+  B   vs A:     -9.7%    -14.9%    -20.3%    +41.2%
+  C   vs A:     -2.4%     -2.2%    -23.7%    +34.6%
+  D   vs A:    -12.5%    -16.4%  +2517.4%    +85.4%
+  E   vs A:     -7.2%    -15.3%     -3.6%   +111.5%
+  F   vs A:     -6.5%    -16.0%    +41.0%    +18.4%
+  G   vs A:    +55.9%    +47.7%    +19.9%    +67.4%
+  H   vs A:     -3.7%     -4.8%    +72.2%    +73.4%
+  I   vs A:     -3.8%     -5.9%    +24.0%   +129.4%
+  Lem vs A:    +46.9%    +45.0%    +54.8%   +119.2%
+  I2  vs A:     -9.3%    -11.1%    +12.1%    +87.3%
+  I3  vs A:     -8.7%    -11.2%    -19.6%     +2.6%
+  I4  vs A:     -9.7%    -10.3%     -4.7%    +11.4%
+  I5  vs A:     -7.7%     -8.4%    +34.0%    +59.2%
+
+deltas vs D (outer spine + n=4096 inner):
+  E   vs D:     +6.0%     +1.3%    -96.3%    +14.1%
+  F   vs D:     +6.8%     +0.6%    -94.6%    -36.2%
+  G   vs D:    +78.1%    +76.7%    -95.4%     -9.7%
+
+deltas vs F (Shar outer + n=4096 inner, ship recommendation):
+  G   vs F:    +66.7%    +75.8%    -15.0%    +41.4%
+  H   vs F:     +3.0%    +13.3%    +22.1%    +46.5%
+  I   vs F:     +2.9%    +12.0%    -12.1%    +93.8%
+  I2  vs F:     -3.0%     +5.8%    -20.5%    +58.2%
+  I3  vs F:     -2.3%     +5.7%    -43.0%    -13.3%
+  I4  vs F:     -3.4%     +6.8%    -32.4%     -5.9%
+  I5  vs F:     -1.3%     +9.1%     -4.9%    +34.5%
+
+deltas vs Lemire reference (how much our stack improves on the published baseline):
+  A   vs Lem:   -31.9%    -31.0%    -35.4%    -54.4%
+  D   vs Lem:   -40.4%    -42.4%  +1590.4%    -15.4%
+  F   vs Lem:   -36.4%    -42.0%     -9.0%    -46.0%

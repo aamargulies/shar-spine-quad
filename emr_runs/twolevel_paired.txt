@@ -1,0 +1,307 @@
+Paired aggregation of 5 bench_twolevel runs for host 'emr'
+pattern: emr_runs/twolevel_run*.txt
+  twolevel_run1.txt: num_sets=200 hot_reps=200 mode=all
+  twolevel_run2.txt: num_sets=200 hot_reps=200 mode=all
+  twolevel_run3.txt: num_sets=200 hot_reps=200 mode=all
+  twolevel_run4.txt: num_sets=200 hot_reps=200 mode=all
+  twolevel_run5.txt: num_sets=200 hot_reps=200 mode=all
+
+Deltas are X/Y - 1 in percent; negative means X is faster. Levels are ns/query.
+WIN = X faster in >= 80% of runs AND |median paired delta| >= 3%; otherwise TIE.
+
+==============================================================================
+hot_bat  (5 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 93, 93, 94, 93, 93  (max/min = 1.01x)
+
+ var      median         min         max    range   description
+   A      136.62      135.69      139.16       3%   bsearch outer + general-n spine inner
+   B      110.09      108.40      112.70       4%   outer spine + general-n spine inner
+   C       62.63       62.36       63.38       2%   bsearch outer + compile-time n=4096 inner
+   D       79.30       78.28       79.55       2%   outer spine + compile-time n=4096 inner
+   E       67.91       67.50       68.41       1%   Shar outer + general-n spine inner
+   F       55.43       55.12       56.19       2%   Shar outer + compile-time n=4096 inner
+   G      267.22      258.03      273.60       6%   Shar outer + Shar inner (no spine)
+   H       66.75       66.35       67.52       2%   Eytzinger outer + K&M prefetch + general-n inner
+   I       55.05       54.74       55.88       2%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      178.70      175.34      182.63       4%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: I I I I I
+   I       1.00       5/5  
+   F       2.00       0/5  
+   C       3.00       0/5  
+   H       4.00       0/5  
+   E       5.00       0/5  
+   D       6.00       0/5  
+   B       7.00       0/5  
+   A       8.00       0/5  
+ Lem       9.00       0/5  
+   G      10.00       0/5  
+
+best by mean rank: I.  Paired delta of each variant vs I:
+    A vs I  : median   +148.2%  range [  +142.8%,   +154.2%]  I faster in 5/5  -> WIN for I
+    B vs I  : median   +100.0%  range [   +95.2%,   +102.0%]  I faster in 5/5  -> WIN for I
+    C vs I  : median    +13.4%  range [   +13.3%,    +14.4%]  I faster in 5/5  -> WIN for I
+    D vs I  : median    +43.0%  range [   +42.4%,    +44.7%]  I faster in 5/5  -> WIN for I
+    E vs I  : median    +23.3%  range [   +22.3%,    +24.0%]  I faster in 5/5  -> WIN for I
+    F vs I  : median     +0.7%  range [    +0.6%,     +0.9%]  I faster in 5/5  -> TIE
+    G vs I  : median   +381.9%  range [  +364.6%,   +399.8%]  I faster in 5/5  -> WIN for I
+    H vs I  : median    +21.1%  range [   +20.8%,    +21.9%]  I faster in 5/5  -> WIN for I
+  Lem vs I  : median   +225.5%  range [  +213.8%,   +233.6%]  I faster in 5/5  -> WIN for I
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    -29.5%  [   -30.4%,    -29.4%]  F faster 5/5  WIN for F   per-run: -30.3 -30.4 -29.4 -29.4 -29.5
+    F vs A  : median    -59.4%  [   -60.3%,    -58.6%]  F faster 5/5  WIN for F   per-run: -59.4 -59.5 -58.6 -60.3 -59.2
+    F vs C  : median    -11.3%  [   -12.0%,    -11.2%]  F faster 5/5  WIN for F   per-run: -11.2 -12.0 -11.3 -11.4 -11.3
+    F vs E  : median    -18.3%  [   -18.8%,    -17.8%]  F faster 5/5  WIN for F   per-run: -18.4 -18.8 -17.8 -18.2 -18.3
+    E vs A  : median    -50.1%  [   -51.5%,    -49.6%]  E faster 5/5  WIN for E   per-run: -50.3 -50.1 -49.6 -51.5 -50.1
+    D vs C  : median    +25.9%  [   +25.5%,    +27.5%]  D faster 0/5  WIN for C   per-run: +27.5 +26.4 +25.5 +25.5 +25.9
+    D vs A  : median    -41.8%  [   -43.7%,    -41.4%]  D faster 5/5  WIN for D   per-run: -41.8 -41.8 -41.4 -43.7 -42.2
+    B vs A  : median    -19.4%  [   -22.1%,    -16.9%]  B faster 5/5  WIN for B   per-run: -19.4 -18.7 -16.9 -22.1 -20.9
+    C vs A  : median    -54.1%  [   -55.2%,    -53.3%]  C faster 5/5  WIN for C   per-run: -54.3 -54.0 -53.3 -55.2 -54.1
+    I vs F  : median     -0.7%  [    -0.9%,     -0.6%]  I faster 5/5  TIE         per-run: -0.7 -0.7 -0.6 -0.9 -0.6
+    H vs E  : median     -1.7%  [    -2.3%,     -1.1%]  H faster 5/5  TIE         per-run: -1.9 -2.3 -1.2 -1.1 -1.7
+    H vs I  : median    +21.1%  [   +20.8%,    +21.9%]  H faster 0/5  WIN for I   per-run: +21.0 +21.2 +20.8 +21.9 +21.1
+    I vs D  : median    -30.1%  [   -30.9%,    -29.8%]  I faster 5/5  WIN for I   per-run: -30.8 -30.9 -29.8 -30.1 -30.0
+    G vs F  : median   +378.6%  [  +361.6%,   +395.4%]  G faster 0/5  WIN for F   per-run: +382.1 +378.6 +378.3 +395.4 +361.6
+    F vs Lem: median    -69.1%  [   -69.8%,    -68.0%]  F faster 5/5  WIN for F   per-run: -69.1 -69.2 -68.0 -69.8 -68.6
+    A vs Lem: median    -23.8%  [   -23.9%,    -22.6%]  A faster 5/5  WIN for A   per-run: -23.8 -23.9 -22.6 -23.8 -23.0
+    D vs Lem: median    -55.6%  [   -57.1%,    -54.6%]  D faster 5/5  WIN for D   per-run: -55.6 -55.7 -54.6 -57.1 -55.5
+    I vs Lem: median    -69.3%  [   -70.0%,    -68.1%]  I faster 5/5  WIN for I   per-run: -69.3 -69.4 -68.1 -70.0 -68.8
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .   +24.1  +117.7   +71.8  +100.4  +146.5   -48.9  +105.1  +148.2   -23.8
+    B    -19.4       .   +76.5   +38.5   +62.1   +98.6   -58.1   +65.3  +100.0   -38.6
+    C    -54.1   -43.3       .   -20.6    -7.7   +12.8   -76.4    -6.3   +13.4   -65.0
+    D    -41.8   -27.8   +25.9       .   +16.4   +41.9   -70.2   +17.9   +43.0   -55.6
+    E    -50.1   -38.3    +8.4   -14.1       .   +22.4   -74.6    +1.7   +23.3   -62.0
+    F    -59.4   -49.7   -11.3   -29.5   -18.3       .   -79.1   -16.9    +0.7   -69.1
+    G    +95.6  +138.6  +324.1  +236.0  +293.2  +378.6       .  +298.1  +381.9   +49.1
+    H    -51.2   -39.5    +6.8   -15.2    -1.7   +20.3   -74.9       .   +21.1   -62.8
+    I    -59.7   -50.0   -11.8   -30.1   -18.9    -0.7   -79.2   -17.4       .   -69.3
+  Lem    +31.2   +62.8  +185.3  +125.3  +163.2  +223.3   -32.9  +169.0  +225.5       .
+
+==============================================================================
+hot_ser  (5 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 91, 91, 91, 91, 91  (max/min = 1.01x)
+
+ var      median         min         max    range   description
+   A      113.12      112.56      113.50       1%   bsearch outer + general-n spine inner
+   B       94.99       94.70       95.86       1%   outer spine + general-n spine inner
+   C      103.61      103.31      104.31       1%   bsearch outer + compile-time n=4096 inner
+   D       92.20       91.60       93.14       2%   outer spine + compile-time n=4096 inner
+   E       69.32       69.18       70.02       1%   Shar outer + general-n spine inner
+   F       58.12       57.73       58.60       2%   Shar outer + compile-time n=4096 inner
+   G      143.00      142.01      145.21       2%   Shar outer + Shar inner (no spine)
+   H       70.72       70.37       71.38       1%   Eytzinger outer + K&M prefetch + general-n inner
+   I       62.17       61.82       62.84       2%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      148.98      147.49      150.52       2%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: F F F F F
+   F       1.00       5/5  
+   I       2.00       0/5  
+   E       3.00       0/5  
+   H       4.00       0/5  
+   D       5.00       0/5  
+   B       6.00       0/5  
+   C       7.00       0/5  
+   A       8.00       0/5  
+   G       9.00       0/5  
+ Lem      10.00       0/5  
+
+best by mean rank: F.  Paired delta of each variant vs F:
+    A vs F  : median    +94.2%  range [   +92.6%,    +96.6%]  F faster in 5/5  -> WIN for F
+    B vs F  : median    +64.0%  range [   +63.4%,    +64.5%]  F faster in 5/5  -> WIN for F
+    C vs F  : median    +78.6%  range [   +77.3%,    +79.4%]  F faster in 5/5  -> WIN for F
+    D vs F  : median    +58.9%  range [   +58.6%,    +59.3%]  F faster in 5/5  -> WIN for F
+    E vs F  : median    +19.8%  range [   +19.2%,    +19.9%]  F faster in 5/5  -> WIN for F
+    G vs F  : median   +144.7%  range [  +142.6%,   +151.5%]  F faster in 5/5  -> WIN for F
+    H vs F  : median    +21.9%  range [   +21.7%,    +22.1%]  F faster in 5/5  -> WIN for F
+    I vs F  : median     +7.2%  range [    +7.0%,     +7.2%]  F faster in 5/5  -> WIN for F
+  Lem vs F  : median   +154.9%  range [  +153.8%,   +160.7%]  F faster in 5/5  -> WIN for F
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    -37.1%  [   -37.2%,    -37.0%]  F faster 5/5  WIN for F   per-run: -37.0 -37.1 -37.1 -37.0 -37.2
+    F vs A  : median    -48.5%  [   -49.1%,    -48.1%]  F faster 5/5  WIN for F   per-run: -48.5 -49.0 -48.2 -49.1 -48.1
+    F vs C  : median    -44.0%  [   -44.3%,    -43.6%]  F faster 5/5  WIN for F   per-run: -44.0 -44.1 -43.8 -44.3 -43.6
+    F vs E  : median    -16.5%  [   -16.6%,    -16.1%]  F faster 5/5  WIN for F   per-run: -16.2 -16.6 -16.1 -16.6 -16.5
+    E vs A  : median    -38.6%  [   -39.0%,    -37.8%]  E faster 5/5  WIN for E   per-run: -38.6 -38.8 -38.2 -39.0 -37.8
+    D vs C  : median    -11.1%  [   -11.6%,    -10.2%]  D faster 5/5  WIN for D   per-run: -11.2 -11.1 -10.7 -11.6 -10.2
+    D vs A  : median    -18.3%  [   -19.3%,    -17.3%]  D faster 5/5  WIN for D   per-run: -18.3 -18.8 -17.7 -19.3 -17.3
+    B vs A  : median    -15.9%  [   -16.6%,    -14.9%]  B faster 5/5  WIN for B   per-run: -15.9 -16.1 -15.3 -16.6 -14.9
+    C vs A  : median     -8.0%  [    -8.7%,     -7.8%]  C faster 5/5  WIN for C   per-run: -8.0 -8.7 -7.8 -8.7 -8.0
+    I vs F  : median     +7.2%  [    +7.0%,     +7.2%]  I faster 0/5  WIN for F   per-run: +7.0 +7.1 +7.2 +7.2 +7.2
+    H vs E  : median     +1.9%  [    +1.7%,     +2.1%]  H faster 0/5  TIE         per-run: +2.0 +1.9 +2.1 +1.7 +1.9
+    H vs I  : median    +13.8%  [   +13.5%,    +14.0%]  H faster 0/5  WIN for I   per-run: +13.8 +14.0 +13.5 +13.7 +13.9
+    I vs D  : median    -32.6%  [   -32.7%,    -32.4%]  I faster 5/5  WIN for I   per-run: -32.6 -32.7 -32.5 -32.4 -32.7
+    G vs F  : median   +144.7%  [  +142.6%,   +151.5%]  G faster 0/5  WIN for F   per-run: +144.3 +149.0 +142.6 +151.5 +144.7
+    F vs Lem: median    -60.8%  [   -61.6%,    -60.6%]  F faster 5/5  WIN for F   per-run: -60.6 -61.1 -60.7 -61.6 -60.8
+    A vs Lem: median    -24.1%  [   -24.6%,    -23.5%]  A faster 5/5  WIN for A   per-run: -23.5 -23.7 -24.1 -24.6 -24.4
+    D vs Lem: median    -37.5%  [   -39.1%,    -37.5%]  D faster 5/5  WIN for D   per-run: -37.5 -38.0 -37.5 -39.1 -37.5
+    I vs Lem: median    -57.9%  [   -58.9%,    -57.8%]  I faster 5/5  WIN for I   per-run: -57.8 -58.3 -57.8 -58.9 -57.9
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .   +18.8    +8.7   +22.4   +62.9   +94.2   -21.3   +59.6   +81.6   -24.1
+    B    -15.9       .    -8.1    +3.0   +37.0   +64.0   -33.1   +34.4   +52.9   -35.7
+    C     -8.0    +8.8       .   +12.5   +49.3   +78.6   -27.5   +46.6   +67.0   -30.3
+    D    -18.3    -2.9   -11.1       .   +32.9   +58.9   -35.1   +30.4   +48.3   -37.5
+    E    -38.6   -27.0   -33.0   -24.8       .   +19.8   -51.2    -1.9   +11.7   -53.1
+    F    -48.5   -39.0   -44.0   -37.1   -16.5       .   -59.1   -18.0    -6.7   -60.8
+    G    +27.0   +49.5   +38.0   +54.0  +104.9  +144.7       .  +100.8  +128.4    -3.7
+    H    -37.4   -25.6   -31.8   -23.3    +1.9   +21.9   -50.2       .   +13.8   -52.1
+    I    -44.9   -34.6   -40.1   -32.6   -10.5    +7.2   -56.2   -12.1       .   -57.9
+  Lem    +31.7   +55.5   +43.5   +60.0  +113.3  +154.9    +3.9  +108.9  +137.7       .
+
+==============================================================================
+cold_bat  (5 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 298, 291, 303, 302, 306  (max/min = 1.05x)
+
+ var      median         min         max    range   description
+   A      262.28      259.31      265.12       2%   bsearch outer + general-n spine inner
+   B      282.89      279.00      294.16       5%   outer spine + general-n spine inner
+   C      200.71      197.29      203.50       3%   bsearch outer + compile-time n=4096 inner
+   D      251.27      232.23      256.46      10%   outer spine + compile-time n=4096 inner
+   E      311.29      294.55      322.19       9%   Shar outer + general-n spine inner
+   F      240.31      223.00      250.94      13%   Shar outer + compile-time n=4096 inner
+   G      448.36      416.26      451.75       9%   Shar outer + Shar inner (no spine)
+   H      363.50      354.25      386.31       9%   Eytzinger outer + K&M prefetch + general-n inner
+   I      315.77      294.35      327.05      11%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      428.60      421.06      438.81       4%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: C C C C C
+   C       1.00       5/5  
+   F       2.00       0/5  
+   D       3.00       0/5  
+   A       4.00       0/5  
+   B       5.00       0/5  
+   E       6.40       0/5  
+   I       6.60       0/5  
+   H       8.00       0/5  
+ Lem       9.20       0/5  
+   G       9.80       0/5  
+
+best by mean rank: C.  Paired delta of each variant vs C:
+    A vs C  : median    +32.1%  range [   +27.4%,    +32.9%]  C faster in 5/5  -> WIN for C
+    B vs C  : median    +40.6%  range [   +37.1%,    +49.1%]  C faster in 5/5  -> WIN for C
+    D vs C  : median    +26.4%  range [   +14.8%,    +27.3%]  C faster in 5/5  -> WIN for C
+    E vs C  : median    +53.0%  range [   +45.7%,    +63.3%]  C faster in 5/5  -> WIN for C
+    F vs C  : median    +21.8%  range [   +10.3%,    +26.3%]  C faster in 5/5  -> WIN for C
+    G vs C  : median   +122.0%  range [  +105.8%,   +127.3%]  C faster in 5/5  -> WIN for C
+    H vs C  : median    +81.1%  range [   +77.9%,    +89.8%]  C faster in 5/5  -> WIN for C
+    I vs C  : median    +58.8%  range [   +46.1%,    +65.7%]  C faster in 5/5  -> WIN for C
+  Lem vs C  : median   +115.3%  range [  +108.2%,   +122.4%]  C faster in 5/5  -> WIN for C
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median     -4.0%  [    -8.9%,     -0.1%]  F faster 5/5  WIN for F   per-run: -8.9 -4.0 -0.1 -4.4 -2.2
+    F vs A  : median     -7.8%  [   -15.1%,     -3.2%]  F faster 5/5  WIN for F   per-run: -12.5 -15.1 -5.0 -7.8 -3.2
+    F vs C  : median    +21.8%  [   +10.3%,    +26.3%]  F faster 0/5  WIN for C   per-run: +15.6 +10.3 +26.3 +21.8 +23.3
+    F vs E  : median    -22.7%  [   -26.3%,    -19.4%]  F faster 5/5  WIN for F   per-run: -26.3 -24.3 -22.7 -20.4 -19.4
+    E vs A  : median    +18.7%  [   +12.2%,    +22.8%]  E faster 0/5  WIN for A   per-run: +18.7 +12.2 +22.8 +15.8 +20.0
+    D vs C  : median    +26.4%  [   +14.8%,    +27.3%]  D faster 0/5  WIN for C   per-run: +26.9 +14.8 +26.4 +27.3 +26.0
+    D vs A  : median     -3.9%  [   -11.6%,     -1.1%]  D faster 5/5  WIN for D   per-run: -3.9 -11.6 -4.9 -3.6 -1.1
+    B vs A  : median     +7.9%  [    +6.0%,    +12.8%]  B faster 0/5  WIN for A   per-run: +6.0 +8.3 +7.9 +12.8 +7.6
+    C vs A  : median    -24.3%  [   -24.8%,    -21.5%]  C faster 5/5  WIN for C   per-run: -24.3 -23.0 -24.8 -24.3 -21.5
+    I vs F  : median    +28.8%  [   +26.8%,    +36.1%]  I faster 0/5  WIN for F   per-run: +26.8 +32.5 +26.8 +36.1 +28.8
+    H vs E  : median    +17.3%  [   +14.9%,    +24.1%]  H faster 0/5  WIN for E   per-run: +15.5 +22.1 +14.9 +17.3 +24.1
+    H vs I  : median    +19.6%  [    +8.3%,    +23.5%]  H faster 0/5  WIN for I   per-run: +23.5 +21.7 +17.2 +8.3 +19.6
+    I vs D  : median    +26.6%  [   +15.5%,    +30.2%]  I faster 0/5  WIN for D   per-run: +15.5 +27.2 +26.6 +30.2 +26.0
+    G vs F  : median    +86.6%  [   +80.0%,    +87.7%]  G faster 0/5  WIN for F   per-run: +87.7 +86.7 +80.0 +86.6 +80.0
+    F vs Lem: median    -45.2%  [   -47.0%,    -41.9%]  F faster 5/5  WIN for F   per-run: -45.2 -47.0 -41.9 -45.2 -42.7
+    A vs Lem: median    -38.8%  [   -40.8%,    -37.4%]  A faster 5/5  WIN for A   per-run: -37.4 -37.6 -38.8 -40.6 -40.8
+    D vs Lem: median    -41.8%  [   -44.8%,    -39.9%]  D faster 5/5  WIN for D   per-run: -39.9 -44.8 -41.8 -42.7 -41.5
+    I vs Lem: median    -26.3%  [   -30.5%,    -25.5%]  I faster 5/5  WIN for I   per-run: -30.5 -29.8 -26.3 -25.5 -26.3
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .    -7.3   +32.1    +4.1   -15.8    +8.5   -41.5   -27.1   -16.9   -38.8
+    B     +7.9       .   +40.6   +13.4   -10.4   +21.1   -35.5   -22.7   -10.1   -33.7
+    C    -24.3   -28.9       .   -20.9   -34.6   -17.9   -55.0   -44.8   -37.0   -53.6
+    D     -3.9   -11.8   +26.4       .   -19.1    +4.1   -44.0   -32.6   -21.0   -41.8
+    E    +18.7   +11.6   +53.0   +23.6       .   +29.3   -29.2   -14.8    -0.3   -29.0
+    F     -7.8   -17.4   +21.8    -4.0   -22.7       .   -46.4   -35.0   -22.3   -45.2
+    G    +71.0   +55.0  +122.0   +78.4   +41.3   +86.6       .   +19.8   +40.9    +2.8
+    H    +37.1   +29.3   +81.1   +48.4   +17.3   +53.9   -16.6       .   +19.6   -14.2
+    I    +20.4   +11.2   +58.8   +26.6    +0.3   +28.8   -29.0   -16.4       .   -26.3
+  Lem    +63.4   +50.7  +115.3   +71.9   +40.8   +82.6    -2.7   +16.6   +35.7       .
+
+==============================================================================
+cold_ser  (5 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 528, 507, 560, 537, 560  (max/min = 1.11x)
+
+ var      median         min         max    range   description
+   A      446.37      397.77      473.47      19%   bsearch outer + general-n spine inner
+   B      440.29      395.19      459.58      16%   outer spine + general-n spine inner
+   C      410.39      382.60      431.97      13%   bsearch outer + compile-time n=4096 inner
+   D      428.82      398.99      459.38      15%   outer spine + compile-time n=4096 inner
+   E      518.94      481.77      544.70      13%   Shar outer + general-n spine inner
+   F      512.30      466.73      540.61      16%   Shar outer + compile-time n=4096 inner
+   G      923.46      886.78      941.15       6%   Shar outer + Shar inner (no spine)
+   H      631.33      592.26      648.62      10%   Eytzinger outer + K&M prefetch + general-n inner
+   I      607.45      580.72      632.43       9%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      666.15      658.02      700.07       6%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: D C C C C
+   C       1.20       4/5  
+   D       2.40       1/5  
+   B       2.60       0/5  
+   A       3.80       0/5  
+   F       5.20       0/5  
+   E       5.80       0/5  
+   I       7.00       0/5  
+   H       8.00       0/5  
+ Lem       9.00       0/5  
+   G      10.00       0/5  
+
+best by mean rank: C.  Paired delta of each variant vs C:
+    A vs C  : median     +8.7%  range [    +1.3%,    +16.7%]  C faster in 5/5  -> WIN for C
+    B vs C  : median     +5.7%  range [    +0.3%,    +15.1%]  C faster in 5/5  -> WIN for C
+    D vs C  : median     +6.3%  range [    -1.3%,    +12.1%]  C faster in 4/5  -> WIN for C
+    E vs C  : median    +24.2%  range [   +21.4%,    +35.6%]  C faster in 5/5  -> WIN for C
+    F vs C  : median    +25.1%  range [   +18.8%,    +33.9%]  C faster in 5/5  -> WIN for C
+    G vs C  : median   +125.8%  range [  +113.8%,   +140.8%]  C faster in 5/5  -> WIN for C
+    H vs C  : median    +50.8%  range [   +46.2%,    +65.0%]  C faster in 5/5  -> WIN for C
+    I vs C  : median    +47.9%  range [   +42.5%,    +58.8%]  C faster in 5/5  -> WIN for C
+  Lem vs C  : median    +67.5%  range [   +54.2%,    +72.9%]  C faster in 5/5  -> WIN for C
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    +17.7%  [   +15.5%,    +20.7%]  F faster 0/5  WIN for D   per-run: +20.7 +17.0 +15.5 +19.5 +17.7
+    F vs A  : median    +15.2%  [    +9.9%,    +17.3%]  F faster 0/5  WIN for A   per-run: +16.3 +17.3 +9.9 +14.8 +15.2
+    F vs C  : median    +25.1%  [   +18.8%,    +33.9%]  F faster 0/5  WIN for C   per-run: +19.1 +18.8 +26.8 +33.9 +25.1
+    F vs E  : median     -1.9%  [    -4.5%,     +0.8%]  F faster 4/5  TIE         per-run: -1.9 -3.1 -4.5 -1.3 +0.8
+    E vs A  : median    +16.3%  [   +14.3%,    +21.1%]  E faster 0/5  WIN for A   per-run: +18.6 +21.1 +15.0 +16.3 +14.3
+    D vs C  : median     +6.3%  [    -1.3%,    +12.1%]  D faster 1/5  WIN for C   per-run: -1.3 +1.6 +9.7 +12.1 +6.3
+    D vs A  : median     -3.7%  [    -4.9%,     +0.3%]  D faster 4/5  WIN for D   per-run: -3.7 +0.3 -4.9 -3.9 -2.1
+    B vs A  : median     -2.1%  [    -2.9%,     -0.6%]  B faster 5/5  TIE         per-run: -2.1 -0.6 -2.9 -1.4 -2.8
+    C vs A  : median     -8.0%  [   -14.3%,     -1.3%]  C faster 5/5  WIN for C   per-run: -2.4 -1.3 -13.3 -14.3 -8.0
+    I vs F  : median    +19.6%  [   +17.0%,    +24.4%]  I faster 0/5  WIN for F   per-run: +19.6 +24.4 +20.8 +18.6 +17.0
+    H vs E  : median    +20.4%  [   +18.0%,    +22.9%]  H faster 0/5  WIN for E   per-run: +20.4 +22.9 +19.1 +21.7 +18.0
+    H vs I  : median     +2.6%  [    +0.1%,     +3.9%]  H faster 0/5  TIE         per-run: +2.6 +2.0 +3.2 +3.9 +0.1
+    I vs D  : median    +41.7%  [   +37.7%,    +45.5%]  I faster 0/5  WIN for D   per-run: +44.4 +45.5 +39.5 +41.7 +37.7
+    G vs F  : median    +80.9%  [   +70.8%,    +90.0%]  G faster 0/5  WIN for F   per-run: +87.4 +90.0 +80.9 +79.8 +70.8
+    F vs Lem: median    -25.7%  [   -29.1%,    -18.8%]  F faster 5/5  WIN for F   per-run: -27.7 -29.1 -25.7 -22.5 -18.8
+    A vs Lem: median    -32.5%  [   -39.6%,    -29.5%]  A faster 5/5  WIN for A   per-run: -37.8 -39.6 -32.4 -32.5 -29.5
+    D vs Lem: median    -35.7%  [   -40.1%,    -31.0%]  D faster 5/5  WIN for D   per-run: -40.1 -39.4 -35.7 -35.2 -31.0
+    I vs Lem: median    -10.3%  [   -13.5%,     -5.1%]  I faster 5/5  WIN for I   per-run: -13.5 -11.7 -10.3 -8.2 -5.1
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .    +2.1    +8.7    +3.8   -14.0   -13.2   -51.5   -29.3   -26.5   -32.5
+    B     -2.1       .    +5.7    +1.7   -15.6   -15.3   -52.2   -30.3   -27.8   -34.4
+    C     -8.0    -5.4       .    -6.0   -19.5   -20.1   -55.7   -33.7   -32.4   -40.3
+    D     -3.7    -1.6    +6.3       .   -17.3   -15.0   -53.4   -32.1   -29.4   -35.7
+    E    +16.3   +18.5   +24.2   +21.0       .    +1.9   -43.7   -17.0   -14.8   -22.2
+    F    +15.2   +18.1   +25.1   +17.7    -1.9       .   -44.7   -18.9   -16.4   -25.7
+    G   +106.4  +109.2  +125.8  +114.8   +77.5   +80.9       .   +45.9   +51.6   +35.6
+    H    +41.4   +43.4   +50.8   +47.2   +20.4   +23.2   -31.5       .    +2.6    -7.3
+    I    +36.1   +38.6   +47.9   +41.7   +17.4   +19.6   -34.1    -2.5       .   -10.3
+  Lem    +48.2   +52.3   +67.5   +55.5   +28.5   +34.6   -26.3    +7.9   +11.4       .
+
