@@ -1,6 +1,11 @@
 How has Shar's algorithm remained so obscure?
 =============================================
 
+[Corrected 2026-10-11 against Text/corrections_2026-10.md; the
+original text described Shar's loop as pipelined independent loads;
+that was retracted (it is a serial cmov chain, corrections section 5)
+and the two passages below were rewritten.]
+
 Good question, and I think there are maybe four reasons working
 together. Only the last one is actually about the algorithm —
 the rest are about how computer science folklore propagates.
@@ -34,8 +39,13 @@ arrive until the late 1980s/early 1990s. The CPUs of the early
 have out-of-order engines — on those machines, a cmov-style
 implementation would have been essentially equivalent to a
 branching version. The thing that makes Shar's algorithm win
-on modern hardware — pipelined independent loads, deep OoO
-windows, expensive branch mispredictions — didn't exist yet.
+on modern hardware — cheap conditional moves on a deeply
+pipelined core where a mispredicted branch costs a pipeline
+flush — didn't exist yet. (Note what is *not* on that list:
+the loop is a serial load -> compare -> csel -> load chain, each
+address depending on the previous select, so it never issues
+its loads in parallel; see Text/corrections_2026-10.md section
+5.)
 Knuth's pp. 416-423 treatment frames it as "faster on some
 computers" and moves on; there's no dramatic speedup to
 report, because on a PDP-10 or an IBM 360 there basically
@@ -68,9 +78,17 @@ Shar's algorithm beats branching binary search when: (a) the
 data is small enough that the entire search fits in L1 or L2,
 and (b) the predicates being evaluated are unpredictable
 enough that branch misprediction is a genuine cost, and (c)
-the CPU has enough load ports and enough OoO window for the
-independent-load pattern to actually pipeline. That's a
-specific regime — the middle of the performance space. For
+the keys are actually cache-resident when queried, because the
+cmov chain cannot be speculated past: every link that misses
+is paid in full, whereas a branchy binary search lets the core
+speculate ahead across mispredicted branches and overlap its
+misses. That is exactly what the two-level benchmark shows:
+the Shar outer (variant F) beats the outer-spine variant D hot
+in 5/5 runs on five of six hosts (SKX hot_ser 4/5, -16.3%; a
+tie on the Pi 5), but the branchy or spine outers (C, D) are
+usually best cold (Text/corrections_2026-10.md sections 2.1
+and 5). That's a specific regime — the middle of the
+performance space. For
 tiny arrays, linear search wins. For huge arrays, you're
 memory-bound and the inner loop doesn't matter. For middling
 arrays where branches are predictable (which is rare but

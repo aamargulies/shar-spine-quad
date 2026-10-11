@@ -1,5 +1,13 @@
 # What's actually news in this project
 
+> Correction notice 2026-10-11: preserved as written (lab note, 2026-05
+> unroll era). The "Shipped best" and EMR tables below are the retired
+> unroll's numbers, the "cold" figures come from bench.cpp's unflushed
+> cold column, and the Shar mechanism is misdescribed. Retracted claims
+> are annotated in place with "> Correction 2026-10-11:" notes; the
+> authoritative list of retractions and replacement numbers is
+> Text/corrections_2026-10.md, which wins wherever the two disagree.
+
 A skeptical re-read of what's novel vs. what's re-validation of known
 techniques. Written after six-host measurements landed (Pi 5, M1 Pro,
 M4 Max, Skylake-SP, Emerald Rapids, Graviton 4).
@@ -12,6 +20,18 @@ n=4096 across six wildly different uarchs. That's the headline. The
 compile-time n=4096 unroll is a shipping detail. The "Shar beats outer
 spine" result is a real but narrow correction to our own prediction, not
 a refutation of anything in the literature.
+
+> Correction 2026-10-11: two updates. (1) The compile-time n=4096
+> kernel is the hybrid, not an unroll, and it is not a shipping detail:
+> at n=4096 it is 6.50 ns warm on EMR vs 18.0 for the general-n spine
+> (-63.6% warm / -34.5% cold, emr_runs/hybrid_summary.txt, 5-run
+> medians), 7.00 vs 16.22 on GV4 (-57% warm / -15% cold vs base,
+> gv4_runs/hybrid_summary.txt), 18.92 vs the unroll's 26.60 on SKX
+> (-28.9% warm, 5/5, skx_runs/hybrid_summary.txt) and 17.75 vs 24.50 on
+> the Pi 5 (-27.6% warm, pi5_runs/hybrid_summary.txt). (2) "2-3x cold"
+> is from bench.cpp's "cold" column, which has no cache flush and is
+> LLC-resident on every host except the Pi 5
+> (Text/corrections_2026-10.md §5).
 
 
 ## The spine is the real contribution
@@ -28,6 +48,14 @@ to "sequential cache-line streaming," which HW streamers handle for free.
 
 Cold-cache results at n=4096: Pi 5 ~2×, M4 ~3×, SKX/EMR/GV4 ~2–3×. Not
 tuning — a structural change to the memory access pattern.
+
+> Correction 2026-10-11: these are within-host ratios from bench.cpp's
+> "cold" column, which has no cache flush: it walks the arrays in
+> allocation order with the targets the previous algorithm just used,
+> and the ~35 MB footprint fits the LLC of every host except the Pi 5.
+> The ratios stand as measured but describe LLC-hit, not DRAM-cold,
+> behaviour on five of the six hosts, and cross-host "cold" comparisons
+> compare cache levels, not cores (Text/corrections_2026-10.md §5).
 
 Why this is reportable:
   - Six-host cross-validation. Same 2–3× cold win on four different
@@ -69,6 +97,16 @@ Warm n=4096, best tuned path vs. Lemire's reference (`simd_quad`):
   EMR      13.8         14.02 (spine_4096)      tied (+1.6%)
   GV4      15.2         14.67 (spine_4096)      tied (-3%)
 
+> Correction 2026-10-11: these "Shipped best" cells are the retired
+> unroll's medians. The shipped `_spine_4096` is the hybrid everywhere;
+> regenerated bench_table.txt (per-cell medians of 5 runs, compile-time
+> n=4096 row) gives warm: Pi 5 15.98, M4 Max 3.71, M1 Pro 6.05, SKX
+> 18.92, EMR 6.50, GV4 7.00 ns. Against the reference column of the same
+> table (Pi 5 31.1, M4 Max 6.3, M1 Pro 9.2, SKX 33.0, EMR 13.8, GV4
+> 15.2) EMR and GV4 are no longer "tied": the hybrid is well below the
+> reference on both (emr_runs/hybrid_summary.txt: -54.8% warm vs the
+> unroll; gv4_runs/hybrid_summary.txt: -51% warm vs the unroll).
+
 Isolating the spine's warm contribution (tuned-ISA without vs. with
 spine, holding the SIMD block-check constant):
 
@@ -80,6 +118,14 @@ spine, holding the SIMD block-check constant):
   EMR      19.5       18.0       -8%
   GV4      20.0       16.2      -19%
 
+> Correction 2026-10-11: the Pi 5 row has no exact archived source. Its
+> 32.4 matches the pi5_runs/hybrid_summary.txt median (pi5 32.40, pi5s
+> 24.50 at n=4096; 5 runs, 2026-05-12, pi5_runs/hybrid_run{1..5}.txt),
+> while 23.8 appears in no archived n=4096 cell; the regenerated
+> bench_table.txt (rebench set, 2026-05-12, per-cell medians of 5 runs)
+> gives 30.1 -> 22.5 at n=4096. The other four rows match
+> bench_table.txt.
+
 Honest warm picture:
   - Spine gives 8–27% warm wins on every host. Not 2–3× like cold, but
     not nothing either. Mechanism survives warm: 128–256 B of spine fits
@@ -87,14 +133,38 @@ Honest warm picture:
     L1 lines per iteration. Lower L1 pressure + better line utilization.
   - Compile-time n=4096 unroll adds another 10–22% warm on M4/EMR/GV4,
     wash elsewhere.
+
+> Correction 2026-10-11: reversed by the hybrid data. Compile-time
+> n=4096 vs the general-n spine at n=4096 is -27.6% warm on the Pi 5
+> (pi5_runs/hybrid_summary.txt), -63.6% on EMR
+> (emr_runs/hybrid_summary.txt) and -57% on GV4
+> (gv4_runs/hybrid_summary.txt); vs the retired unroll it is -28.9% on
+> SKX (5/5, skx_runs/hybrid_summary.txt) and -2.6% on M4 Max (5/5,
+> m4_runs/hybrid_summary.txt). Not a wash on EMR, GV4, SKX or the Pi 5;
+> on M4 Max the -2.6% warm (5/5) / -2.2% cold (3/5,
+> m4_runs/hybrid_summary.txt) is below the 3% median threshold the
+> corrections file uses for a WIN, i.e. a tie by size.
   - EMR and GV4 warm at n=4096 land essentially tied with Lemire's
     reference. The zmm/NEON block-check regresses warm vs. the
     SSE2/reference leaf; spine + unroll claw it back to parity. On the
     two newest server hosts, warm n=4096 is *not* a story — the
     reference was already near-optimal there, and the spine's value is
     the cold 2–3×.
+
+> Correction 2026-10-11: no longer true. With the hybrid, EMR
+> `intel_spine_4096` is 6.50 ns warm vs the 13.8 ns reference and GV4
+> `graviton_spine_4096` is 7.00 vs 15.2 (regenerated bench_table.txt,
+> per-cell medians of 5 runs; emr_runs/hybrid_summary.txt,
+> gv4_runs/hybrid_summary.txt). Warm n=4096 is a story on both.
   - Pi 5, M1, M4, SKX warm wins are 18–42%. Real, shippable, and those
     hosts cover "older server Intel," "laptop ARM," and "embedded ARM."
+
+> Correction 2026-10-11: "18-42%" is the retired unroll's "Warm win"
+> column. With the shipped hybrid (regenerated bench_table.txt, per-cell
+> medians of 5 runs, compile-time n=4096 row vs the reference column,
+> warm n=4096): Pi 5 15.98 vs 31.1, M1 Pro 6.05 vs 9.2, M4 Max 3.71 vs
+> 6.3, SKX 18.92 vs 33.0, i.e. -49% / -34% / -41% / -43% (X/Y - 1,
+> computed from those cells).
 
 
 ## Absolute EMR headline at n=4096
@@ -114,12 +184,24 @@ That actually strengthens the spine-is-the-real-news framing: the spine
 solves a cold-memory problem, and EMR's warm path was already near the
 AVX-512 issue limit where there's nothing left to win.
 
+> Correction 2026-10-11: the 14.02 / 25.87 cells are the retired
+> unroll's. The shipped hybrid is 6.50 warm / 24.36 cold at n=4096
+> (emr_runs/hybrid_summary.txt, shipped_run 5-run medians; -63.6% warm /
+> -34.5% cold vs the general-n spine; -54.8% warm vs the unroll), so EMR
+> is not "warm-cache a wash" against the 13.8 ns reference. The cold
+> numbers are from bench.cpp's unflushed cold column
+> (Text/corrections_2026-10.md §5).
+
 Separately: the `simd_quad_intel` warm regression vs. the SSE2 reference
 at 13.8 -> 19.5 is itself interesting — the zmm single-compare
 block-check pays a fixed cost that the warm SSE2 path doesn't. Spine +
 unroll land us back at parity warm and 2.7x ahead cold. Net: the AVX-512
 block-check is load-bearing for cold but neutral-to-negative warm on
 EMR; the spine carries the warm/cold story either way.
+
+> Correction 2026-10-11: "spine + unroll land us back at parity warm"
+> is superseded: the hybrid lands at 6.50 ns warm vs 13.8 for the SSE2
+> reference (emr_runs/hybrid_summary.txt; regenerated bench_table.txt).
 
 
 ## The Shar-outer result, in proportion
@@ -141,6 +223,14 @@ chain of ~9 independent scalar loads beats a dependent pointer chase.
 That calculus changes at the inner level: n=4096 = 64 lines, the spine
 streams cleanly, and Shar isn't competitive there.
 
+> Correction 2026-10-11: Shar's outer is a serial cmov chain (load ->
+> compare -> csel -> load, each address depending on the previous
+> select), not ~9 independent loads; it wins hot because it has no
+> branch mispredicts and no side structure. On cold data the branchy
+> std::lower_bound outer (A, C) speculates ahead across mispredicted
+> branches, which is why C -- not Shar -- is the cold winner on EMR and
+> GV4 (5/5 in both cold modes; Text/corrections_2026-10.md §5, §2.1).
+
 What was actually refuted is narrower: our prediction that the outer
 spine would win on Intel because of LLC streamers. It didn't — not on
 SKX, not on EMR. Scalar-vs-scalar argument about which descent shape
@@ -149,6 +239,13 @@ fits a short key array, not about SIMD.
 Honest endgame: **Shar outside + Lemire-style SIMD-quad inside**. The
 two compose; they don't compete. The only thing that lost is the
 assumption that the same descent shape works at both levels.
+
+> Correction 2026-10-11: hot-only. Paired 4-mode data
+> ({host}_runs/twolevel_paired.txt, Text/corrections_2026-10.md section
+> 2.2): the outer spine (D) beats Shar (F) in cold_ser on both Intel
+> hosts, SKX +16.9% (F faster 0/5) and EMR +17.7% (0/5); the cold-best
+> variant is C or D (sections 2.1–2.3), so "Shar outside + quad inside"
+> is the hot-mode ship only.
 
 
 ## How was the Shar-outer win missed?
@@ -185,6 +282,18 @@ What's new here is narrow and specific to this project:
      are single-host. But the result each host produces individually
      wouldn't surprise anyone who runs their own numbers.
 
+> Correction 2026-10-11: the convergence is hot-only. Paired per-run
+> analysis (5 runs per host, {host}_runs/twolevel_paired.txt,
+> Text/corrections_2026-10.md §2.1-2.3): F beats D hot 5/5 on five hosts
+> (-14% to -54%; 4/5 for SKX hot_ser, -16.3%) and only 4/5 at -6% on
+> the Pi 5 (a tie in the repaired-harness re-runs,
+> pi5_runs/twolevel_paired_v2.txt, §6); cold, C beats F 5/5 in both
+> cold modes on EMR and GV4 (C is fastest in 5/5 GV4 runs and 5/5 EMR
+> cold_bat runs, 4/5 EMR cold_ser runs), D wins cold_bat 5/5 on the
+> Pi 5 and cold_ser 5/5 on SKX, and on the M4 Max F ties E in cold_bat
+> and loses cold_ser to B, D and E. The Pi 5 ship recommendation is D
+> (§6).
+
 Why the SIMD-quad framing persists in the literature: Lemire's article
 is about the inner-container problem, which *is* genuinely SIMD-shaped.
 Papers cluster around the interesting vector-instruction story; "the
@@ -198,6 +307,12 @@ anyone overlooked. Honest headline: "our outer-spine idea didn't pan
 out; the plain branchless baseline is what you should ship." Less
 exciting title, more accurate.
 
+> Correction 2026-10-11: hot-only, and not on the Pi 5: the
+> repaired-harness re-runs (pi5_runs/twolevel_paired_v2.txt, section 6)
+> make the outer spine (D) the Pi 5 ship recommendation, fastest in 7/10
+> hot_bat, 8/10 hot_ser and 7/10 cold_bat runs; cold-best elsewhere is C
+> or D (sections 2.1–2.3).
+
 
 ## What to sell, in priority order
 
@@ -206,15 +321,58 @@ exciting title, more accurate.
    blog-post-worthy result. Six-host validation gives it weight no
    single-host benchmark would have.
 
+> Correction 2026-10-11: the warm percentages are unroll-era; with the
+> hybrid the compile-time n=4096 kernel is below the reference on all
+> six hosts (regenerated bench_table.txt, warm n=4096: 15.98 vs 31.1
+> Pi 5, 3.71 vs 6.3 M4 Max, 6.05 vs 9.2 M1 Pro, 18.92 vs 33.0 SKX, 6.50
+> vs 13.8 EMR, 7.00 vs 15.2 GV4). "2-3x cold" is bench.cpp's unflushed
+> cold column (Text/corrections_2026-10.md §5). The two-level
+> F-vs-Lemire result holds at n=4096 (F faster in all 24 host x mode
+> cells, -35% to -84% hot, -7% to -45% cold, §2.2) but not across
+> container sizes: Lemire's variant beats F in 5/5 runs at n=48-62 and
+> n=81-124 hot_bat and at n=1-7 and n=64-95 cold_ser on the M4 Max
+> (§2.3).
+
 2. **Six-host uarch-dependent tuning catalog.** Gap tracks cache line,
    not SIMD width. Speculative prefetch helps narrow-OoO (A76) and
    downclocked-scalar (SKX), hurts wide-OoO (M-series, EMR, GV4).
    Apple-silicon gap=64 is unique. These are concrete, portable lessons
    that CRoaring and similar libraries could apply.
 
+> Correction 2026-10-11: the Pi 5 prefetch is a net loss, not a help:
+> in the archived Pi 5 main bench the prefetch kernel is slower cold at
+> 13 of 14 sizes from n=128 up (+2% to +31%) and slower warm at 13 of 14
+> (plot.py pi5 dicts, pi5 vs graviton columns;
+> pi5_runs/rebench_run*.txt), and fresh interleaved A/Bs in the review
+> agreed. On SKX the shipped gated build executes no zmm instruction, so
+> there is no "downclocked scalar" loop to help; the SKX prefetch was
+> kept on an inconclusive A/B (CLAUDE.md (gitignored) hardware table,
+> in-loop prefetch row for Skylake-SP: "kept (A/B inconclusive; no
+> license argument applies, the gated build runs no zmm)"), and no SKX
+> prefetch A/B run is archived in skx_runs/, so the A/B itself cannot be
+> audited (the no-downclock point is Text/corrections_2026-10.md §5).
+
 3. **Shar outer + quad inner for the two-level RoaringSet API.**
    Correction of our own outer-spine prediction. Useful as the shippable
    RoaringSet shape; not a standalone result.
 
+> Correction 2026-10-11: shippable for the hot modes only; the
+> cold-best variant is usually C or D (Text/corrections_2026-10.md
+> §2.1-2.3), and on the Pi 5 the repaired harness makes D the ship (F
+> ties D hot and loses cold_bat +44.7%, D faster 10/10;
+> pi5_runs/twolevel_paired_v2.txt, §6).
+
 4. Compile-time n=4096 unroll. Shipping detail. Biggest win on EMR
    (-22% warm / -30% cold). Wash or mild regression elsewhere. Footnote.
+
+> Correction 2026-10-11: reversed. The compile-time n=4096 kernel is
+> the hybrid and is a first-order result: EMR -63.6% warm / -34.5% cold
+> vs the general-n spine (emr_runs/hybrid_summary.txt), GV4 -57% / -15%
+> vs base (gv4_runs/hybrid_summary.txt), SKX -28.9% warm vs the unroll
+> in 5/5 runs (skx_runs/hybrid_summary.txt; cold +45.5% vs the unroll in
+> the same file; separately, Text/corrections_2026-10.md §2.3 reports a
+> +40% cold regression (paired per-run median; per-run -12%, +62%, +41%,
+> +40%, -6%, hybrid faster in 2 of 5 runs) against the general-n control
+> in skx_runs/hybrid_run*.txt, alongside -32% warm, and treats it as a
+> possible real cold cost rather than noise), Pi 5 -27.6% warm / -7.2%
+> cold vs the general spine (pi5_runs/hybrid_summary.txt).

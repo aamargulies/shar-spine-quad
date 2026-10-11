@@ -1,5 +1,8 @@
 # SIMD reference
 
+Corrected 2026-10-11 against Text/corrections_2026-10.md; earlier numbers
+were retracted, see that file.
+
 Which SIMD instruction set each host uses, what register width we actually
 issue, and which SIMD sizes shape the algorithm. This is the companion to
 `CPU.text` (which covers cache hierarchy and latency) — SIMD here, memory
@@ -15,11 +18,17 @@ Two universal rules across all six hosts:
      zmm path uses gap=32 — a 32-element u16 block is one 64-B line on
      Intel, and crossing the line boundary costs more than the wider
      block saves in interpolation depth. Only the 128-B-line Apple cores
-     go to gap=64.
+     go to gap=64. Caveat: "one block = one line" holds only when the
+     array is line-aligned. The benchmarks use `std::vector` buffers
+     (16-B aligned), so about 75% of 64-B blocks and 87.5% of 128-B
+     blocks straddle two lines; interleaved aligned-vs-misaligned A/Bs on
+     the Pi 5 measured a +14–30% cold penalty at n=4096 (corrections
+     section 5). A Roaring integration must align container arrays and
+     spines to get the designed behaviour.
 
 | Host              | ISA / widest SIMD used     | Intrinsics family | Block-check shape                                  | Gap | Block size |
 |-------------------|----------------------------|-------------------|----------------------------------------------------|-----|------------|
-| Pi 5 (A76)        | AArch64 NEON, 128-bit      | `arm_neon.h`      | `vld1q_u16_x2` → 2× `vceqq_u16` → OR → `vmaxvq`    |  32 |   64 B     |
+| Pi 5 (A76)        | AArch64 NEON, 128-bit      | `arm_neon.h`      | 2× `vld1q_u16_x2` → 4× `vceqq_u16` → OR → `vmaxvq` |  32 |   64 B     |
 | M1 Pro (Firestorm)| AArch64 NEON, 128-bit      | `arm_neon.h`      | 2× `vld1q_u16_x4` → 8× `vceqq_u16` → OR-tree → `vmaxvq` |  64 |  128 B     |
 | M4 Max (P-core)   | AArch64 NEON, 128-bit      | `arm_neon.h`      | 2× `vld1q_u16_x4` → 8× `vceqq_u16` → OR-tree → `vmaxvq` |  64 |  128 B     |
 | Skylake-SP (8175M)| AVX2, 256-bit (zmm gated off)| `immintrin.h`   | 2× `_mm256_loadu_si256` → 2× `_mm256_cmpeq_epi16` → OR → `movemask` |  32 |   64 B     |
@@ -28,14 +37,27 @@ Two universal rules across all six hosts:
 
 M1 Pro and M4 Max share `simd_quad_m4.c` — same family (Apple-silicon
 P-core, 128-B line, 128-bit NEON, 3 load AGUs, wide OoO), so one file
-serves both. Graviton 4 is Neoverse V2 which has SVE2 at 128-bit VL, but
-since u16 search gets no width advantage over NEON at 128-bit VL we stay
-on plain NEON for portability. Skylake-SP has AVX-512BW but we
-**intentionally avoid zmm** — a single 512-bit instruction trips the
-core into AVX-512 license L2 and downclocks the surrounding scalar
-interpolation loop by ~15–20%, more than the one-instruction block-check
-saves. The zmm path is gated on `__AVX512VBMI2__` (Ice Lake-SP+), which
-is our proxy for "frequency penalty is gone."
+serves both. The Pi 5 and Graviton 4 rows are the same block check (two
+`vld1q_u16_x2` loads, four compares); after stripping comments the
+`simd_quad_graviton_spine*` functions are byte-identical to their
+`simd_quad_pi5_spine*` counterparts, and only the general-n kernels
+differ (the Pi 5 in-loop prefetch) — corrections section 5. Graviton 4
+is Neoverse V2 which has SVE2 at 128-bit VL, but since u16 search gets
+no width advantage over NEON at 128-bit VL we stay on plain NEON for
+portability. Skylake-SP has AVX-512BW but we **intentionally avoid
+zmm**: in the development runs an ungated zmm block check made the
+non-spine kernel slower than the SSE2 reference at n >= 2048 warm (no
+archived A/B of that experiment exists). On Skylake-SP a light 512-bit
+integer op (load, compare) trips frequency license level L1 — not L2,
+which is reserved for heavy FP/multiply ops — and the downclock lands on
+the surrounding scalar interpolation loop. The shipped SKX build is
+gated to AVX2 and executes no 512-bit instruction at all, so nothing is
+downclocked in the configuration we measure. The zmm path is gated on
+`__AVX512VBMI2__` (Ice Lake-SP+), our proxy for "frequency penalty is
+gone"; note that `-march=x86-64-v4` does not define it (use
+`-march=icelake-server` or `-march=sapphirerapids`), and that Zen 4 /
+Zen 5 do define it, so the proxy also selects the zmm path on AMD,
+untested (corrections section 5).
 
 
 ## Small-size SIMD fast paths
@@ -62,12 +84,15 @@ loads), which the 3 AGUs can dispatch in parallel.
 Two numbers per host drive the whole design:
 
   - **Cache line size** (64 B on everything except Apple silicon's 128 B)
-    sets the gap. One block = one line.
+    sets the gap. One block = one line — when the array is line-aligned
+    (see the caveat under rule 2).
   - **SIMD register width × load AGUs** sets how the block is assembled.
     Pi 5 has 2 AGUs → paired 128-bit loads; M-series has 3 AGUs → four
     paired 128-bit loads per half-block; EMR has a 512-bit register wide
     enough to eat the whole block in one load; SKX has the registers but
-    can't use them without losing the scalar loop's clock.
+    the ungated zmm build lost to SSE2 in the development runs (license
+    L1 downclock of the scalar loop), so it ships the 2× ymm shape and
+    issues no zmm at all.
 
 Note what's **not** on that list: the widest SIMD the ISA supports. Every
 Intel host here technically has 512-bit zmm, but only EMR uses it; every
@@ -79,21 +104,33 @@ for u16 search.
 ## Where SIMD is deliberately absent
 
   - **Quaternary descent** over blocks (`while (n > 3)`): 3 scalar
-    dependent loads + 3 scalar `<` compares per iteration. Fits in
+    loads (independent of each other, dependent on the previous
+    iteration's `base`) + 3 scalar `<` compares per iteration. Fits in
     general-purpose registers, benefits from cmov lowering of the
     branchless `base += (c1+c2+c3) * quarter` update. SIMD would serialize
     what's already a load-AGU-bound pattern.
   - **Spine descent** in `simd_quad_*_spine` / `_spine_4096`: same
     scalar pattern over the packed spine. The spine itself is
-    SIMD-irrelevant — its whole point is to stream consecutive cache
-    lines into L1, which the hardware streamer does, not SIMD.
-  - **Shar outer branchless binary** (`bench_twolevel.cpp` variants E/F,
-    the cross-host winner): pure scalar cmov chain on K=512 u16 keys.
-    The algorithmic story here is **against** SIMD: ~9 independent
-    scalar loads on the critical path, issuing back-to-back through the
-    load AGUs, beat any vectorized shape that would force dependent-load
-    chaining through a spine. Four of the five 64-B-line hosts plus the
-    two 128-B-line Apple hosts all converge on this.
+    SIMD-irrelevant — its whole point is to put the probe keys into a
+    few contiguous lines (4 at gap=32, 1 at gap=64, when aligned) so the
+    descent's misses are few and can be pulled in up front; that is a
+    layout effect, not SIMD.
+  - **Shar outer branchless binary** (`bench_twolevel.cpp` variants E/F):
+    pure scalar cmov chain on K=512 u16 keys. It is a *serial* chain —
+    load → compare → csel → load, each address depending on the previous
+    select — so it cannot be speculated past (corrections section 5); its
+    win is the absence of branch mispredicts and of any side structure,
+    not parallel loads. That makes it the **hot** winner: F beats D
+    (outer spine, same compile-time inner) by −14% to −54% paired on M4
+    Max, M1 Pro, SKX, EMR and GV4 — 5/5 runs on hot_bat on all five and
+    on hot_ser on four (SKX 4/5) (`{host}_runs/twolevel_paired.txt`) —
+    and on the Pi 5 is 4/5 at −6% in the archived runs and a tie in the
+    2026-10 repaired-harness runs (`pi5_runs/twolevel_paired_v2.txt`;
+    corrections 2.3 and 6). **Cold**, where every
+    chain link is a miss the core cannot speculate past, the branchy
+    `std::lower_bound` outer (C) or the outer spine (D) is usually best:
+    C wins both cold modes 5/5 on EMR and GV4, D wins cold_bat 5/5 on the
+    Pi 5 and cold_ser 5/5 on SKX (corrections sections 2.1–2.3).
   - **Tail sweeps** past `num_blocks * gap`: scalar. Never reached at
     `n=4096` since 4096 % gap == 0 for both gap=32 and gap=64, so this
     code is cold on the canonical hot path.

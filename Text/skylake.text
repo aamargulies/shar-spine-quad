@@ -1,41 +1,91 @@
 How did Skylake do in comparison with Graviton and EMR?
 
-At n=4096, tuned+spine (the shipped path on each host):
+[Corrected 2026-10-11 against Text/corrections_2026-10.md; earlier
+numbers were retracted, see that file. Every figure below is sourced
+inline.]
+
+At n=4096, tuned+spine (the shipped general-n spine path on each host),
+per-cell medians of 5 ./bench 4000 5000 runs (bench_table.txt, from the
+archived {host}_runs/rebench_run{1..5}.txt):
 
                       warm ns   cold ns   SKX ratio warm   SKX ratio cold
-  SKX  (Xeon 8175M)      27.5     131.1       1.00x            1.00x
-  EMR  (Xeon 8559C)      17.9      46.2       0.65x            0.35x
-  GV4  (Neoverse V2)     16.2      36.4       0.59x            0.28x
+  SKX  (Xeon 8175M)      26.8     132.7       1.00x            1.00x
+  EMR  (Xeon 8559C)      18.0      37.2       0.67x            0.28x
+  GV4  (Neoverse V2)     16.2      34.6       0.60x            0.26x
 
-SKX is slowest across the board: ~1.5x EMR and ~1.7x GV4 warm, ~2.8x EMR
-and ~3.6x GV4 cold at n=4096. The cold gap is much larger than the warm
-gap, which is exactly what you'd expect -- SKX (a) runs the scalar
-interpolation loop downclocked under the AVX-512 license (even though the
-zmm path is gated off, the surrounding AVX-512 state still taxes it),
-(b) sits on a shared-tenant EC2 LLC with noisier neighbors, and (c) has a
-narrower OoO window to hide DRAM round-trips. EMR and GV4 are in roughly
-the same ballpark as each other (EMR slightly slower warm, slightly slower
-cold -- but within the noise floor of a single EC2 session).
+(ratios computed from those medians.)
 
-Relative wins from the optimizations track cleanly across hosts, with one
-SKX exception:
+SKX is slowest in both columns: ~1.5x EMR and ~1.7x GV4 warm, ~3.6x EMR
+and ~3.8x GV4 "cold" at n=4096. But the cold gap is not a core
+comparison. bench.cpp's "cold" column has no cache flush: it walks the
+arrays in allocation order with the same targets the previous algorithm
+just used, and its ~35 MB footprint fits the last-level cache of every
+host except the Pi 5 -- SKX's 33 MB L3 included (corrections section 5).
+So all three servers' cold cells are last-level-cache hits in an
+unflushed harness, and the 0.28x / 0.26x ratios compare cache levels,
+not cores. Why SKX's LLC-hit cell is 3.6x EMR's is unexplained pending a
+flushed cold column. Two candidate factors, not conclusions: (a) it is a
+shared-tenant EC2 instance with noisier neighbours, and (b) it has 2
+load AGUs and a narrower OoO window. (The 8175M's L3 is also close
+enough to the footprint that I would want the flushed column before
+trusting the LLC-hit label itself -- my own inference, not the
+corrections file's.) What is *not* a factor is the AVX-512 frequency
+license: the shipped SKX build is gated to AVX2 and executes no 512-bit
+instruction at all, so nothing is downclocked (and a light 512-bit
+integer op would trip license L1, not L2, anyway). EMR and GV4 are in
+the same ballpark as each other (EMR slightly slower warm and cold) --
+LLC-hit regimes in this column, as is SKX.
 
-                 compile-time n=4096 unroll       two-level spine D vs A
-                 (warm / cold delta vs general-n) (warm / cold delta)
-  SKX            -1.5%  / noise                   -41%  / -74%
-  EMR            -22%   / -30%                    -40%  / -71%
-  GV4            -10%   / noise                   (not yet ported)
+Relative wins from the optimizations, with sources:
 
-The two-level spine structure is basically uarch-agnostic on x86: SKX's
-A->D deltas (-41% warm, -74% cold) are within a hair of EMR's (-40%,
--71%). SKX's absolute numbers are much worse (237 -> 139 ns vs EMR 142
--> 85 ns warm), but the fraction of the baseline you get back is the
-same. That's the real headline from this session -- the optimization is
-buying back an architecture-agnostic structural cost, not a SKX-specific
-mitigation.
+  compile-time n=4096 hybrid vs general-n spine (warm / cold):
+    SKX   -32% warm, 5/5; cold it is slower in 3 of 5 runs (per-run -12%
+          to +62%, paired per-run median +40%) against a general-n
+          control that is stable to +-0.6% in the same runs
+          (skx_runs/hybrid_run{1..5}.txt; corrections 2.3), so the
+          hybrid may carry a real cold cost; not settled at 5 runs.
+    EMR   -63.6% / -34.5%  (emr_runs/shipped_summary.txt, 5-run medians:
+          6.50 / 24.36 vs the same-run general-n spine 17.86 / 37.20)
+    GV4   -57%   / -15%    (gv4_runs/hybrid_summary.txt: 16.22 -> 7.00
+          warm, 35.86 -> 30.62 cold)
 
-The compile-time-n=4096 unroll is the lone exception: ~0 on SKX, ~-10%
-on GV4, ~-22% on EMR. Prior prediction was "biggest win on SKX" (narrow
-OoO + downclock -> branch control should hurt more). Wrong -- SKX cold
-is dominated by memory, not branch overhead, so removing interpolation-
-loop branches has nothing to buy back.
+  two-level spine D vs A (outer spine + compile-time inner vs bsearch
+  outer + general-n inner), paired per-run medians of the archived
+  2026-05-18 runs, {host}_runs/twolevel_paired.txt:
+
+                 hot_bat        hot_ser        cold_bat       cold_ser
+    SKX          -59.9% (5/5)   -35.1% (5/5)   -24.1% (5/5)   -13.6% (4/5)
+    EMR          -41.8% (5/5)   -18.3% (5/5)    -3.9% (5/5)    -3.7% (4/5)
+    GV4          -30.9% (5/5)   -14.1% (5/5)   -18.1% (5/5)   +14.8% (0/5, A faster)
+
+The earlier version of this note quoted D vs A as "-41% warm / -74%
+cold" on SKX and "-40% / -71%" on EMR and called the structure
+uarch-agnostic. Those numbers came from the retired two-mode harness
+whose cold query missed the outer keys ~99% of the time and never ran
+the inner search (corrections section 3); they are withdrawn. With the
+4-mode harness and paired analysis the hot_bat gain is -60% on SKX
+versus -42% on EMR (levels: SKX A 235.33 -> D 95.58 ns, EMR A 136.62 ->
+D 79.30 ns hot_bat, per-cell medians, {host}_runs/twolevel_summary.txt),
+and the cold gain is small: -24% on SKX, -4% on EMR, and on GV4 D is
+actually slower than A in cold_ser (0/5). The structure is not
+uarch-agnostic; it buys back the most on the narrowest core hot and
+little or nothing cold.
+
+Best variant per mode by paired rank (corrections 2.1): SKX F / F / C
+(D 4/5 over F) / D (5/5 over F); EMR I (-0.7% vs F, a tie by size) / F /
+C (5/5) / C (4/5); GV4 I (5/5) / F (5/5) / C (5/5) / C (5/5). So F is
+the hot_ser choice on all three servers and the hot_bat choice on SKX;
+on GV4 the Eytzinger variant I leads hot_bat (-10.8%, 5/5; measured
+with the mis-aimed prefetch, pending re-measurement) and on EMR I ties
+F by size. A bsearch or spine outer (C or D) is the cold choice; "F
+wins every mode" is not supported on any of them.
+
+The compile-time-n=4096 story also reverses the earlier reading. The
+"~0 / -1.5% on SKX" figure described the retired unroll; the shipped
+hybrid is -32% warm on SKX in 5/5 runs -- a real win, though about half
+the size of EMR's (-63.6%) and GV4's (-57%). Where SKX differs is cold:
+the hybrid is slower there in 3 of 5 runs (per-run -12% to +62%)
+against a stable control. The prior prediction was "biggest win on SKX"
+(narrow OoO -> branch control should hurt more); the data say SKX gets a
+smaller warm win than the other two servers, and that its cold column is
+where the straight-line hybrid can lose -- not settled at 5 runs.

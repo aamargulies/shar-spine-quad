@@ -6,14 +6,24 @@ access latencies. Latencies are published / third-party measured values
 measured from this project's benches. Cycle → ns conversion uses each
 core's typical max boost clock.
 
+Corrected 2026-10-11 against Text/corrections_2026-10.md; earlier numbers
+were retracted, see that file.
+
 Gap is chosen to match cache line size, not SIMD width: on 64-B-line
 hosts we use gap=32 (one block = one line for u16), on 128-B-line Apple
-silicon we use gap=64 (one block = one line).
+silicon we use gap=64 (one block = one line). "One block = one line" is
+a design intent, not an enforced property: the benchmark arrays and
+spines are `std::vector` allocations (16-B aligned), so about 75% of
+64-B blocks and 87.5% of 128-B blocks straddle two lines and a 256-B
+spine usually spans five lines. Interleaved aligned-vs-misaligned A/Bs
+on the Pi 5 measured a +14–30% cold penalty at n=4096 (corrections
+section 5). A Roaring integration must align container arrays and spines
+to get the behaviour described below.
 
 
 ## Raspberry Pi 5 — ARM Cortex-A76 @ 2.4 GHz  (verified locally via lscpu)
 
-Cache line: 64 B      |      gap = 32      (one block = 64 B = one line)
+Cache line: 64 B      |      gap = 32      (one block = 64 B = one line when 64-B aligned)
 
 | Level | Size                  | Latency (cycles) | Latency (ns @ 2.4 GHz) |
 |-------|-----------------------|------------------|------------------------|
@@ -22,13 +32,19 @@ Cache line: 64 B      |      gap = 32      (one block = 64 B = one line)
 | L3    | 2 MiB shared (1 inst) | ~27              | ~11                    |
 | DRAM  | LPDDR4X-4267          | —                | ~80–120                |
 
-Spine @ n=4096 = 4 lines (256 B). In-loop `__builtin_prefetch` kept
-(narrow OoO, 2 load AGUs).
+Spine @ n=4096 = 4 lines (256 B). In-loop `__builtin_prefetch` is still
+in the shipped kernel, but the evidence says it is a net loss, not the
+"~10–25% cold win" once claimed: `simd_quad_graviton.c` is this kernel
+minus the prefetch, so the archived main-bench table is a built-in A/B,
+and the prefetch kernel is slower cold at 13 of 14 sizes from n=128 up
+(+2% to +31%) and slower warm at 13 of 14 (`pi5_runs/rebench_run*.txt`;
+corrections section 5). No prefetch A/B was ever archived. Removing it
+is a kernel change that needs its own A/B at all sizes.
 
 
 ## Apple M1 Pro — Firestorm P-core @ 3.23 GHz
 
-Cache line: 128 B     |      gap = 64      (one block = 128 B = one line)
+Cache line: 128 B     |      gap = 64      (one block = 128 B = one line when 128-B aligned)
 
 | Level | Size                     | Latency (cycles) | Latency (ns @ 3.23 GHz) |
 |-------|--------------------------|------------------|-------------------------|
@@ -38,13 +54,14 @@ Cache line: 128 B     |      gap = 64      (one block = 128 B = one line)
 | SLC   | 24 MiB system-level      | ~90              | ~28                     |
 | DRAM  | LPDDR5-6400              | —                | ~80–100                 |
 
-Spine @ n=4096 = 1 line (128 B). Prefetch dropped (wide OoO, 3 AGUs).
-Shares `simd_quad_m4.c` with M4 Max.
+Spine @ n=4096 = 1 line (128 B). Prefetch dropped (inherits the M4
+decision; the "narrow core wants it" premise from the Pi 5 is retracted —
+corrections section 5). Shares `simd_quad_m4.c` with M4 Max.
 
 
 ## Apple M4 Max — P-core @ ~4.5 GHz
 
-Cache line: 128 B     |      gap = 64      (one block = 128 B = one line)
+Cache line: 128 B     |      gap = 64      (one block = 128 B = one line when 128-B aligned)
 
 | Level | Size                  | Latency (cycles) | Latency (ns @ 4.5 GHz) |
 |-------|-----------------------|------------------|------------------------|
@@ -55,9 +72,18 @@ Cache line: 128 B     |      gap = 64      (one block = 128 B = one line)
 | DRAM  | LPDDR5X-8533          | —                | ~80–100                |
 
 Spine @ n=4096 = 1 line (128 B). Prefetch dropped.
-**Known cold regression** for `simd_quad_m4_spine_4096` — the 1-line
-spine is too small for the streamer to engage, so three tier misses land
-on the critical path. M1 Pro reproduces this almost identically.
+**Reported cold regression** for `simd_quad_m4_spine_4096` (bench_table.txt
+n=4096 cold: 6.5 → 21.9 ns on M4 Max, 11.1 → 32.1 ns on M1 Pro). The
+earlier explanation ("the 1-line spine is too small for the streamer to
+engage, so three tier misses land on the critical path") is withdrawn:
+the project's own 2026-05-14 decomposition found the spine tiers are L1
+hits and the floor is the demand block load, and the regression may be
+a measurement-order artifact — in `bench.cpp` the grid's spine cold pass
+runs right after the non-spine cold pass with identical targets (block
+line L2-resident), while the dedicated `4096*` row runs after its own
+32 MB warm sweep (block line from SLC/DRAM); the gap matches L2-hit vs
+SLC-hit latency. Hypothesis pending a flushed test on Apple hardware
+(corrections section 5).
 
 
 ## Intel Skylake-SP (Xeon Platinum 8175M) — Skylake server core @ 2.5 / 3.1 GHz boost
@@ -72,13 +98,17 @@ Cache line: 64 B      |      gap = 32
 | L3    | 33 MiB shared (24-core)  | ~50–70           | ~16–23                 |
 | DRAM  | DDR4-2666                | —                | ~85–100                |
 
-Spine @ n=4096 = 4 lines (256 B). Prefetch kept (AVX-512 freq
-downclock + narrower OoO make "kept" the safe default; A/B inconclusive).
-zmm block check gated off by `__AVX512VBMI2__` (absent on SKX) — falls
-back to 2× 256-bit AVX2 to avoid the frequency-license downclock.
+Spine @ n=4096 = 4 lines (256 B). Prefetch kept only because the A/B
+was inconclusive under shared-tenant noise; there is no downclock
+argument for it — the shipped build executes no 512-bit instruction, so
+nothing is downclocked (corrections section 5). zmm block check gated
+off by `__AVX512VBMI2__` (absent on SKX) — falls back to 2× 256-bit
+AVX2. The ungated zmm experiment (development runs, not archived) lost
+to SSE2 at n ≥ 2048 warm; a light 512-bit integer op on Skylake-SP trips
+frequency license L1 (not L2) and slows the surrounding scalar loop.
 
 
-## Intel Emerald Rapids (Xeon Platinum 8559C) — Redwood Cove @ ~3.5 GHz boost
+## Intel Emerald Rapids (Xeon Platinum 8559C) — Raptor Cove (5th Gen Xeon Scalable, family 6 model 207) @ ~3.5 GHz boost
 
 Cache line: 64 B      |      gap = 32
 
@@ -90,9 +120,11 @@ Cache line: 64 B      |      gap = 32
 | L3    | ~260 MiB shared (48-core)| ~45–55           | ~13–16                 |
 | DRAM  | DDR5-5600                | —                | ~90–110                |
 
-Spine @ n=4096 = 4 lines (256 B). Prefetch dropped (3 AGUs + deeper OoO
-+ no AVX-512 downclock on VBMI2 path). zmm single-compare block check
-enabled.
+Spine @ n=4096 = 4 lines (256 B). Prefetch dropped on its own A/B
+(`emr_runs/baseline_run{1..5}.txt` vs `noprefetch_run{1..5}.txt`, 5-run
+per-cell medians of the non-spine kernel: removing it is −3.8% to −13.0%
+faster warm at n ≥ 512; table in `Text/post.text`). zmm single-compare
+block check enabled.
 
 
 ## AWS Graviton 4 — ARM Neoverse V2 @ 2.8 GHz
@@ -107,15 +139,20 @@ Cache line: 64 B      |      gap = 32
 | SLC   | ~36 MiB system-level     | ~35–45           | ~12–16                 |
 | DRAM  | DDR5-5600                | —                | ~90–110                |
 
-Spine @ n=4096 = 4 lines (256 B). Prefetch dropped (4 load AGUs + deep
-OoO make speculative prefetch a pure slowdown: +10.8% warm / +5.6% cold
-when kept). Plain NEON — V2's SVE2 is 128-b VL, no u16 width advantage.
+Spine @ n=4096 = 4 lines (256 B). Prefetch dropped: the A/B
+(`gv4_runs/ab_summary.txt`, 5-run medians, non-spine kernel) is slower
+with the prefetch kept in every warm cell from n=128 up, worst +10.8%
+warm at n=2048 and +5.6% cold at n=256. The review puts Neoverse V2 at
+three load pipes rather than four (not verified on hardware here;
+corrections section 5). Plain NEON — V2's SVE2 is 128-b VL, no u16 width
+advantage.
 
 
 ## Why gap tracks cache-line, not SIMD width
 
 A 128-B line holds 64 × u16, so gap=64 means each block-check reads
-exactly one line. Going to gap=32 on M4 would double the number of
+exactly one line (given a line-aligned array; see the alignment caveat
+at the top). Going to gap=32 on M4 would double the number of
 spine tiers (saving one line per block but doubling the spine). Going
 to gap=64 on Intel/Pi 5/GV4 would force each block to span two 64-B
 lines, paying for a second line without saving an iteration — on EMR
@@ -126,18 +163,32 @@ Roaring container sizes → fatal, scratch variant not committed).
 ## Warm vs cold, at n=4096 (ns, from this project's benches)
 
 For context on how much of the latency table actually shows up in the
-main-bench numbers. All values are the shipping `*+spine` path.
+main-bench numbers. All values are the shipping general-n `*+spine`
+path, per-cell medians of 5 `./bench 4000 5000` runs from
+`bench_table.txt` (archived `{host}_runs/rebench_run{1..5}.txt`); the
+ratio column is computed from them. The earlier table here (Pi 5
+6.8/68.4, SKX ~8/~100, EMR ~8/~30, GV4 6.3/11.2) matched no archived
+measurement and is withdrawn.
 
 | Host     | Warm | Cold  | Cold/warm |
 |----------|------|-------|-----------|
-| Pi 5     |  6.8 |  68.4 | ~10×      |
+| Pi 5     | 22.5 | 150.7 | ~6.7×     |
 | M1 Pro   |  6.3 |  11.1 | ~1.8×     |
 | M4 Max   |  4.3 |   6.5 | ~1.5×     |
-| SKX      | ~8   | ~100  | ~12×      |
-| EMR      | ~8   | ~30   | ~4×       |
-| GV4      |  6.3 |  11.2 | ~1.8×     |
+| SKX      | 26.8 | 132.7 | ~5.0×     |
+| EMR      | 18.0 |  37.2 | ~2.1×     |
+| GV4      | 16.2 |  34.6 | ~2.1×     |
 
-Pi 5 has the widest cold/warm ratio (small L2, aggressive DRAM round-trip
-cost at 2.4 GHz). Apple silicon and GV4 stay close to warm cold because
-the large per-cluster L2 / SLC usually still contains the 8 KB target
-array after the cache-flush pass.
+Read the "Cold" column with care: `bench.cpp` has no cache-flush pass.
+Its cold column walks the arrays in allocation order with the same
+targets the previous algorithm just used, and the ~35 MB footprint fits
+the last-level cache of every host except the Pi 5 (and at n ≤ 256 is
+L2/L3-resident on the Pi 5 too). So "cold" is a DRAM miss on the Pi 5
+(2 MB L3) and an L2 / L3 / SLC hit on every other host, SKX included —
+which is why Apple silicon, EMR and GV4 sit near their warm numbers;
+SKX's ~5× ratio on an LLC-hit column is not explained by this harness
+(shared tenancy and the narrower core are candidates, not conclusions).
+Cross-host comparisons of this column compare cache levels,
+not cores (corrections section 5). `bench_twolevel`'s cold modes do
+flush (`thrash_llc()`, raised from 256 MB to 512 MB because the 8559C's
+L3 is ~260 MB).

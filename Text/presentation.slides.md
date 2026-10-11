@@ -53,13 +53,17 @@ style: |
 
 *your name · date*
 
+<p class="pause">Corrected 2026-10-11 against Text/corrections_2026-10.md; earlier numbers were retracted, see that file.</p>
+
 <!--
 Speaker notes:
+(Deck corrected 2026-10-11 against Text/corrections_2026-10.md. Two-level numbers are paired per-run deltas, 5 archived runs per host ({host}_runs/twolevel_paired.txt), Pi 5 also re-run 10x with the repaired harness (pi5_runs/twolevel_paired_v2.txt). Main-bench numbers are 5-run medians from bench_table.txt.)
+
 Roaring Bitmaps are how Elasticsearch, Druid, and ClickHouse compress sets of integers. Inside every Roaring Bitmap are thousands of tiny sorted arrays of 16-bit numbers. Searching those arrays faster makes all of those systems faster.
 
-A few years ago Daniel Lemire published a SIMD trick called quad search that beats binary search on these arrays. I spent about a week with Claude trying to push it further — on six different CPUs, from a Raspberry Pi to Amazon's newest server chip.
+Earlier this year Daniel Lemire published a SIMD trick called quad search that beats binary search on these arrays. I spent about a week with Claude trying to push it further — on six different CPUs, from a Raspberry Pi to Amazon's newest server chip.
 
-The punchline is going to be that a 55-year-old algorithm nobody remembers beat every clever thing we came up with. But first let me set the stage.
+The punchline is going to be that a 55-year-old algorithm nobody remembers beat the clever index we built — at least while the data are hot. But first let me set the stage.
 -->
 
 ---
@@ -107,7 +111,7 @@ Claude is very good at producing confident-sounding hypotheses. The only thing t
 
 ---
 
-# The "spine": one idea, universal win
+# The "spine": one idea, one direction on every CPU
 
 Quad search does **3 dependent loads** before the real work starts.
 Cold cache → 3 trips to DRAM.
@@ -116,18 +120,18 @@ Cold cache → 3 trips to DRAM.
 
 **Fix**: precompute a tiny sorted sample of the array. Scan it *sequentially* first.
 
-<div class="big">Result: <strong>2–3× faster</strong> on every CPU.</div>
+<div class="big">Result: <strong>faster cold on every CPU</strong> — about 2–3× on ARM/Apple, under 2× on the servers.</div>
 
-<p class="pause">(stride prefetchers love sequential reads)</p>
+<p class="pause">(memory-level parallelism over a 256-byte contiguous read — too short to train a stride prefetcher; bench_table.txt n=4096 medians, within-host only — bench.cpp's cold column is unflushed)</p>
 
 <!--
-The first big optimization — and the only one that wins on every machine — is the "spine."
+The first big optimization — and the only one that wins on every machine, at least for full-size containers — is the "spine."
 
 Quad search picks probe points, loads them, uses the result to pick the next set of probe points. That's three dependent memory loads before you even start looking. On a cold cache that's three separate trips to main memory. Slow.
 
-Fix: precompute a tiny sampled version of the array — just a few hundred bytes — and scan it sequentially before diving into the real array. Every modern CPU has a hardware "stride prefetcher" that watches for sequential access patterns and pulls the next cache line before you ask for it. Give it a sequential pattern, the first loads become free.
+Fix: precompute a tiny sampled version of the array — just a few hundred bytes — and search that first before diving into the real array. This is not the hardware prefetcher at work: a 256-byte spine is too short to train a stride prefetcher. The probes now land in a handful of adjacent cache lines instead of being scattered across eight kilobytes, so the CPU can have those few lines in flight at once — memory-level parallelism over a short contiguous read — instead of paying a full memory round trip for every dependent probe.
 
-2 to 3× faster cold on every single machine. One idea, universal win.
+Faster cold on every single machine — roughly two to three times on the Pi and the Macs, less than two times on the Xeons and the Graviton (bench_table.txt, cold n=4096, non-spine -> spine: Pi 5 299.0 -> 150.7 ns, M4 Max 16.8 -> 6.5, M1 Pro 37.1 -> 11.1, Skylake 180.9 -> 132.7, Emerald Rapids 64.9 -> 37.2, Graviton 4 65.0 -> 34.6). One idea, one direction everywhere.
 
 This is where AI was genuinely great — writing six tuned variants of the same idea, one per CPU, is mechanical work. Exactly what I don't want to do by hand.
 -->
@@ -137,28 +141,28 @@ This is where AI was genuinely great — writing six tuned variants of the same 
 # Where we were confidently wrong
 
 - *"Prefetching will help on the fast chips."*
-  → +10% **slower** on M4, Emerald Rapids, Graviton
+  → **slower** on Graviton 4 (up to +10.8% warm), dropped on M4 and Emerald Rapids — and a net loss on the Pi 5 too, where we had logged it as a win
 
 <br>
 
 - *"Skylake will win biggest from loop unrolling."*
-  → measured: **1.5%**. Compiler already did it.
+  → the unroll: ~1.5%. The hybrid that replaced it: −32% warm (5/5), **+40% slower cold at the median** (hybrid faster in only 2 of 5 runs; per-run −12% to +62%, `skx_runs/hybrid_run*.txt` `4096*` rows; corrections §2.3). Warm and cold disagree.
 
 <br>
 
 - *"Intel's prefetcher will love the 'outer spine' for two-level search."*
-  → It didn't. *More on this in a moment.*
+  → It didn't — hot. Cold is another story. *More on this in a moment.*
 
 <!--
 The flipside. Three predictions I made — with Claude happily agreeing — that measurement destroyed.
 
-One: speculative prefetch inside the search loop. I thought it would help on modern wide-OoO chips. It hurt them by 10%. Those chips are already overlapping the memory miss on their own. The prefetch just burns an instruction slot.
+One: speculative prefetch inside the search loop. I thought it would help on modern wide-OoO chips. It didn't: on Graviton 4 the build with the prefetch is slower, up to eleven percent warm at n=2048 (gv4_runs/ab_summary.txt), and on M4 and Emerald Rapids we dropped it. Those chips already overlap the memory miss on their own; the prefetch just burns an instruction slot. The embarrassing part: on the Raspberry Pi, where we had written down a 10-25% cold win, the archived data say the prefetch is a net loss there too — the Graviton kernel is the Pi 5 kernel minus that prefetch and is faster cold at 13 of 14 sizes from n=128 up (corrections §5). Nobody had run the A/B.
 
-Two: I predicted Intel's Skylake Xeon would benefit most from unrolling — narrower OoO window. Measured win: 1.5%. GCC had already done it years ago.
+Two: I predicted Intel's Skylake Xeon would benefit most from unrolling — narrower OoO window. The unroll gave about 1.5% (corrections §2.3). The hybrid finish that replaced it is 32% faster warm, 5/5 — and +40% slower cold at the median (hybrid faster in only 2 of 5 runs; per-run −12% to +62%, skx_runs/hybrid_run*.txt 4096* rows; corrections §2.3), against a general-n control stable to ±0.6% in the same runs. Warm and cold disagree, and we don't yet know why.
 
 Three — the setup for the main story — I predicted an elaborate two-level spine would dominate on Intel, because Intel's prefetchers love sequential patterns.
 
-It lost. Everywhere. To a 55-year-old algorithm. Let me tell you about that.
+With hot data it lost, on five of six machines, to a 55-year-old algorithm. Let me tell you about that — including the part where the old algorithm loses too.
 -->
 
 ---
@@ -215,29 +219,33 @@ We built an **elaborate two-level "outer spine"** indexing 512 Roaring container
 
 *Predicted:* crushing win on Intel (prefetcher-friendly sequential).
 
-### Reality, measured on all 6 machines:
+### Reality: Shar outer vs. our spine outer (paired, 5 runs/host; negative = Shar faster)
 
-| Host | Shar vs. our spine |
-|---|---|
-| Raspberry Pi 5 | −92% cold |
-| Apple M4 Max | −28% cold |
-| Apple M1 Pro | confirmed same |
-| Intel Skylake | −23% cold |
-| **Intel Emerald Rapids** | **−40% cold** |
-| **AWS Graviton 4** | **−53% cold** |
+| Host | hot, serial | cold, batched | cold, serial |
+|---|---|---|---|
+| Raspberry Pi 5 | −6.4% (4/5)* | **+31.8%** (0/5) | −0.4% tie |
+| Apple M4 Max | −53.9% (5/5) | −11.5% (4/5) | **+16.2%** (1/5) |
+| Apple M1 Pro | −38.9% (5/5) | −10.6% (5/5) | +5.7% tie |
+| Intel Skylake | −16.3% (4/5) | **+6.6%** (1/5) | **+16.9%** (0/5) |
+| Intel Emerald Rapids | −37.1% (5/5) | −4.0% (5/5) | **+17.7%** (0/5) |
+| AWS Graviton 4 | −43.4% (5/5) | −11.3% (5/5) | +1.2% tie |
+
+<p class="pause">Red = our spine wins. Text/corrections_2026-10.md §2.2 ({host}_runs/twolevel_paired.txt). * tie in the ten 2026-10 repaired-harness Pi 5 runs.</p>
 
 <!--
 Fast-forward to this project. I built an elaborate two-level version of the spine — an outer index across 512 Roaring containers feeding into the inner array search. I was confident it would crush naive binary search on Intel server chips — their prefetchers love sequential patterns.
 
 We benchmarked Shar's 1971 code as a baseline, expecting to beat it.
 
-On every single machine — the Pi, both Macs, both Xeons, the Graviton — Shar won. On Emerald Rapids, Intel's newest server chip, Shar was 40% faster cold. On Graviton 4, Amazon's newest ARM chip, 53% faster.
+With the outer keys hot in cache, Shar won on five of the six machines — both Macs, both Xeons, the Graviton — by fourteen to fifty-four percent, in five of five paired runs — four of five for Skylake serial (hot_bat is the same story: −14.4% to −41.9%, 5/5). On the Pi it was a tie.
 
 [PAUSE]
 
+Then we flushed the caches. Cold, our spine won back. On the Pi 5, Shar was thirty-two percent slower in the batched cold mode (forty-five percent in the ten repaired-harness runs). On Skylake, seventeen percent slower serial. On Emerald Rapids and Graviton the best cold variant wasn't even our spine — it was the plain, branchy, textbook binary-search outer, in five of five batched-cold runs (corrections §2.1).
+
 Here's why. My outer spine was about 1 kilobyte. Too small for any prefetcher to get traction on — by the time it notices the pattern, you're already done. So the spine was just pure dependent-load latency, each step waiting for the previous one.
 
-Shar's 1971 code has about nine INDEPENDENT memory loads on its critical path. On a modern wide-out-of-order CPU — which Shar obviously couldn't have imagined in 1971 — those nine loads all issue in parallel. The critical path collapses.
+Shar's 1971 code is ALSO a dependency chain — load, compare, conditional select, load, nine levels deep — and because every address depends on the previous select, the CPU cannot speculate past it. What it doesn't have is branches. Hot, with every load an L1 hit, no mispredicts means it simply runs faster. Cold, the branchy binary search gets to guess, run ahead across its mispredicted branches and overlap the misses — and the cmov chain can't. Khuong and Morin wrote this up in 2017; we rediscovered it the hard way (corrections §5).
 -->
 
 ---
@@ -248,14 +256,17 @@ Shar's 1971 code has about nine INDEPENDENT memory loads on its critical path. O
 ## lost to history,
 ## rediscovered by a blog post —
 ## beat the modern engineered solution
-## on hardware its inventor couldn't have dreamed of.
+## on hardware its inventor couldn't have dreamed of —
+## *when the data were hot.*
 
 <br>
 
-### Good ideas are timeless. Hardware changes around them.
+### Good ideas are timeless. Hardware changes around them. Where your data live decides which one wins.
 
 <!--
 Land this slowly. Let the punchline breathe.
+
+Then the cold half, in one breath: flush the caches and the spine or the textbook branchy search wins back — our spine (D) on the Pi 5 and Skylake (on Skylake's batched cold mode plain bsearch C ranks first; D still beats Shar 4/5 and is the serial-cold best 5/5), plain bsearch (C) on Emerald Rapids and Graviton 4. Don't skip it — it is the honest half of the story.
 
 Moral: if you're only ever reading this year's papers, you're going to miss the ones already written.
 -->
@@ -294,9 +305,9 @@ The right division of labor for research like this: human brings hypotheses and 
 
 # Three things to take home
 
-### 1. The spine: one idea, **2–3× faster** on every CPU.
+### 1. The spine: one idea, **faster cold on every CPU** (about 2–3× on ARM/Apple, less on the servers).
 
-### 2. Shar 1971 beat everything modern we tried. **Read old papers.**
+### 2. Shar 1971 beat our modern outer index hot on five of six CPUs — and lost cold to the spine or the textbook bsearch outer (D on the Pi 5 and Skylake, C on Emerald Rapids and Graviton 4). **Read old papers. Measure cold.**
 
 ### 3. AI + measurement. AI makes six-machine experiments cheap. Measurement keeps you honest when AI's intuition — and yours — is wrong.
 
@@ -307,9 +318,9 @@ The right division of labor for research like this: human brings hypotheses and 
 <!--
 Three things to take home.
 
-One: the spine. Precompute a small sorted sample, scan it sequentially first, let the hardware prefetcher do the work. 2–3× faster on every CPU I tested. Simple ideas with good mechanical sympathy still win.
+One: the spine. Precompute a small sorted sample and search it first, so the probes hit a few adjacent cache lines that can be fetched together instead of being scattered across the array. Faster cold on every CPU I tested — two to three times on the ARM and Apple cores, less on the servers. Simple ideas with good mechanical sympathy still win.
 
-Two: read old papers. A 1971 algorithm beat every modern design we tried on six machines spanning four architectures. The reasons it wins are reasons that didn't exist when it was written. Only reading this year's literature, you'll miss the good stuff.
+Two: read old papers. A 1971 algorithm beat our modern design hot on five of six machines spanning four architectures, and cold it lost back to the spine or to plain branchy binary search — older still — the spine on the Pi 5 and Skylake, plain binary search on Emerald Rapids and Graviton 4. The reasons they win are reasons that didn't exist when they were written. Only reading this year's literature, you'll miss the good stuff.
 
 Three: AI plus measurement. AI made it possible for one person to run a six-machine, multi-week experiment in a week. But AI's intuitions about performance are unreliable — and honestly so are mine. The discipline that makes this work produce real results is writing down your predictions, running the benchmark, and logging when you were wrong.
 

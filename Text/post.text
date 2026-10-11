@@ -22,6 +22,23 @@ up an r8g instance - AWS Graviton 4, an Arm Neoverse V2 server
 core - and wrote a fifth variant for that. This post covers
 all of it.
 
+[Corrected 2026-10-11 against Text/corrections_2026-10.md;
+earlier numbers were retracted, see that file. Two things to
+know while reading. (1) Unless a sentence says otherwise, the
+single-lookup figures below are the archived 5-run medians of
+./bench 4000 5000 in bench_table.txt (from
+{host}_runs/rebench_run{1..5}.txt); the first draft quoted
+single development runs. (2) bench.cpp's "cold" column has no
+cache flush: it walks the arrays in allocation order with the
+same targets the previous algorithm just used, and its ~35 MB
+footprint fits the last-level cache of every host except the
+Pi 5. So "cold" is a DRAM miss on the Pi 5 (for n > 256) and an
+L2/L3/SLC hit on every other host - Skylake-SP included, alongside
+the M4, Emerald Rapids and Graviton 4 - and every cross-host "cold"
+comparison in this post compares cache levels, not cores
+(corrections section 5). The in-text corrections below
+say so where it matters.]
+
 The Pi 5 has four Arm Cortex-A76 cores at 2.4 GHz, 128-bit NEON
 vectors (no SVE), a 64 KB L1 data cache per core, 512 KB of L2
 per core, 2 MB of shared L3, 64-byte cache lines, and LPDDR4X
@@ -33,15 +50,22 @@ memory. Still 128-bit NEON - no SVE/SVE2 on Apple silicon either -
 so the ISA is the same, but almost everything else about the
 memory hierarchy has changed.
 
-The short version of what I found: the same algorithm runs 5-7x
-faster on the M4 Max on warm cache across the board, which is
-unremarkable, and the same algorithm runs up to 29x faster on cold
-cache, which is the interesting part. On the Intel side, Skylake-SP
+The short version of what I found: the same algorithm runs
+roughly 4-6x faster on the M4 Max warm (bench_table.txt
+n=4096: SIMD kernels 4.9-5.4x, std::binary_search 6.2x,
+std::find 3.7x), which is unremarkable. The "cold" column
+widens that gap to 13-30x at n=4096 (bench_table.txt), which I
+originally took for the interesting part - but most of it is
+the harness, not the core:
+bench.cpp's cold pass has no cache flush, and the ~35 MB working
+set stays in the M4's on-chip caches while it misses to DRAM on
+the Pi 5 (see the note above). On the Intel side, Skylake-SP
 turns out to punish the "obvious" AVX-512 port with a frequency-
-license downclock that makes the tuned variant slower than the
-generic SSE2 reference, and the fix is to emit different code for
-Skylake-SP than for Emerald Rapids despite both being "AVX-512
-capable." More on that after the algorithm story.
+license downclock (license level L1 for these light integer ops)
+that makes the tuned variant slower than the generic SSE2
+reference, and the fix is to emit different code for Skylake-SP
+than for Emerald Rapids despite both being "AVX-512 capable."
+More on that after the algorithm story.
 
 Porting the reference algorithm to the Pi 5
 
@@ -50,10 +74,17 @@ NEON for ARM, SSE2 for everyone else. The Pi 5 takes the NEON
 path. The SSE2 branch is dead code and I removed it. I also
 switched the block size from 16 to 32. The reasoning: on the Pi 5
 a cache line is 64 bytes, which holds exactly 32 uint16_t values.
-A 32-element block is therefore one cache line, and a block check
-that touches exactly one line is as cheap as it can be. Halving
-the block count also shortens the interpolation phase by roughly
-one iteration.
+A 32-element block is therefore one cache line - if the array is
+64-byte aligned - and a block check that touches exactly one line
+is as cheap as it can be. (Caveat I did not check at the time:
+the benchmark's std::vector arrays are only 16-byte aligned, so
+about 75% of the blocks it measures straddle two lines, and an
+interleaved aligned-vs-misaligned A/B on the Pi 5 later measured
+a +14-30% cold penalty at n=4096 - corrections section 5. A
+Roaring integration must align its container arrays and spines to
+get the one-line block this post assumes.) Halving the block
+count also shortens the interpolation phase by roughly one
+iteration.
 
 The block check itself uses two paired NEON loads (vld1q_u16_x2),
 which maps to the A76's two load AGUs and lets the hardware issue
@@ -79,8 +110,10 @@ whole array in three instructions. For 16 <= n < 32, a paired
 vld1q_u16_x2 covers the first 16 elements and a short scalar
 sweep handles the tail.
 
-After this change n=8 drops from 14.6 ns to 4.7 ns warm. It is
-now the fastest cell in the whole table.
+After this change n=8 dropped from 14.6 ns to 4.7 ns warm in the
+development run (the archived 5-run median is 5.4 ns,
+bench_table.txt). It is among the fastest cells in the whole
+table.
 
 What Eytzinger does to your thinking
 
@@ -89,9 +122,10 @@ iteration. Those loads are on the critical path, and for cold
 arrays at size 4096 they dominate the runtime. This is exactly
 the kind of pattern that an Eytzinger layout would attack: pack
 the upper levels of the search tree into the first few cache
-lines so they're always hot, and prefetch the grand-grandchild
-node a few levels ahead so its miss overlaps with the work of
-the current level.
+lines so they're always hot, and prefetch the descendant log2(B)
+levels ahead - the one whose block of B descendants fills exactly
+one cache line (5 levels at gap 32, 6 at gap 64) - so its miss
+overlaps with the work of the current level.
 
 I didn't want to change the array layout - Roaring Bitmap
 containers need to stay sorted for iteration, intersection, and
@@ -103,10 +137,23 @@ probes) and issue a __builtin_prefetch for it. The miss, if
 there is one, now overlaps with the current iteration's in-flight
 loads instead of serializing behind them.
 
-This saved 10-25% on cold-cache queries for n >= 512 on the Pi 5.
-Warm was unchanged. Cheap trick, easy to justify - on that
-hardware. We'll come back to this when we get to the M4, because
-on Apple silicon it stops being a trick worth keeping.
+At the time I recorded this as a 10-25% cold win for n >= 512 on
+the Pi 5, and that claim travelled into every later document. It
+was wrong. No prefetch A/B was ever archived, and the archived
+main-bench table contains a built-in one: simd_quad_graviton.c
+(introduced later in this post) is simd_quad_pi5.c minus this one
+prefetch line, and on the Pi 5 the prefetch kernel is slower cold
+at 13 of 14 sizes from n=128 up (+2% to +31%) and slower warm at
+13 of 14 (5-run medians, bench_table.txt pi5 vs graviton rows;
+per-run pairs in pi5_runs/rebench_run*.txt agree). Fresh
+interleaved A/Bs during the 2026-10 review agreed (corrections
+section 5). Structurally the prefetch address depends on the
+just-updated base, so it issues at the same dependency depth as
+the demand loads it is supposed to hide. The shipped Pi 5 kernel
+still contains it, pending a kernel A/B at all sizes. Keep this in
+mind for the M4 and Graviton chapters, where I "discovered" that
+wide cores don't want the prefetch - the narrow one doesn't
+either.
 
 What orlp's bitwise binary search does NOT do
 
@@ -123,8 +170,10 @@ three independent loads per iteration, which the A76's two
 load AGUs can overlap and the M4's three can overlap even more
 freely. Swapping our quaternary descent for a bitwise binary
 descent would give up that independence and serialize log2(n)
-loads instead of parallelizing them. The arithmetic works out
-to a wash on L1 and a regression on cold cache.
+loads instead of parallelizing them. By that dependency-chain
+argument it should be a wash on L1 and a regression on cold
+cache - I did not benchmark it, so that is reasoning, not
+measurement.
 
 The one idea from orlp that transfers is compile-time unrolling
 when the size is known. That's a general technique, not a
@@ -136,8 +185,8 @@ The cold-cache interpolation phase was still the Pi 5 bottleneck.
 At n=4096 it touches up to ~10 different cache lines before the
 final SIMD block check. The hardware prefetcher can't help - the
 access pattern is data-dependent and irregular. Software prefetch
-of the next middle probe helps a bit, but it's only one line of
-overlap.
+of the next middle probe was supposed to help a bit; as the
+archived A/B above shows, it doesn't even do that.
 
 The right move is to pack the probe keys themselves into a
 separate, dense region. Given a sorted array carr of 4096
@@ -145,12 +194,13 @@ uint16_t values and a gap of 32, define:
 
     spine[i] = carr[(i+1)*32 - 1]
 
-This is 128 uint16_t values, 256 bytes, exactly 4 cache lines on
-the Pi 5. The entire interpolation phase - every probe, every
-comparison - now reads from this tiny contiguous region, which on
-cold access takes a handful of consecutive cache lines (which
-hardware prefetchers DO handle well) or one prefetch to stream
-in.
+This is 128 uint16_t values, 256 bytes, 4 cache lines on the Pi 5
+when the spine is line-aligned (a 16-byte-aligned std::vector
+spine usually spans five). The entire interpolation phase - every
+probe, every comparison - now reads from this tiny contiguous
+region, which on cold access costs a handful of consecutive cache
+lines whose misses can all be in flight at once, or one up-front
+prefetch to pull in.
 
 The final SIMD block check still loads from carr. The spine isn't
 trying to replace the sorted array, only to accelerate the
@@ -177,8 +227,12 @@ Cortex-A76 @ 2.4 GHz, GCC 15 with -O3 -mcpu=cortex-a76. Each
 benchmark generates 4000 random sorted arrays per size and
 performs membership queries in warm mode (each array queried
 5000 times consecutively, simulating cache hits) and cold mode
-(each array queried once, cycling through thousands of arrays,
-simulating cache misses).
+(each array queried once, cycling through thousands of arrays).
+There is no explicit cache flush in cold mode; it relies on the
+~35 MB cycle outrunning the caches, which it does on the Pi 5 for
+n > 256 (at n <= 256 the set is L2/L3-resident even here) and
+does not do on the larger-cache hosts later in this post
+(corrections section 5).
 
 First, the warm-cache picture:
 
@@ -189,24 +243,30 @@ Pi 5 port and the reference algorithm sit within a nanosecond or
 two of each other - the 32-element block and the small-size fast
 paths help a lot at small n, but by n=4096 we're all doing roughly
 the same work. The spine variant pulls clearly ahead starting
-around n=128 and stays ahead, ending at 23.6 ns versus 30.9 ns for
-the next-best variant at n=4096. That's a 1.3x improvement on a
+around n=128 and stays ahead, ending at 22.5 ns versus 30.1 ns for
+the plain Pi 5 variant and 31.1 ns for the reference at n=4096
+(bench_table.txt, 5-run medians). That's a 1.3x improvement on a
 workload that already felt optimized.
 
 Now the cold-cache picture, which is the interesting one:
 
 [bench_cold.png]
 
-This is where the spine earns its keep. Cold-cache queries at
-large n are dominated by memory latency, not arithmetic. The
-reference SIMD Quad and the plain Pi 5 variant cross 300 ns at
-n=4096. The spine variant does the same query in 155 ns.
+This is where the spine earns its keep - and the Pi 5 is the one
+host where bench.cpp's cold column really is cold at these sizes:
+the ~35 MB working set does not fit its 2 MB L3, so these are DRAM
+misses (corrections section 5). Cold-cache queries at large n are
+dominated by memory latency, not arithmetic. The reference SIMD
+Quad and the plain Pi 5 variant sit just under 300 ns at n=4096
+(296.3 and 299.0). The spine variant does the same query in
+150.7 ns.
 
-At n=4096 on the Pi 5, the spine variant is roughly 2x faster
-than std::binary_search warm, roughly 2x faster than
-std::binary_search cold, roughly 1.3x faster than the reference
-SIMD Quad warm, and roughly 2x faster than the reference SIMD
-Quad cold.
+At n=4096 on the Pi 5 (bench_table.txt), the spine variant is
+roughly 3x faster than std::binary_search warm (68.6 vs 22.5),
+roughly 2x faster than std::binary_search cold (323.4 vs 150.7),
+roughly 1.4x faster than the reference SIMD Quad warm (31.1 vs
+22.5), and roughly 2x faster than the reference SIMD Quad cold
+(296.3 vs 150.7).
 
 The cold-cache improvement is the one I find most satisfying
 because cold is the case that matters most. If your hot loop was
@@ -234,7 +294,9 @@ the calculus for manual prefetch.
 So I wrote simd_quad_m4. The plan:
 
 Block size goes from 32 to 64. A 64-element block is one 128-byte
-cache line on the M4. The block check becomes two vld1q_u16_x4
+cache line on the M4 (when the array is 128-byte aligned; the
+benchmark's 16-byte-aligned vectors straddle two lines 87.5% of
+the time). The block check becomes two vld1q_u16_x4
 loads (eight paired 128-bit loads total), which the three load
 AGUs can interleave freely. The interpolation depth shrinks
 again.
@@ -245,21 +307,24 @@ one more, for [32,64), which uses a single vld1q_u16_x4 to cover
 the first 32 elements and scalar-sweeps the tail.
 
 Speculative prefetch inside the interpolation loop comes out.
-On the Pi 5 it bought 10-25% cold. On the M4 the OoO window is
-wide enough that the miss already overlaps with other in-flight
-loads, and the prefetch instruction just costs an issue slot.
-The gap between the plain Pi 5 variant and the reference
-algorithm on cold n=4096 narrows dramatically when both run on
-M4 (11.4 vs 15.8) compared to Pi 5 (311 vs 299), suggesting the
-M4 already does in hardware what __builtin_prefetch was doing
-on the A76. I left it out and benchmarks agree.
+At the time my reasoning was "it bought 10-25% cold on the Pi 5,
+but the M4's OoO window is wide enough that the miss already
+overlaps with other in-flight loads, so the instruction just
+costs an issue slot." The second half may well be right; the
+first half, as the Pi 5 chapter now says, was never true - the
+prefetch loses on the A76 too. So the honest statement is
+simpler: the in-loop prefetch costs more than it saves on every
+host where it has been A/B'd (Pi 5 built-in A/B above, EMR and
+GV4 A/Bs below). I left it out and the benchmarks agree.
 
 Spine stays, and compresses further. With gap=64 and n=4096 the
 spine is 64 uint16_t values, 128 bytes - exactly one M4 cache
-line. The entire interpolation phase for the maximum-size
-Roaring container now lives in a single cache line. At n=2048
-it's half a line. The num_blocks <= 3 fallback from the Pi 5
-variant applies here too, for the same accidental-reuse reason.
+line if it is 128-byte aligned (the benchmark's is not, so it
+usually straddles two). The entire interpolation phase for the
+maximum-size Roaring container now lives in one or two cache
+lines. At n=2048 it's half a line. The num_blocks <= 3 fallback
+from the Pi 5 variant applies here too, for the same
+accidental-reuse reason.
 
 M4 Max results
 
@@ -270,23 +335,33 @@ Apple clang 21 with -O3 -mcpu=apple-m4.
 
 [bench_m4_cold.png]
 
-The M4 spine variant is fastest or tied-fastest at every size
-from n=128 up. At n=4096 warm it lands at 4.3 ns, 1.4x faster
-than the reference algorithm and 2.6x faster than
-std::binary_search on the same machine. At n=4096 cold it
-lands at 5.8 ns, 5.6x faster than the reference and 10.6x
-faster than std::binary_search.
+At n=4096 warm the M4 spine variant is the fastest kernel on
+the M4 (4.3 ns vs 4.6 for the gap=32 spines); at most smaller
+sizes, and at most sizes in the cold column, a gap=32 spine
+kernel ties or beats it (bench_table.txt). At n=4096 warm its
+4.3 ns is 1.5x faster than the reference algorithm (6.3) and
+2.6x faster than std::binary_search (11.1) on the same machine. At n=4096 "cold"
+it lands at 6.5 ns, 4.8x faster than the reference (31.5) and
+10x faster than std::binary_search (66.6) - all bench_table.txt
+5-run medians. Remember what "cold" means on this host: the
+working set sits in the M4's L2/SLC, so these are on-chip hits,
+not DRAM round trips.
 
 Some gap=64-specific observations. At cold n=4096 the plain m4
-variant (18.0) is slightly slower than the plain pi5 variant
-(15.1) running on the same machine. With fewer interpolation
+variant (16.8) is slightly slower than the plain pi5 variant
+(15.2) running on the same machine. With fewer interpolation
 probes there's less accidental warming of the final block's
 cache lines. The spine variant cleans this up. The comparison
-between m4+spine and pi5+spine on M4 is less clear-cut than I
-expected: at cold n=4096 the Pi 5 spine is marginally ahead
-(5.3 vs 5.8); at intermediate sizes n=512-2048 the M4 spine
-wins. The lesson is that once the spine fits in a couple of
-cache lines, spine size matters at least as much as block size.
+between m4+spine and the gap=32 spines on the M4 is not readable
+from this column at all: the pi5+spine and graviton+spine
+kernels are byte-identical code (corrections section 5), yet
+bench_table.txt gives them 11.6 and 5.1 ns cold at n=4096 on the
+M4, bracketing m4+spine's 6.5. Any "difference" smaller than
+that is measurement order in an unflushed harness, not the
+kernel. Warm they are within 10% (4.3 vs 4.6). The lesson I drew
+at the time - that once the spine fits in a couple of cache
+lines, spine size matters at least as much as block size - may
+still be right, but this data cannot show it.
 
 M4 vs Pi 5 side by side
 
@@ -299,62 +374,73 @@ M4 vs Pi 5 side by side
 [bench_speedup.png]
 
 The warm-cache comparison looks about how you'd expect. Every
-algorithm runs 5-7x faster on the M4 than on the Pi 5, and the
-ratio is fairly uniform. Same ISA, same code, a much wider and
-faster core. There's nothing much to say: the M4 is a bigger
-machine and it does the arithmetic faster.
+algorithm runs roughly 4-6x faster on the M4 than on the Pi 5
+(bench_table.txt n=4096: SIMD kernels 4.9-5.4x,
+std::binary_search 6.2x, std::find 3.7x), and the ratio is
+fairly uniform. Same ISA, same code, a much wider and faster
+core. There's nothing much to say: the M4 is a bigger machine
+and it does the arithmetic faster.
 
-The cold-cache comparison is where it gets weird.
+The cold-cache comparison is where it gets weird - and where the
+harness fooled me.
 
 At n=4096 cold, the same simd_quad_pi5 code runs 20x faster on
-the M4 (15.1 ns) than on the Pi 5 (311 ns). The same
-pi5+spine code runs 29x faster on the M4 (5.3 ns) than on the
-Pi 5 (155 ns). The warm ratio for the same comparison is 5x.
-So cold-cache work on the M4 is 4-6x less penalized than it is
-on the Pi 5, relative to warm.
+the M4 (15.2 ns) than on the Pi 5 (299.0 ns). The same gap=32
+spine code runs 13x to 30x faster on the M4 (11.6 ns as
+pi5+spine, 5.1 ns as the byte-identical graviton+spine) than on
+the Pi 5 (150.7 / 154.7 ns). The warm ratio for the same
+comparison is 5x. So "cold" work on the M4 looks 3-6x less
+penalized than on the Pi 5, relative to warm.
 
 You can see the same thing inside a single machine. On the Pi 5
 at n=4096, the cold/warm ratio for the plain pi5 variant is
-~10x (311/31). On the M4 it's ~2.5x (15/6). Cold cache is
-genuinely a smaller problem on Apple silicon. Not gone - still
-the regime where spine pays rent - but much smaller. A big OoO
-window plus an aggressive hardware prefetcher plus unified LPDDR5X
-is apparently doing an enormous amount of hidden work.
+~10x (299.0/30.1). On the M4 it's ~2.5x (15.2/6.2). I originally
+read this as "cold cache is genuinely a smaller problem on Apple
+silicon - a big OoO window plus an aggressive hardware prefetcher
+plus unified LPDDR5X is doing an enormous amount of hidden work."
+Most of it is not that. bench.cpp's cold pass has no cache flush;
+it walks ~35 MB of arrays in allocation order with the targets
+the previous algorithm just used. That footprint fits the M4's L2
+and SLC and does not fit the Pi 5's 2 MB L3. The Pi 5 column is
+DRAM misses; the M4 column is on-chip cache hits. The ratio
+measures cache capacity, not latency hiding. How much better the
+M4 core actually hides a real DRAM miss is an open question that
+needs a flushed cold column (corrections section 5).
 
 This does not mean the spine stops mattering on the M4. On Pi 5
-cold n=4096 the spine saves 155 ns, roughly 2x. On M4 cold n=4096
-the spine drops the pi5 variant from 15.1 to 5.3 and the m4
-variant from 18.0 to 5.8, roughly 3x. The spine is the single
-biggest optimization in the stack on both machines. The M4's
-hardware masks a lot of latency, but there's still latency left
-to mask, and compressing the pointer-chase region into one or
-two cache lines still matters.
+cold n=4096 the spine saves ~148 ns (299.0 -> 150.7), roughly
+2x. On M4 cold n=4096 the spine drops the m4 variant from 16.8
+to 6.5, roughly 2.6x, and the gap=32 kernel from 15.2 to 11.6
+(or 11.7 to 5.1 for its identical twin). The spine is the single
+biggest optimization in the stack on both machines, even when
+the misses it removes are L2-to-SLC rather than DRAM: compressing
+the pointer-chase region into one or two cache lines still
+matters.
 
 Two other cross-machine observations are worth pulling out.
 
 First, gap=64 (the m4 block size) only edges out gap=32 (the pi5
-block size) on the M4 at the largest warm sizes, and not cold.
+block size) on the M4 at the largest warm sizes (4.3 vs 4.6 ns at
+n=4096), and the cold column cannot separate them (see above).
 The extra interpolation step saved is tiny, and the spine-size
 advantage of the smaller gap (more keys packed per line for large
-n) almost cancels it on cold queries. If I had to ship one
-variant to run on both machines, I'd ship pi5+spine: it's within
-noise of m4+spine on the M4 and dominates on the Pi 5. That
-surprised me - I expected the M4 retune to be a clearer win on
-its own hardware.
+n) almost cancels it. If I had to ship one variant to run on both
+machines, I'd ship pi5+spine: it's within 10% of m4+spine warm on
+the M4 and dominates on the Pi 5. That surprised me - I expected
+the M4 retune to be a clearer win on its own hardware.
 
 Second, the speculative __builtin_prefetch in the quaternary
-loop was the right call on the A76 and the wrong call on the M4.
-The tool is the same, the workload is the same, and the hardware
-made the tool either helpful or wasted. I don't think this is a
-general lesson about prefetching - it's a specific consequence
-of how much memory-level parallelism is already in flight on
-either core. On the A76, two load AGUs and a modest OoO window
-leave room for a software hint to help. On the M4, three load
-AGUs, a much deeper window, and a smarter prefetcher already
-saturate what can usefully be in flight for this access pattern,
-and the extra instruction is just overhead. Hold that thought -
-the Intel chapter is going to pin down exactly which uarch
-properties flip this decision.
+loop: I believed it was the right call on the A76 and the wrong
+call on the M4, and built a tidy story about memory-level
+parallelism on top - two load AGUs and a modest OoO window leave
+room for a software hint on the A76; three AGUs, a deeper window
+and a smarter prefetcher saturate the useful MLP on the M4. The
+archived data say it was the wrong call on both (Pi 5 chapter
+above). The story's second half may still describe the M4; its
+first half is not supported, and the "which uarch properties flip
+this decision" question the Intel chapter set out to answer turns
+out to have a boring answer: nothing measured so far wants this
+prefetch.
 
 Moving to x86: Intel Skylake-SP and Emerald Rapids
 
@@ -373,7 +459,8 @@ The two hosts:
                        enough that every reported cell is the
                        median of 5 ./bench 4000 5000 runs.
 
-  Emerald Rapids       Xeon Platinum 8559C, family 6 model 207.
+  Emerald Rapids       Xeon Platinum 8559C, family 6 model 207,
+                       Raptor Cove cores (5th Gen Xeon Scalable).
                        AVX-512 plus VBMI2, VNNI, BF16, FP16, AMX.
                        64 B cache line, 48 KB L1D, 3 load AGUs.
                        Deeper ROB, more LFBs, more aggressive L1
@@ -386,7 +473,8 @@ The first draft, and why it was wrong on Skylake-SP
 
 The first draft followed the shape of the Pi 5 port. gap=32,
 because the Intel cache line is 64 B and 32 u16 values is exactly
-one line - the same structural argument that sized the A76 block.
+one line (for a line-aligned array) - the same structural argument
+that sized the A76 block.
 The 512-bit register made the block check trivially nicer than
 on either ARM variant: one load, one compare, one kortest. Three
 hot instructions where the Pi 5 had four and the M4 had eight.
@@ -398,21 +486,29 @@ hot instructions where the Pi 5 had four and the M4 had eight.
 
 This should have been the easy win. It wasn't. On Skylake-SP the
 plain "intel" variant (non-spine) was slower than the reference
-SSE2 simd_quad at n >= 2048 warm. I rebuilt twice assuming I'd
-fumbled a flag. The build was fine; the problem was the uarch.
+SSE2 simd_quad at n >= 2048 warm in my development runs (I did
+not archive that A/B, so treat the magnitude as anecdote). I
+rebuilt twice assuming I'd fumbled a flag. The build was fine;
+the problem was the uarch.
 
-On Skylake-SP, executing any 512-bit operation trips the core
-into a lower frequency license for a window measured in hundreds
-of microseconds to milliseconds. This is well-documented. What's
-less well-known is how badly it interacts with code shaped like
-ours: the block check is one zmm instruction per call, but the
+On Skylake-SP, executing a 512-bit operation trips the core into
+a lower frequency license for a window measured in hundreds of
+microseconds. For the light integer ops a zmm block check uses (a
+load and a compare) that is license level L1; L2 is reserved for
+heavy FP/multiply work. This is well-documented. What's less
+well-known is how badly it interacts with code shaped like ours:
+the block check is one zmm instruction per call, but the
 quaternary interpolation loop surrounding it is entirely scalar.
 That scalar loop now runs at the reduced frequency, and on SKX
 the reduction is large enough to more than cancel the
-one-instruction block-check win. Net: worse than SSE2.
+one-instruction block-check win. Net: worse than SSE2. (To be
+explicit about what follows from the fix below: the shipped SKX
+build executes no 512-bit instruction at all, so nothing in the
+Skylake numbers in this post is downclocked.)
 
 Newer Intel server parts - Ice Lake-SP, Sapphire Rapids, Emerald
-Rapids, Granite Rapids - have this penalty either hugely reduced
+Rapids, Granite Rapids (a later generation than my EMR host; the
+8559C itself is Raptor Cove) - have this penalty either hugely reduced
 or gone entirely. But you can't distinguish "licensed-downclock
 uarch" from "non-licensed uarch" with the AVX-512BW feature flag:
 Skylake-SP has AVX-512BW. You need a feature flag that landed
@@ -421,9 +517,14 @@ after the licensing changed.
 VBMI2 is that flag. It shipped first in Ice Lake - which is also
 the first generation where the AVX-512 frequency penalty is
 negligible. Skylake-SP has BW but not VBMI2. Ice Lake-SP /
-Sapphire / Emerald / Granite all have VBMI2. This makes
-__AVX512VBMI2__ a perfect proxy for "safe to emit a zmm
-instruction inside a scalar hot loop."
+Sapphire / Emerald all have VBMI2, as does the later Granite
+Rapids. This makes
+__AVX512VBMI2__ a good proxy for "safe to emit a zmm
+instruction inside a scalar hot loop" - with two footnotes: AMD
+Zen 4 and Zen 5 also define VBMI2, so the proxy selects the zmm
+path there too, untested; and -march=x86-64-v4 does not define
+it, so that build line silently produces the AVX2 + prefetch
+variant (corrections section 5).
 
 So the Intel variant's block check is gated:
 
@@ -466,21 +567,28 @@ block check; it runs the 2x 256-bit AVX2 path.
 The warm picture is orderly. linear grows linearly in n, binary
 grows logarithmically, and the three SIMD variants cluster at the
 bottom with the spine variant pulling ahead at n >= 512. At
-n=4096 warm, intel+spine is 28.5 ns, versus 33.3 ns for the
-reference and 83.4 ns for std::binary_search. The intel spine
-variant is about 1.2x faster than the reference SIMD and about
-2.9x faster than std::binary_search on warm cache.
+n=4096 warm, intel+spine is 26.8 ns, versus 33.0 ns for the
+reference and 82.3 ns for std::binary_search (bench_table.txt).
+The intel spine variant is about 1.2x faster than the reference
+SIMD and about 3.1x faster than std::binary_search on warm cache.
 
-The cold picture is where Skylake's age shows. The shared-tenant
-EC2 instance plus the older memory subsystem means cold queries
-at n=4096 are expensive: binary_search is 427 ns, reference SIMD
-is 269 ns, intel is 236 ns, intel+spine is 190 ns. The spine is
-still the biggest win (1.25x over the non-spine intel variant),
-but absolute numbers are much larger than on the M4. The
-ordering is what you want - every SIMD variant beats
-binary_search, every spine variant beats its non-spine sibling -
-but this is not a host where the SIMD tricks feel transformative.
-They're just reliably ahead of the generic path.
+The cold picture is where SKX falls furthest behind. Corrections
+section 5 counts it among the hosts whose last-level cache holds
+bench.cpp's ~35 MB working set, so this is an unflushed LLC-hit
+column here as on EMR and GV4, not a DRAM-miss one - though the
+8175M's 33 MB L3 is close enough to that footprint that I would
+want a flushed cold column before leaning on the label (my own
+inference, not the corrections file's). Shared EC2 tenancy adds
+noise on top. Cold queries at n=4096 are expensive here:
+binary_search is 276.8 ns, reference SIMD is
+171.5 ns, intel is 180.9 ns, intel+spine is 132.7 ns. The spine
+is still the biggest win (1.36x over the non-spine intel
+variant), but absolute numbers are much larger than on the M4.
+The ordering is mostly what you want - every spine variant beats
+its non-spine sibling, everything beats binary_search - though
+the non-spine intel kernel does not beat the SSE2 reference cold
+here. This is not a host where the SIMD tricks feel
+transformative. They're just reliably ahead of the generic path.
 
 Emerald Rapids results
 
@@ -492,42 +600,56 @@ runs. Here the block check is the single-zmm path.
 
 [bench_emr_cold.png]
 
-This is a different machine. At n=4096 warm, intel+spine is 17.7
-ns, versus 57.8 ns for std::binary_search - 3.3x. At n=4096 cold,
-intel+spine is 36.6 ns, versus 121.0 ns for std::binary_search -
-3.3x, same ratio. On the Intel side, EMR is the first host where
-the pattern from the ARM hosts reappears: warm and cold ratios
-look similar, the spine pays in both regimes, and the algorithm
-feels in its natural habitat.
+This is a different machine. At n=4096 warm, intel+spine is 18.0
+ns, versus 60.6 ns for std::binary_search - 3.4x. At n=4096
+"cold", intel+spine is 37.2 ns, versus 117.6 ns for
+std::binary_search - 3.2x, about the same ratio (bench_table.txt).
+On the Intel side, EMR is the first host where the pattern from
+the Apple host reappears: warm and cold ratios look similar and
+the spine pays in both regimes. Part of the reason is the same as
+on the M4: the 8559C's L3 is ~260 MB, so bench.cpp's unflushed
+cold pass is an L3 hit here, not a DRAM miss.
 
-Two absolute numbers worth pulling out. At n=4096 cold, EMR's
-intel+spine (36.6 ns) is 5x faster than SKX's intel+spine
-(189.5 ns). Same source file, opposite sides of the VBMI2 gate,
-different memory subsystems, six years of uarch in between. And
-looking further afield: SKX's intel+spine at n=4096 cold
-(189.5 ns) lands close to the Pi 5's pi5+spine at the same size
-(155 ns) on a 2.4 GHz Cortex-A76. That is not the comparison a
-spec sheet prepares you for.
+Two observations worth pulling out, with that caveat attached.
+At n=4096 cold, EMR's intel+spine (37.2 ns) is 3.6x faster than
+SKX's intel+spine (132.7 ns). Same source file, opposite sides of
+the VBMI2 gate - but both cells are last-level-cache hits in an
+unflushed harness (corrections section 5), one on a bare-metal
+box and one on a shared-tenant one, and cross-host "cold"
+comparisons from this column compare cache levels, not cores. So
+it says little about the two cores; my earlier framing of it as
+"different memory subsystems, six years of uarch in between" is
+withdrawn, and the 3.6x itself is unexplained pending a flushed
+cold column. Second, SKX's and the Pi 5's cold cells (132.7 and
+150.7 ns) are the two large ones in the table; what either core
+does with a real DRAM miss is not measured here.
 
 The prefetch question, revisited on Intel
 
-The A76 loved the speculative prefetch. The M4 didn't need it.
-Intel was somewhere in between on paper. In practice, each uarch
-deserves its own answer.
+I thought the A76 loved the speculative prefetch and the M4
+didn't need it, with Intel somewhere in between on paper. In
+practice, each uarch deserves its own A/B - and the A76's, once
+read off the archived data, says it doesn't love it either.
 
 On Skylake-SP the A/B was inconclusive: shared-tenant noise
-swamped the effect. There's a tiebreaker from the uarch side,
-though. Skylake's 2 load AGUs and its narrower OoO window are
-exactly the conditions where a software prefetch has room to
-pay its issue slot back - the same story as the Pi 5, another
-2-load-AGU core where the prefetch bought 10-25% cold. So on
-Skylake-SP the prefetch stays in, pending a future bare-metal
-A/B to confirm.
+swamped the effect. At the time I used a uarch tiebreaker:
+Skylake's 2 load AGUs and narrower OoO window are "exactly the
+conditions where a software prefetch has room to pay its issue
+slot back - the same story as the Pi 5, another 2-load-AGU core
+where the prefetch bought 10-25% cold." That precedent no longer
+exists (the Pi 5 prefetch is a net loss in the archived data),
+and the other argument I leaned on elsewhere - that SKX's scalar
+loop runs downclocked under the AVX-512 license - is not true of
+the shipped build, which issues no zmm. So the SKX prefetch stays
+in because its one A/B was inconclusive under shared-tenant noise;
+a repeat on quiet hardware is open (not among the items corrections
+section 6 tracks).
 
 On Emerald Rapids I could settle the A/B. Two binaries, same
 source, the only difference being the presence or absence of the
 _mm_prefetch line in the quaternary loop. Five runs of each,
-per-cell medians:
+per-cell medians (emr_runs/baseline_run{1..5}.txt vs
+emr_runs/noprefetch_run{1..5}.txt):
 
   n     intel warm  intel cold
   512     -6.2%      -18.5%
@@ -597,8 +719,8 @@ shippable for this workload. Keep gap=32.
 
 The conclusion is the mirror of what I found on the M4 Max.
 There, gap=64 was right because the cache line was 128 B; a
-single block still fit in one line. On EMR, gap=64 spans two
-lines, and the iteration-count win is size-dependent. The
+single (aligned) block still fit in one line. On EMR, gap=64
+spans two lines, and the iteration-count win is size-dependent. The
 original cache-line argument was right.
 
 Cross-machine view, five ways
@@ -623,10 +745,11 @@ And at n=4096 specifically:
 
 [bench_speedup.png]
 
-A few things jump out of the summary.
+A few things jump out of the summary (all bench_table.txt 5-run
+medians).
 
 At n=4096 warm, tuned+spine across the five hosts: Pi 5 at
-23.6 ns, SKX at 28.5 ns, GV4 at 16.2 ns, EMR at 17.7 ns, M4 at
+22.5 ns, SKX at 26.8 ns, GV4 at 16.2 ns, EMR at 18.0 ns, M4 at
 4.3 ns. The M4 is in a class of its own; EMR and Graviton 4 are
 essentially tied for second; Pi 5 and SKX are a bit behind, and
 within 2x of each other. A Pi 5 at 2.4 GHz runs the algorithm
@@ -637,14 +760,23 @@ like the A76. The badges "2018 server chip" and "small ARM core"
 collapse into the same ballpark once you're bottlenecked on the
 same two load ports.
 
-At n=4096 cold, tuned+spine: Pi 5 at 155 ns, SKX at 190 ns, GV4
-at 36 ns, EMR at 37 ns, M4 at 5.8 ns. The EC2-shared-tenant SKX
-is the slowest host in the set at cold, by enough that it's
-closer to the Pi 5 than to its own newer sibling. Graviton 4
-lands a hair ahead of EMR on cold despite running a 128-bit
-ISA against EMR's 512-bit one - further reinforcement that cold
-cache is about memory-level parallelism and not about register
-width. Memory wins are uarch-and-tenancy wins, not badge wins.
+At n=4096 cold, tuned+spine: Pi 5 at 150.7 ns, SKX at 132.7 ns,
+GV4 at 34.6 ns, EMR at 37.2 ns, M4 at 6.5 ns. This row is a
+cache-hierarchy row, not a core row: only the Pi 5 (2 MB L3)
+cannot hold bench.cpp's ~35 MB working set, so its "cold" cell is
+a DRAM miss; on SKX, EMR (~260 MB L3), GV4 and the M4 the cells
+are last-level-cache hits (corrections section 5). SKX's and the
+Pi 5's cells are the two large ones in the table, and why an
+LLC-hit cell on the shared-tenant 8175M lands within 15% of a
+DRAM-miss cell on the Pi 5 is not something this harness explains
+(tenancy and the narrower core are candidates, not conclusions).
+Among the other three, GV4 and EMR are a hair apart despite a
+128-bit ISA against a 512-bit one, which does say that at this
+level register width is not what matters. What this row cannot
+say is how well any of these cores hides a real DRAM miss relative
+to another - my earlier "memory wins are uarch-and-tenancy wins"
+reading of it is withdrawn (corrections section 5). A flushed cold
+column for bench.cpp is an open item.
 
 Graviton 4: the ARM server case
 
@@ -666,9 +798,11 @@ The uarch facts, alongside the ARM hosts we already have:
                      128-bit NEON, very wide OoO, aggressive HW
                      prefetcher, no SVE.
 
-  Graviton 4 / V2    4 load AGUs, 64 B cache line, 64 KB L1D,
-                     128-bit NEON + 128-bit SVE2, very wide OoO
-                     (~320-entry ROB), aggressive L1/L2 streamers.
+  Graviton 4 / V2    3 load pipes (the review's count; I had
+                     written 4 - not verified on hardware here,
+                     corrections section 5), 64 B cache line,
+                     64 KB L1D, 128-bit NEON + 128-bit SVE2, very
+                     wide OoO, aggressive L1/L2 streamers.
 
 Two things to notice. First, Graviton 4 has the A76's 64-byte
 cache line, so gap=32 is the right block size for the same
@@ -680,13 +814,15 @@ two other ARM variants. I wrote simd_quad_graviton.c as a
 NEON-only file.
 
 The one interesting design question was the speculative prefetch.
-The A76 keeps it and wins 10-25% cold. The M4 Max drops it and
-doesn't miss it. On paper, V2 looks more like the M4: wide OoO,
-plentiful load AGUs, aggressive streamers. So I shipped the
-variant without the prefetch and A/B'd against a scratch version
-that kept it. Five runs of each, per-cell medians. Negative
-percentages mean the prefetch-kept version was faster; positive
-means removing it (what the shipped code does) was right.
+The A76 keeps it (on the strength of a "10-25% cold win" that, as
+the Pi 5 chapter now says, the archived data do not support). The
+M4 Max drops it and doesn't miss it. On paper, V2 looks more like
+the M4: wide OoO, plentiful load pipes, aggressive streamers. So I
+shipped the variant without the prefetch and A/B'd against a
+scratch version that kept it. Five runs of each, per-cell medians
+(gv4_runs/ab_summary.txt, non-spine kernel). Negative percentages
+mean the prefetch-kept version was faster; positive means removing
+it (what the shipped code does) was right.
 
   n     gv4 warm  gv4 cold
   128     +5.9%     +3.2%
@@ -701,11 +837,14 @@ biggest hit at n=2048 (+10.8%) and n=512 (+8.9%). Cold is similar
 direction with a single small outlier. No configuration where
 keeping the prefetch is clearly faster. So V2 lives in the same
 regime the M4 and EMR do: a SW prefetch is dispatch bandwidth
-spent for nothing. The interesting thing is that the pattern
-split isn't "ARM vs x86" and it isn't "wide vs narrow cache
-line." It's OoO-width + load-AGU-count together. Every wide-OoO
-core I've tested (M4, EMR, V2) wants the prefetch out. Every
-narrower one (A76, SKX) wants it kept.
+spent for nothing. When I first wrote this up I drew a line:
+"every wide-OoO core I've tested (M4, EMR, V2) wants the prefetch
+out; every narrower one (A76, SKX) wants it kept - the split is
+OoO width plus load-AGU count." The second half has collapsed.
+The A76's built-in A/B says out; SKX's A/B was inconclusive. On
+the evidence, every host wants this prefetch out, and the "narrow
+cores want it" rule was a story fitted to one unarchived number
+(corrections section 5).
 
 Graviton 4 results
 
@@ -718,19 +857,26 @@ instance.
 [bench_gv4_cold.png]
 
 At n=4096 warm, simd_quad_graviton + spine lands at 16.2 ns.
-That's 2.9x faster than std::binary_search (47.3 ns) and 1.3x
-faster than the reference SIMD (20.0 ns). At n=4096 cold, the
-spine variant lands at 36.4 ns versus 129.8 ns for
-binary_search, 85.4 ns for the reference, and 68.0 ns for the
-plain graviton variant - the spine is again a ~2x win on cold
-cache, the same pattern we saw on Pi 5 and EMR.
+That's 2.9x faster than std::binary_search (47.1 ns) and 1.2x
+faster than the plain graviton variant (20.0 ns) - but not faster
+than the gap=16 reference SIMD, which is 15.2 ns warm at this
+size on GV4; an earlier draft misattributed the 20.0 to the
+reference. Against the reference the spine's warm result is mixed
+across sizes (bench_table.txt); its consistent payoff is cold. At
+n=4096 cold, the spine variant lands at 34.6 ns versus 119.8 ns
+for binary_search, 81.7 ns for the reference, and 65.0 ns for the
+plain graviton variant - the spine is again a ~2x win on the cold
+column, the same pattern we saw on Pi 5 and EMR, with the
+reminder that on GV4 (like EMR and the M4) that column is an
+on-chip cache hit, not a DRAM miss.
 
 Two observations worth pulling out.
 
 First, Graviton 4 is nearly tied with Emerald Rapids on this
 workload. At n=4096 warm, gv4+spine is 16.2 ns vs emr+spine
-18.0 ns. At n=4096 cold, gv4+spine is 36.4 ns vs emr+spine
-37.2 ns. These two hosts are running entirely different ISAs
+18.0 ns. At n=4096 cold, gv4+spine is 34.6 ns vs emr+spine
+37.2 ns (both LLC-hit regimes in this harness). These two hosts
+are running entirely different ISAs
 (AArch64 with NEON vs AVX-512 with VBMI2), different SIMD
 register widths (128 bits vs 512 bits), different block-check
 instruction counts (four NEON compares + OR-tree vs one zmm
@@ -741,54 +887,77 @@ bandwidth, prefetcher aggressiveness), the benchmark lands in
 the same band regardless of what their SIMD instructions look
 like.
 
-Second, Graviton 4 cleanly beats Intel Skylake-SP at cold n=4096
-(36.4 ns vs 189.5 ns) despite the ARM host not having anything
-wider than 128-bit NEON and the x86 host having AVX-512BW. The
-cold-cache comparison is almost entirely a memory-hierarchy
-comparison - and a modern ARM server core plus current EC2
-networking and memory generally beats a 2018-era Xeon plus a
-shared-tenant DIMM. "CPU generation matters more than vendor"
-was already the takeaway between SKX and EMR; Graviton 4
-reinforces it from the other side of the ISA fence.
+Second, Graviton 4's cold n=4096 cell (34.6 ns) is about a
+quarter of Intel Skylake-SP's (132.7 ns) despite the ARM host not
+having anything wider than 128-bit NEON and the x86 host having
+AVX-512BW. I originally read this as a core-generation story
+("CPU generation matters more than vendor"). The harness cannot
+support that reading: both cells are last-level-cache hits in
+bench.cpp's unflushed cold column (corrections section 5), SKX's
+on a shared-tenant box, and cross-host "cold" comparisons from
+that column compare cache levels, not cores. The 4x gap is
+unexplained pending a flushed cold column. What survives is the
+narrower point that register width is irrelevant to this column;
+what the two cores do with a real DRAM miss is not measured here.
 
 Compile-time n=4096 on Graviton 4
 
 I also ported the compile-time-n=4096 specialization over from
-the Intel variant. Same structural shape: at gap=32 and n=4096,
-the quaternary descent is exactly three iterations (128 -> 32
--> 8 -> 2), one binary step, and the final lo pick. Every
-offset is a compile-time constant, so the compiler can emit a
-straight-line body with no backward branches.
+the Intel variant. At gap=32 and n=4096 the quaternary descent is
+exactly three iterations (128 -> 32 -> 8 -> 2), and every offset
+is a compile-time constant, so the compiler can emit a
+straight-line body with no backward branches. The first version
+finished with one binary step and the final lo pick; the shipped
+version (the "hybrid") replaces those two dependent rounds with
+one branchless 2-probe finish,
+lo = base + (spine[base] < pos) + (spine[base+1] < pos).
 
-The result on Graviton 4 is a modest warm win and cold noise:
-16.2 -> 14.6 ns warm (~-10%), 36.4 -> 35.5 ns cold (within
-noise). That's smaller than the -22% warm / -30% cold I saw on
-EMR, and the reason is the branch predictor. V2 already predicts
-the data-dependent quaternary descent very well, so removing
-the backward branches helps less. It still pays, and it's the
-right thing to ship for API callers that know their container
-is full-sized (4096 u16 = 8 KB = the classic Roaring array
-container cap), but it is not the transformative optimization
-that the spine was on every host.
+My first measurement of the unroll on Graviton 4 was a modest
+warm win (16.19 -> 13.96 ns, -13.8%) with a cold delta of similar
+size (37.63 -> 32.07 ns, -14.8%) that I read as noise
+(gv4_runs/spineN_summary.txt, 5-run medians; the "16.2 -> 14.6 ns"
+of the first draft was an unarchived development run), smaller
+than on EMR, and I blamed V2's branch predictor. The shipped
+hybrid is a different animal: on GV4, 16.22 -> 7.00 ns warm
+(-57%) and 35.86 -> 30.62 ns cold (-15%) against the general-n
+spine in the same runs (gv4_runs/hybrid_summary.txt, 5-run
+medians); on EMR, 17.86 -> 6.50 warm (-63.6%) and 37.20 -> 24.36
+cold (-34.5%) against the same-run general-n spine
+(emr_runs/shipped_summary.txt, 5-run medians). On SKX it is -32%
+warm in 5/5 runs, but slower cold in 3 of 5 runs (per-run -12% to
++62%, paired per-run median +40%) against a general-n control
+stable to +-0.6% in the same runs, so the SKX hybrid may carry a
+real cold cost; not settled at 5 runs (skx_runs/hybrid_run{1..5}.txt;
+corrections section 2.3). It is the right thing to ship for API
+callers that know their container is full-sized (4096 u16 = 8 KB =
+the classic Roaring array container cap), and on the server hosts
+its warm win is several times the spine's own (EMR: spine -8%,
+hybrid -64% at n=4096).
 
 What I learned
 
 First, the biggest win (the spine) came from Eytzinger's layout
-idea, not from its branchless-descent idea. The received wisdom
+idea, not from its branchless-descent idea and - as it turned
+out - not from its prefetch idea either. The received wisdom
 about Eytzinger is that it's "branchless binary search with
-prefetch." The prefetch is what matters. The branchless part is
-not what makes it fast - it is a side effect of the layout
-change. This was true on the Pi 5, it is still true on the M4,
-it is still true on both Intel server chips, and it is still
-true on Graviton 4. The spine is the single biggest optimization
-on every host in the set.
+prefetch." What transferred here was the layout: put the keys
+the descent touches into a few contiguous lines. The in-loop
+software prefetch I borrowed alongside it is a net loss on the
+Pi 5 (above), and a real Eytzinger outer with the Khuong-Morin
+prefetch, once its prefetch offset was fixed, never beats the
+outer spine on the Pi 5 in the two-level benchmark (corrections
+sections 1 and 6). The spine is the biggest optimization in the
+cold column on every host, and the biggest general-n
+optimization warm; the compile-time hybrid built on top of it is
+the biggest warm win on the servers.
 
 Second, orlp's bitwise binary search looks like a general
 improvement to binary search but is not one. It's a
 specialization to a particular regime (scalar, serial,
 power-of-two, lower-bound semantics). When your algorithm is
 already parallel across loads, the bitwise trick is the wrong
-trade on all four machines.
+trade. I did not benchmark it; by the dependency-chain argument
+above it should be a wash in L1 and lose cold.
 
 Third - and this is the one I should have expected - the
 optimization wasn't in the algorithm. It was in the memory
@@ -799,21 +968,23 @@ redundant data per 8-kilobyte container on Pi 5, SKX, and EMR
 (all 3% overhead with 64 B lines), or 128 bytes on the M4
 (1.5%, 128 B line). On every machine it is the biggest single
 speedup in the stack, and on every machine it wins for the same
-reason: cold pointer chases through scattered lines lose to one
-contiguous streaming read.
+reason: cold pointer chases through scattered lines lose to a
+read of a few contiguous lines.
 
 Fourth, the cold-cache gap between Apple silicon and the Pi 5
-is much larger than the warm-cache gap. Apple's core isn't just
-faster; it is much better at hiding memory latency. Emerald
-Rapids is closer to the M4 than to Skylake-SP in this respect,
-despite being nominally "x86 server" like SKX. On the Pi 5,
-any code path that misses L1 has a large, visible cost, so
-aggressive manual prefetching and data-layout tricks pay well.
-On the M4 and on EMR, those same tricks pay less but they still
-pay - even these wide cores can't hide the latency of scattered
-data-dependent loads for free. You should still write cache-aware
-code on the newer machines. You just won't be rewarded as much
-as you would on an older one.
+is much larger than the warm-cache gap - but I now know that
+most of that is cache capacity meeting an unflushed harness, not
+Apple's core hiding latency (see the M4 vs Pi 5 section). The
+same goes for "Emerald Rapids is closer to the M4 than to
+Skylake-SP in this respect": EMR's, the M4's and SKX's cold cells
+are all on-chip cache hits in that column and only the Pi 5's are
+DRAM misses (corrections section 5), so the column does not rank
+the three cores. What survives: on the Pi 5, any code path that
+misses L1 has a large, visible cost, so data-layout tricks pay
+well; on the M4 and EMR the spine still pays, even when the misses
+it removes are L2-to-SLC rather than DRAM. You should still write
+cache-aware code on the newer machines. How much less you are
+rewarded for it is a question for a flushed cold column.
 
 Fifth - and this is the one I genuinely didn't see coming - ISA
 feature flags are a poor model of performance. AVX-512BW is on
@@ -825,45 +996,60 @@ on the other. The fix was to find a more specific flag -
 __AVX512VBMI2__, which happens to draw the line where Intel's
 own uarch cost model changed - and gate on that. What was
 pleasantly surprising is that the same flag, with opposite
-polarity, turned out to be the right decision for the
-speculative-prefetch question too: the uarch generations that
-don't need the prefetch are the same ones that are safe to use
-zmm. One flag, two decisions, one cut line.
+polarity, turned out to be a workable switch for the
+speculative-prefetch question too: the generations that are safe
+to use zmm are the ones where the prefetch was A/B'd out. Whether
+the no-VBMI2 side should keep it is, as the Skylake section says,
+unmeasured - so "one flag, two decisions, one cut line" is one
+decision and one default.
 
-Sixth, with Graviton 4 in the set the speculative-prefetch
-split clarifies further. I had noticed across the ARM hosts
-that A76 wanted the prefetch and M4 Max did not, and on Intel
-that SKX wanted it and EMR did not. That could have been an
-ISA-family coincidence. The V2 data point rules it out: V2 is
-ARM, has a 64-byte cache line identical to the A76, has 128-bit
-NEON identical to the A76 - and it drops the prefetch, matching
-the M4 and EMR. What the three prefetch-drop hosts share is not
-an ISA. It is a wide OoO window plus plentiful load AGUs (3+)
-plus an aggressive HW prefetcher. What the two prefetch-keep
-hosts share is the inverse: a narrower OoO window and exactly 2
-load AGUs. The rule is about MLP budget, not about vendor or
-ISA. A single-source codebase can get this right by gating on
-uarch feature flags that track OoO generation (__AVX512VBMI2__
-on x86 worked because VBMI2 happens to mark the same uarch
-generation where the AVX-512 freq penalty went away); on ARM
-there is no such flag, so the simplest thing is to ship
-per-host files and let each one make its own call.
+Sixth, the speculative-prefetch "split" I thought Graviton 4
+had clarified does not exist. The story was: A76 and SKX (narrow
+OoO, 2 load AGUs) want the prefetch; M4, EMR and V2 (wide OoO,
+3+ load pipes) don't; the rule is MLP budget, not vendor or ISA.
+The V2 data point was real, but the "keep" side was built on an
+A/B that was never archived (Pi 5) and one that was inconclusive
+(SKX). The archived Pi 5 data say the prefetch loses there too.
+So the evidence supports a simpler, less interesting rule: this
+particular prefetch - whose address depends on the just-updated
+base and therefore issues at the same dependency depth as the
+loads it is meant to hide - does not pay on any host measured.
+The gating lesson survives in weaker form: __AVX512VBMI2__ still
+cleanly separates the zmm decision on x86, and it happens to also
+switch the prefetch off on the hosts where it was A/B'd out; on
+ARM there is no such flag, so per-host files remain the simplest
+way to make per-host calls.
 
-I suspect we can do even better than this. The obvious next
-steps: unroll the interpolation with compile-time knowledge of
-n (when it exists) on the ARM hosts that don't have it yet (Pi 5,
-M4); experiment with a two-level spine for Roaring Bitmap sets
-of containers on ARM (currently x86-only); look at whether the
+I suspect we can do even better than this. Since this post was
+first drafted, two of the obvious next steps have been done: the
+compile-time n=4096 hybrid now exists on every host, and the
+two-level (container-key outer + n=4096 inner) benchmark runs on
+all six hosts under a 4-mode harness. Its paired results are in
+Text/corrections_2026-10.md sections 2 and 6; the short form is
+that a branchless Shar outer (variant F) wins hot on five hosts
+(-14% to -54% vs the outer-spine variant D; 5/5 runs on hot_bat
+on all five and on hot_ser on four, SKX 4/5), is 4/5 at -6% on
+the Pi 5 in the archived runs and a tie there in the repaired
+10-run harness (pi5_runs/twolevel_paired_v2.txt), while cold the
+branchy or spine outers (C, D) are usually best - and on the Pi 5,
+after that repaired harness, the recommendation is D outright. Our
+stack beats Lemire's published variant in all 24 n=4096 cells (-35%
+to -84% hot, -7% to -45% cold), but his is faster at several small
+container sizes on the M4 Max. Still open: remove the Pi 5 in-loop
+prefetch (needs a kernel A/B); align container arrays and spines to
+cache lines; give bench.cpp a real cache flush; look at whether the
 tail-block scalar sweep can merge into the SIMD path without
-branching; and see whether AMX on Emerald Rapids has anything
-to offer (probably not for 16-bit integers, but worth a look).
-Let us get creative.
+branching; and see whether AMX on Emerald Rapids has anything to
+offer (probably not for 16-bit integers, but worth a look). Let
+us get creative.
 
 Appendix
 
   Code:
     simd_quad_pi5.c      - Pi 5 port, small-size fast paths,
-                          speculative prefetch, spine variant
+                          speculative prefetch (still shipped;
+                          archived data say it is a net loss),
+                          spine variant + compile-time hybrids
     simd_quad_m4.c       - M4 Max port, gap=64, wider block check,
                           spine variant, speculative prefetch removed
     simd_quad_intel.c    - Intel server port. gap=32. Both block
@@ -875,10 +1061,11 @@ Appendix
                           keep prefetch.
     simd_quad_graviton.c - AWS Graviton 4 / Arm Neoverse V2 port.
                           gap=32, paired NEON block check, no
-                          in-loop prefetch (dropped for the same
-                          wide-OoO reason as M4/EMR; confirmed by
-                          A/B on r8g 2026-05-01). Also ships a
-                          compile-time n=4096 unroll.
+                          in-loop prefetch (A/B on r8g,
+                          gv4_runs/ab_summary.txt). Its spine
+                          functions are byte-identical to the Pi 5
+                          ones (corrections section 5). Also ships
+                          the compile-time n=4096 hybrid.
 
   Benchmark: bench.cpp - correctness check against
              std::binary_search, warm/cold timings across sizes
@@ -907,13 +1094,22 @@ Appendix
                                                  over Pi 5 baseline
                                                  for M4/SKX/EMR/GV4
     bench_spine_4096.png                       - compile-time n=4096
-                                                 unroll vs general-n
-                                                 spine (all five hosts)
-    bench_twolevel.png                         - two-level spine A-F
-                                                 micro-bench, including
-                                                 Shar branchless outer
-                                                 (all five hosts)
+                                                 hybrid vs general-n
+                                                 spine (six hosts)
+    bench_twolevel.png                         - two-level micro-bench,
+                                                 A-I + Lem, six hosts,
+                                                 4 modes (levels only;
+                                                 H/I measured with the
+                                                 pre-fix prefetch on all
+                                                 six hosts - the Pi 5
+                                                 repaired-harness re-run
+                                                 is in pi5_runs/
+                                                 twolevel_paired_v2.txt,
+                                                 not in this plot;
+                                                 corrections sections
+                                                 1, 2, 6)
     bench_table.txt                            - full numerical table
+                                                 (archived 5-run medians)
 
   Builds:
     Pi 5:
@@ -933,10 +1129,12 @@ Appendix
     Intel Emerald Rapids / any Ice Lake-SP+ / AVX-512 + VBMI2:
       g++ -O3 -march=native -std=c++20 \
           bench.cpp simd_quad_intel.c -o bench
-      (Or -march=icelake-server / -march=sapphirerapids /
-       -march=x86-64-v4 - all enable __AVX512VBMI2__. The zmm
-       single-compare path is active; the in-loop prefetch is
-       compiled out.)
+      (Or -march=icelake-server / -march=sapphirerapids - both
+       enable __AVX512VBMI2__. The zmm single-compare path is
+       active; the in-loop prefetch is compiled out. Note that
+       -march=x86-64-v4 does NOT define __AVX512VBMI2__ and
+       silently builds the AVX2 + prefetch variant - corrections
+       section 5.)
 
   Systems:
     Raspberry Pi 5, BCM2712, 4x Cortex-A76 @ 2.4 GHz,
@@ -955,5 +1153,6 @@ Appendix
     AWS Graviton 4, Arm Neoverse V2 (CPU part 0xd4f), 96 cores,
     r8g EC2 instance. GCC 11.5 with -O3 -mcpu=neoverse-v2.
     Per-cell median of 5 runs; warm noise was very low, cold at
-    n>=1024 had moderate run-to-run drift (likely EC2 neighbor
-    noise, same caveat as the SKX host).
+    n>=1024 had moderate run-to-run drift (the instance was later
+    confirmed bare-metal, so this is intrinsic DRAM/LLC variance
+    rather than neighbor noise).

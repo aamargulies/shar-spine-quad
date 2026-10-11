@@ -1,11 +1,15 @@
 # F vs F* sweep findings — M4 Max, 2026-05-19
 
+> **Correction notice (2026-10-11).** This document is a lab note kept as history. A 2026-10-11 review of the repository's measurements found aggregation and harness defects behind several claims below; each affected statement is followed by a `Correction 2026-10-11` note and the original text is left in place. The authoritative list of retractions and replacement numbers is [Text/corrections_2026-10.md](../Text/corrections_2026-10.md); where that file and this one disagree, that file wins.
+
 ## Setup
 
 - **F** (baseline) = Shar branchless outer (K=512) + general-n `simd_quad_m4_spine` inner (= variant E in `bench_twolevel.cpp`).
 - **F\*** (specialized) = Shar branchless outer (K=512) + `simd_quad_m4_spineN_<N>` compile-time-N specialized inner (constant-prop unroll of the general-n descent body; **not** the hybrid 4-probe finish — see `simd_quad_m4_spine_4096` for the hybrid that ships at N=4096 in `bench_twolevel`).
 - 90 log-spaced N from 64 to 4096. n<64 skipped — at gap=64 the M4 inner short-circuits to small-fastpath before reaching the spine descent, so F == F* trivially.
 - 4-mode harness (hot_bat / hot_ser / cold_bat / cold_ser), 5 runs of 200 sets × 200 hot reps each, per-cell median. Same harness shape as `bench_twolevel.cpp`.
+
+  > Correction 2026-10-11: per-cell medians across runs are the aggregation defect of `Text/corrections_2026-10.md` §2 — whole runs drift (1.2–1.5× between `bench_twolevel` runs on the M4 Max, `Text/corrections_2026-10.md` §2.1), so differencing the medians of two variants can invert the ordering that every single run shows. The F vs F\* deltas below have not been re-analysed as paired per-run deltas; `m4_runs/sweep_summary.txt` holds only the medians, the per-run values are in `m4_runs/sweep_n<N>_<mode>_run<R>.txt`. TODO(review): paired per-run re-analysis of the sweep.
 
 ## Results
 
@@ -19,11 +23,17 @@ cold_ser  F* − F:  −20.0%   −54 .. +37%    77 / 1 / 12
 
 F\* wins on every n in both hot modes and on the strong majority of n in both cold modes.
 
+> Correction 2026-10-11: "win/tie/loss (per N)" counts the sign of the median-of-medians delta at each N; it is not a per-run sign count and not a sign test (`Text/corrections_2026-10.md` §2, defect 2). TODO(review): recompute paired per-run deltas and sign counts per N from `m4_runs/sweep_n<N>_<mode>_run<R>.txt`.
+
 ## What this means
 
 **Compile-time-N inner specialization is a uniform ~15-20% win across the full Roaring container size range on M4 Max.** This is despite the F\* shape being the *retired* unroll (general descent with constant num_blocks), not the shipping hybrid (`_spine_4096` = 2 quat iters + branchless 4-probe finish). The win comes purely from the compiler unrolling the descent loops once the trip count is constant — eliminating the loop counter dependency chain in the `while (n > 3)` and `while (n > 1)` headers.
 
+> Correction 2026-10-11: "uniform ~15–20% win" is a median over N of median-of-medians deltas (defect 2, see the Setup note). Read it as a level-based estimate pending the paired re-analysis: the direction is supported by the hot-mode median delta having the same sign at all 90 sizes (`m4_runs/sweep_summary.txt`), but no per-run sign count exists for it, and the cold-mode counts (84/0/6, 77/1/12) are weaker.
+
 The headline relevance: **`simd_quad_m4_spine` (general-n) leaves a meaningful chunk of performance on the table at every N, not just at N=4096.** The shipping `_spine_4096` hybrid is even faster (`bench_twolevel` E vs F at N=4096: −19% hot_bat), but its mechanism is harder to extend per-N because the hybrid finish width depends on N/gap.
+
+> Correction 2026-10-11: the "−19% hot_bat" does not match the archived 2026-05-18 M4 Max runs. The paired per-run F vs E `hot_bat` delta is −12.4%, F faster 5/5 (per-run −9.7 / −12.4 / −10.5 / −18.4 / −31.5%; `m4_runs/twolevel_paired.txt`), and the 5-run per-cell medians are E 15.12 vs F 13.25 ns (`m4_runs/twolevel_summary.txt`), also −12.4%.
 
 ## Cold-mode losses
 
@@ -37,6 +47,8 @@ The losses don't cluster around a particular n boundary, suggesting they're vari
 Memory note `shar-outer-no-prod-win.md` (2026-05-14) flagged: "today's M4 sweep showed FN cold_ser regresses vs Lem at n ≤ 512 but wins at n ≥ 1024. CRoaring may want a 'spine on at n ≥ threshold' knob."
 
 The current sweep is **F vs F\***, not F vs Lem, so it doesn't directly answer the threshold question. But it does say: **once you've decided to use the spine, compile-time-N specialization is worthwhile at every n ≥ 64 — there's no n range where the general-n inner wins.** If a threshold-based dispatcher gates "use spine at n ≥ T" for some T, the spine arm should be the F\* compile-time-N variant, not the general-n F.
+
+> Correction 2026-10-11: the F-vs-Lemire sweep has since been run on the M4 Max (`m4_runs/sweep_fvl_*`, 200 sizes, 5 runs; medians in `m4_runs/sweep_fvl_summary.txt` and `m4_fvl_sweep_data.py`). Lemire's published variant is faster than F in 5/5 runs at n = 48–62 (`hot_bat`, 25–29%), n = 81–124 (`hot_bat`, 5–31%), n = 1–7 (`cold_ser`, 40–47%) and n = 64–95 (`cold_ser`, 20–31%). The code explains the bands: the gap-64 kernel's [32,64) path is one vector load plus a scalar sweep of up to 31 elements, the general tail scans up to 63 elements, and the spine is inert below n = 256 on 128-byte-line hosts because `num_blocks <= 3` delegates to the plain path. "Our stack beats Lemire on every mode on every host" therefore holds only for n = 4096 containers (`Text/corrections_2026-10.md` §2.3).
 
 ## Measurement gotcha (recorded for future benchmarks)
 
@@ -57,5 +69,7 @@ First cold measurement in a fresh process pays one-time TLB warmup / page-fault 
 ## Out of scope (future work)
 
 - Port F\* sweep to other 5 hosts (Pi 5, M1 Pro, EMR, GV4 already have `_spine_{256,512,1024,2048,4096}` family — incremental cost; SKX has only 4096).
+
+  > Correction 2026-10-11: the host list is wrong on two counts. `simd_quad_m4.c` (M4 Max and M1 Pro) has no compile-time spine specialization other than `simd_quad_m4_spine_4096` (no `_spine_{256,512,1024,2048}` exists on either Apple host); the only other M4 compile-time inner is the codegen'd `simd_quad_m4_spineN_<N>` family in `simd_quad_m4_spine_family.c`/`.h` (90 log-spaced N from `m4_runs/sweep_n_list.txt`, none of which is 256, 512, 1024 or 2048 — only `spineN_4096` coincides with the `_spine_*` sizes), which is the F\* of this note. SKX shares `simd_quad_intel.c`, which defines the full `simd_quad_intel_spine_{256,512,1024,2048,4096}` family.
 - Compare F\* to *hybrid-style* per-N specialization (would `_spineN_<N>` benefit from the 2-quat + 4-probe finish at N where num_blocks divides cleanly?) — separate axis from this sweep.
 - Compare F\* to F at sub-gap sizes via Lemire's gap=16 reference path (the "spine on at n ≥ threshold" question).

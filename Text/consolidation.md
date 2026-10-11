@@ -1,5 +1,7 @@
 # Consolidation sketch: unified templated quad_search
 
+> **Correction notice (2026-10-11).** This document is a lab note kept as history. A 2026-10-11 review of the repository's measurements found aggregation and harness defects behind several claims below; each affected statement is followed by a `Correction 2026-10-11` note and the original text is left in place. The authoritative list of retractions and replacement numbers is [Text/corrections_2026-10.md](corrections_2026-10.md); where that file and this one disagree, that file wins.
+
 Here's the shape. Five files, maybe 500 lines total vs. the current ~1500.
 
 ## `quad_traits.hpp` — one struct per uarch, all knobs in one place
@@ -31,6 +33,8 @@ struct TraitsNeoverseV2 {
     using Leaf = NeonPairLeaf;       // same as A76, sans prefetch
 };
 ```
+
+> Correction 2026-10-11: the `TraitsA76` leaf comment ("`vld1q_u16_x2` + 2 cmp + OR") understates the shipped block check — both the Pi 5 and the Graviton kernels do two `vld1q_u16_x2` loads and four compares, and after stripping comments every `simd_quad_graviton_spine*` function is identical to its `simd_quad_pi5_spine*` counterpart; only the general-n non-spine kernel differs, by the one prefetch line (`Text/corrections_2026-10.md` §5). `speculative_prefetch = true` on A76 records the shipped state, not a measured win: the archived Pi 5 main-bench table is a built-in A/B (pi5 vs graviton columns; per-run pairs in `pi5_runs/rebench_run*.txt`) in which the prefetch kernel is slower cold at 13 of 14 sizes from n=128 up (+2% to +31%) and slower warm at 13 of 14, and fresh interleaved A/Bs in the review agreed (1–6% slower at n=4096, 17–20% slower at n=2048; only n=1024 favoured the prefetch). The prefetch address depends on the just-updated `base`, so it issues at the same dependency depth as the demand loads it is meant to hide; removing it is a kernel change that needs its own A/B on all sizes (`Text/corrections_2026-10.md` §5). `TraitsSkylakeSP`'s prefetch is kept by default, not because a zmm license downclocks the scalar loop — the gated SKX build executes no zmm instruction (`Text/corrections_2026-10.md` §5).
 
 ## `quad_leaf_neon.hpp` / `quad_leaf_avx.hpp` — pure leaf ops, nothing else
 
@@ -106,6 +110,8 @@ bool quad_search_spine_4096(const uint16_t *carr, const uint16_t *spine,
 }
 ```
 
+> Correction 2026-10-11: the `quad_search_spine_4096` sketch describes the retired unroll ("3 quat + 1 binary + final lo" / "3 quat + final lo"). What ships as `_spine_4096` on every host is the hybrid: gap=32 exits the quaternary descent at n=2 and finishes with `lo = base + (spine[base] < pos) + (spine[base+1] < pos)`; gap=64 exits at n=4 and uses the 4-probe equivalent (`Text/hybrid.md`; `simd_quad_*_spine_4096` in the kernel files).
+
 ## `quad_dispatch.hpp` — arch macros pick the traits once
 
 ```cpp
@@ -132,6 +138,8 @@ bool simd_quad(const uint16_t *carr, int32_t n, uint16_t pos) {
 - Adding a seventh host = one new traits struct, maybe one new leaf file.
 - `if constexpr (T::speculative_prefetch)` makes the prefetch-or-not a compile-time decision — same codegen as the hand-specialized files.
 - The non-obvious bits (AVX-512 freq-license gate, gap-follows-cache-line, prefetch polarity) move from scattered `.c` comments into one documented enum of traits structs.
+
+> Correction 2026-10-11: two of these "non-obvious bits" rest on corrected rationales. The AVX-512 gate's SKX justification ("license L2 downclocks the scalar loop") is wrong: 512-bit integer compares on Skylake-SP trip license level L1, not L2, and the gated build executes no zmm instruction, so nothing is downclocked. `-march=x86-64-v4` does not define `__AVX512VBMI2__`, so the `#if defined(__AVX512VBMI2__)` dispatch above silently selects the AVX2 + prefetch traits under that flag (use `-march=icelake-server` or `-march=sapphirerapids`), and Zen 4 / Zen 5 do define it, so the "Ice Lake or newer" proxy also selects the zmm path on AMD, untested. The prefetch polarity's Pi 5 anchor ("~10–25% cold win") is retracted — the prefetch is a net loss in the archived A/B (see the note under `quad_traits.hpp`) and still ships pending a kernel A/B (`Text/corrections_2026-10.md` §5).
 
 ## What this loses
 

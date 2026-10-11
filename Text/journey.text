@@ -1,6 +1,17 @@
 The SIMD Quad journey
 =====================
 
+> Correction notice 2026-10-11: this document is preserved as
+> written, as a record of the project's history. A review on
+> 2026-10-11 found that several of its numbers came from a retired
+> two-mode bench_twolevel harness, from per-cell medians taken
+> across drifting runs, or from bench.cpp's unflushed "cold"
+> column, and that some hardware statements were wrong. Retracted
+> claims are annotated in place below with "> Correction
+> 2026-10-11:" notes. The authoritative list of retractions and
+> replacement numbers is Text/corrections_2026-10.md; where this
+> document and that file disagree, that file wins.
+
 The story of the research, porting, benchmarking, and arguing with
 hardware across six very different machines. This is the high-level
 story: what problem I was trying to solve, what tricks I found
@@ -141,6 +152,25 @@ prefetcher loves this pattern — it is a simple sequential scan —
 and the whole interpolation phase effectively costs the latency
 of reading a single cache line from memory, even cold.
 
+> Correction 2026-10-11: the mechanism is not the hardware
+> prefetcher: a 256-byte spine is too short to train a stride
+> prefetcher. The win is memory-level parallelism over a short
+> contiguous read: the descent touches a few adjacent cache
+> lines instead of chasing probes through the 8 KB array, so
+> those few lines can be in flight at once (CLAUDE.md
+> (gitignored), Findings). The 2x-3x cold win at n=4096 itself
+> stands (see the next note for what the cold column measures).
+
+> Correction 2026-10-11: "two or four cache lines at most" assumes
+> the spine is cache-line aligned, which nothing enforces: arrays
+> and spines are std::vector allocations (16-byte aligned), so a
+> 256-byte spine usually spans five lines, and about 75% of
+> 64-byte blocks (87.5% of 128-byte blocks) straddle two lines.
+> Interleaved aligned-vs-misaligned A/Bs on the Pi 5 measured a
+> +14-30% cold penalty at n=4096. A Roaring integration must align
+> container arrays and spines to get the designed behaviour
+> (Text/corrections_2026-10.md, section 5).
+
 The spine is the single largest performance improvement in the
 entire project. On every machine I tested, for large cold-cache
 searches, the spine version is roughly 2x to 3x faster than the
@@ -148,6 +178,15 @@ no-spine version. It is also the most "boring" optimization in
 the project: no SIMD, no branchless tricks, no architecture-
 specific intrinsics. Just: put the data the CPU is going to read
 next to the data the CPU is reading now.
+
+> Correction 2026-10-11: "roughly 2x to 3x faster" here (and
+> "another 2-3x" above) are within-host ratios from bench.cpp's
+> "cold" column, which has no cache flush: it walks the arrays in
+> allocation order with the targets the previous algorithm just
+> used, and the ~35 MB footprint fits the LLC of every host except
+> the Pi 5. The ratios stand as measured but describe LLC-hit, not
+> DRAM-cold, behaviour on five of the six hosts
+> (Text/corrections_2026-10.md, section 5).
 
 Once I had the spine working, I wondered whether I could
 take the idea a level higher. Roaring Bitmap lookups are
@@ -189,6 +228,21 @@ case by a wide margin.
 I was wrong. F won on every single machine, by a comfortable
 margin.
 
+> Correction 2026-10-11: measured with the retired two-mode
+> harness (Text/corrections_2026-10.md, section 3). Under the
+> 4-mode harness with paired per-run analysis (5 runs per host,
+> {host}_runs/twolevel_paired.txt, sections 2.1-2.2), F beats D
+> hot in 5/5 runs on five hosts (-14% to -54%; the one exception
+> is SKX hot_ser, 4/5 at -16.3%) but only 4/5 at -6% on the Pi 5,
+> where it is a tie in the repaired-harness re-runs (10 runs,
+> pi5_runs/twolevel_paired_v2.txt, section 6). Cold, the
+> best variant is usually C or D: C beats F 5/5 in both cold
+> modes on EMR and GV4 (C is fastest in 5/5 GV4 runs and 5/5
+> EMR cold_bat runs, 4/5 EMR cold_ser runs); D wins cold_bat
+> 5/5 on the Pi 5 (F vs D +31.8%) and cold_ser 5/5 on SKX (F vs
+> D +16.9%). On no host is F best in every mode. The Pi 5 ship
+> recommendation is now D (section 6).
+
 The reason why is a story I will tell in a moment, but first
 we need to introduce Shar.
 
@@ -201,6 +255,12 @@ branchless binary search. Like most things Dijkstra-era
 computer science rediscovered, it was promptly forgotten,
 and then re-popularized in 2023 by a blog post from Malte
 Skarupke.
+
+> Correction 2026-10-11: Shar never published the method. The 1971
+> date is Knuth's inline attribution ("suggested in 1971 by L. E.
+> Shar", The Art of Computer Programming, Vol. 3, 2nd ed., p. 416);
+> see the Shar entry in Works Cited and the Notes on citations at
+> the end of this document.
 
 The idea is that a normal binary search has a branch at every
 iteration: "is the target less than the midpoint? go left;
@@ -224,6 +284,16 @@ can issue them back-to-back without waiting for each to complete.
 What used to be a serial chain of compare-branch-compare-branch
 becomes a pipelined chain of independent loads, which is exactly
 what modern out-of-order execution engines are best at.
+
+> Correction 2026-10-11: this mechanism is wrong. The compiled
+> Shar loop is load -> compare -> csel -> load, each address
+> depending on the previous select, so it is a serial dependent
+> chain that cannot be speculated past, not a set of independent
+> loads. It wins hot because it has no branch mispredicts and no
+> side structure. On cold data the branchy std::lower_bound
+> (variants A, C) lets the core speculate ahead across mispredicted
+> branches, which is why C is the cold winner on EMR and GV4
+> (Text/corrections_2026-10.md, section 5).
 
 For our two-level experiment, the outer search is over a few
 hundred keys. That is exactly the regime where Shar's wins: too
@@ -249,6 +319,12 @@ check reads one line. On the other machines, a block of 32
 elements is one cache line. Getting this wrong costs you a
 factor of 2x in memory traffic.
 
+> Correction 2026-10-11: "a block ... is one cache line" holds
+> only if the array is cache-line aligned, which no kernel or
+> harness enforces: std::vector allocations are 16-byte aligned,
+> so about 75% of 64-byte blocks and 87.5% of 128-byte blocks
+> straddle two lines (Text/corrections_2026-10.md, section 5).
+
 Out-of-order execution window and load ports. The Pi 5 has a
 relatively narrow out-of-order window and only 2 load units.
 The Apple chips have 3 load units and a very wide window. The
@@ -257,6 +333,19 @@ you get from loading ahead: on a wide machine, inserting a
 "please prefetch this" hint is pure waste — the machine was
 already going to issue that load early, on its own. On a narrow
 machine, the hint can be worth 20% cold-cache performance.
+
+> Correction 2026-10-11: two retractions. (1) The 2026-10-11
+> review reported that Neoverse V2 has three load pipes, not four
+> (not verified on hardware; Text/corrections_2026-10.md,
+> section 5). (2) The Pi 5 in-loop prefetch is a net loss, not a
+> 20% cold win: simd_quad_graviton.c is simd_quad_pi5.c minus that
+> prefetch, and in the archived Pi 5 main bench the prefetch
+> kernel is slower cold at 13 of 14 sizes from n=128 up (+2% to
+> +31%) and slower warm at 13 of 14 (plot.py pi5 dicts, pi5 vs
+> graviton columns; per-run pairs in pi5_runs/rebench_run*.txt).
+> Fresh interleaved A/Bs during the review agreed (1-6% slower at
+> n=4096, 17-20% slower at n=2048; only n=1024 favoured the
+> prefetch) (section 5). The shipped Pi 5 kernel still contains it.
 
 Frequency license. Intel's AVX-512 instructions, which do
 512-bit-wide SIMD on 32 16-bit integers at once, triggered a
@@ -268,12 +357,26 @@ slower than the non-AVX-512 fallback, because the frequency
 penalty outweighed the SIMD width advantage. On Emerald Rapids
 Intel fixed the downclock problem, so AVX-512 is free again.
 
+> Correction 2026-10-11: on Skylake-SP, 512-bit integer compares
+> trip frequency license level L1, not L2, and the shipped gated
+> build executes no zmm instruction at all, so nothing in it is
+> downclocked; "the scalar loop is downclocked" is not a reason
+> for keeping the SKX prefetch (Text/corrections_2026-10.md,
+> section 5). The corrections file does not revisit the zmm-vs-
+> AVX2 measurement itself, only the explanation given here.
+
 The net effect is that the same source file needs different
 tuning decisions on different machines:
 
   * The Raspberry Pi 5 (Cortex-A76) wants block size 32,
     paired loads, and a speculative prefetch hint in the
     interpolation loop.
+
+> Correction 2026-10-11: the prefetch hint is a net loss on the
+> Pi 5 (slower cold at 13 of 14 sizes from n=128 up and slower
+> warm at 13 of 14 in the archived main bench;
+> Text/corrections_2026-10.md, section 5). Removing it needs its
+> own kernel A/B and is an open item.
 
   * The Apple M4 Max and M1 Pro (Firestorm / P-core) want
     block size 64, 4-way parallel loads, and no prefetch hint.
@@ -287,6 +390,16 @@ tuning decisions on different machines:
     the AVX-512 path on, with the prefetch dropped. They
     share a source file but pick different paths at compile
     time using preprocessor guards.
+
+> Correction 2026-10-11: the SKX prefetch was kept on an
+> inconclusive A/B (CLAUDE.md (gitignored) hardware table,
+> in-loop prefetch row for Skylake-SP: "kept (A/B inconclusive;
+> no license argument applies, the gated build runs no zmm)"),
+> not because of a downclocked scalar loop; the gated SKX build
+> executes no zmm instruction, so nothing in it is downclocked
+> (Text/corrections_2026-10.md, section 5). No SKX prefetch A/B
+> run is archived in skx_runs/, so the A/B itself cannot be
+> audited.
 
   * The AWS Graviton 4 (Neoverse V2) behaves like the Apple
     chips — wide out-of-order window, prefetch hint wastes
@@ -315,12 +428,41 @@ case):
   * Intel Skylake-SP:      ~130 nanoseconds per lookup (noisy)
   * Raspberry Pi 5:        ~140 nanoseconds per lookup
 
+> Correction 2026-10-11: two of these six values (GV4 ~15, EMR
+> ~17) match no archived cold measurement; they resemble the
+> general-n spine WARM cells (GV4 16.2, EMR 18.0 in the
+> regenerated bench_table.txt, n=4096 warm column), so they were
+> probably mislabelled "cold". M4 Max, M1 Pro and SKX match the
+> general-n spine cold column (6.5, 11.1, 132.7), and Pi 5 ~140
+> sits between the general-n spine's rebench-set 150.7
+> (bench_table.txt; pi5_runs/rebench_run{1..5}.txt, 2026-05-12
+> 20:11) and the compile-time kernel's hybrid-run-set 136.75
+> (pi5_runs/hybrid_summary.txt; pi5_runs/hybrid_run{1..5}.txt,
+> 2026-05-12 17:00). For reference, the archived per-cell medians
+> (5 runs, bench.cpp n=4096 "cold" column, regenerated
+> bench_table.txt) are, for the general-n spine kernel: M4 Max
+> 6.5 ns, M1 Pro 11.1, GV4 34.6, EMR 37.2, SKX 132.7, Pi 5 150.7;
+> for the compile-time n=4096 kernel: M4 Max 21.94, M1 Pro 32.12,
+> GV4 27.24 (fullsweep set, gv4_runs/fullsweep_run{1..5}.txt,
+> 2026-05-12 15:19, via gv4_runs/fullsweep_summary.txt; the
+> hybrid_run set of 2026-05-12 13:19 in gv4_runs/hybrid_summary.txt
+> gives 30.62), EMR 24.36, SKX 185.01, Pi 5 111.85 (rebench set,
+> 2026-05-12 20:11; the hybrid_run set of 17:00 gives 136.75).
+
 The Apple and ARM server machines land in an impressively narrow
 band — 7 to 17 nanoseconds per lookup, cold — while the Pi 5 and
 the older Skylake trail. The Pi 5 number is mostly memory
 latency: it has the smallest L2, the slowest DRAM, and the
 longest round-trip. The Skylake number is dominated by
 shared-tenancy noise on the EC2 instance I rented.
+
+> Correction 2026-10-11: bench.cpp's "cold" column has no cache
+> flush: it walks the arrays in allocation order with the targets
+> the previous algorithm just used, and the ~35 MB footprint fits
+> the LLC of every host except the Pi 5, so this cross-host
+> ranking compares cache levels, not cores
+> (Text/corrections_2026-10.md, section 5). The Pi 5 is the only
+> host here whose "cold" is DRAM-cold.
 
 For the full two-level lookup — outer container search + inner
 element check — Shar's algorithm plus the compile-time-unrolled
@@ -329,6 +471,34 @@ with warm-cache numbers around 13 to 90 nanoseconds and
 cold-cache numbers around 10 to 30 nanoseconds. That is the
 shape of the code I recommend shipping into the CRoaring
 library.
+
+> Correction 2026-10-11: the 13-90 ns warm / 10-30 ns cold
+> two-level figures come from the retired two-mode harness, whose
+> cold query missed the outer keys about 99% of the time and never
+> ran the inner search (Text/corrections_2026-10.md, section 3).
+> Under the 4-mode harness (per-cell medians of 5 runs,
+> {host}_runs/twolevel_summary.txt) F's hot_bat / hot_ser /
+> cold_bat / cold_ser levels are: Pi 5 244.4 / 328.5 / 1591.6 /
+> 1547.0 ns (the Pi 5 F hot_ser 328.5 is an outlier-run artifact:
+> per-run 216 / 340 / 482 / 252 / 329, section 3); M4 Max 13.25 /
+> 16.33 / 161.88 / 281.67; M1 Pro 45.88 / 79.26 / 278.54 / 776.46;
+> SKX 84.42 / 83.72 / 594.47 / 826.85; EMR 55.43 / 58.12 / 240.31
+> / 512.30; GV4 65.37 / 50.34 / 268.45 / 486.13. F beats D hot on
+> five hosts (5/5 in every cell except SKX hot_ser, 4/5 at -16.3%,
+> skx_runs/twolevel_paired.txt), but the best hot variant by
+> paired per-run rank is I on GV4 hot_bat (5/5, -10.8% vs F,
+> gv4_runs/twolevel_paired.txt) and on M1 Pro hot_ser (4/5, -10.9%
+> vs F, m1_runs/twolevel_paired.txt), both measured with the
+> mis-aimed prefetch (section 1); on EMR hot_bat I is also ahead
+> of F in 5/5 runs but by only -0.7%, a tie by size (section 2.1).
+> The cold-best variant is usually C or D (sections 2.1-2.3), and
+> on the Pi 5 the repaired harness (10 runs,
+> pi5_runs/twolevel_paired_v2.txt, section 6) makes D the ship
+> recommendation: F ties D hot and loses cold_bat by +44.7% (D
+> faster 10/10). The honest headline is F vs Lemire's published
+> variant at n=4096: -35% to -84% hot, -7% to -45% cold (section
+> 2.2), with the caveat that Lemire's variant beats F in several
+> small-container bands on the M4 Max (section 2.3).
 
 
 A note on the process
@@ -355,6 +525,22 @@ machine (the M1 Pro), the same regression reproduced — which
 turned the weird outlier into confirmed structural evidence
 that the regression was about the cache hierarchy, not
 execution-engine quirks.
+
+> Correction 2026-10-11: three claims in this paragraph are
+> superseded. The Pi 5 prefetch hint did not help there (net loss
+> in the archived main bench; Text/corrections_2026-10.md,
+> section 5). The outer spine lost to Shar's only in the hot
+> modes: cold, D (outer spine) wins cold_bat 5/5 on the Pi 5 and
+> cold_ser 5/5 on SKX, and C beats F 5/5 in both cold modes on
+> EMR and GV4 (C is fastest in 5/5 GV4 runs and 5/5 EMR cold_bat
+> runs, 4/5 EMR cold_ser runs) (sections 2.1-2.3; paired, 5
+> runs, {host}_runs/twolevel_paired.txt). The Apple _spine_4096
+> "structural" cold regression may be a measurement-order
+> artifact of bench.cpp: the spine kernel's cold pass runs right
+> after the non-spine kernel's cold pass with identical targets,
+> so the block line is an L2 hit, and the same asymmetry
+> reproduces on the Pi 5; this is a hypothesis that needs a test
+> on Apple hardware (section 5).
 
 Each of those surprises became a paragraph in the findings
 section of the technical write-up. None of them were predictable
@@ -392,6 +578,13 @@ AVX2
   SIMD registers. Supported on every Intel chip since around
   2013 and on AMD Zen 2 and later.
 
+> Correction 2026-10-11: AMD shipped AVX2 before Zen 2 (Excavator,
+> 2015, and Zen 1, 2017, both implement it, per AMD's published
+> ISA support), so "Zen 2 and later" is wrong. Raised by the
+> 2026-10-11 review; not recorded in Text/corrections_2026-10.md
+> and the review sheet is not checked in, so this is a plain
+> hardware-fact correction, not a cited retraction.
+
 AVX-512
   An extension to the x86 instruction set that adds 512-bit
   SIMD registers. Supported on Intel server chips from Skylake
@@ -403,6 +596,18 @@ AVX-512 frequency license
   CPU to downclock the entire core to stay within its thermal
   budget. On chips like Emerald Rapids this behavior has been
   fixed and AVX-512 is free again.
+
+> Correction 2026-10-11: "through Ice Lake-SP" contradicts the
+> Ice Lake-SP entry below and the project's gating rule in
+> CLAUDE.md (gate zmm on __AVX512VBMI2__ (Ice Lake-SP+), not
+> __AVX512BW__), which treat Ice Lake-SP as the generation where
+> the penalty largely disappeared. This is an internal-consistency
+> fix raised by the 2026-10-11 review; it is not recorded in
+> Text/corrections_2026-10.md.
+> Also, on Skylake-SP 512-bit integer compares trip license level
+> L1, not L2, and the shipped gated build executes no zmm
+> instruction, so nothing in it is downclocked
+> (Text/corrections_2026-10.md, section 5).
 
 Binary search
   A textbook algorithm for finding a value in a sorted array.
@@ -464,6 +669,13 @@ Emerald Rapids
   An Intel Xeon server chip, released 2023. Fourth-generation
   server core, fixes the AVX-512 frequency license problem.
   Specifically: Xeon Platinum 8559C.
+
+> Correction 2026-10-11: the Emerald Rapids 8559C core is Raptor
+> Cove (not Granite Rapids, not Redwood Cove)
+> (Text/corrections_2026-10.md, section 5); Emerald Rapids is
+> marketed by Intel as 5th Gen Intel Xeon Scalable, not
+> fourth-generation (Intel product branding; raised by the
+> 2026-10-11 review, not recorded in Text/corrections_2026-10.md).
 
 Firestorm
   The codename for the P-core (performance core) in the Apple
@@ -583,11 +795,24 @@ Skylake-SP
   with the frequency-downclock penalty; the canonical example
   of "AVX-512 capable but not actually useful for light usage".
 
+> Correction 2026-10-11: on Skylake-SP, 512-bit integer compares
+> trip license level L1, not L2; the shipped gated build executes
+> no zmm instruction, so nothing in it is downclocked
+> (Text/corrections_2026-10.md, section 5).
+
 Spine
   Our term for the small dense side array of interpolation
   keys, packed next to each other so that the hardware
   prefetcher can stream them. The single biggest optimization
   in the project.
+
+> Correction 2026-10-11: not "so that the hardware prefetcher
+> can stream them": a 256-byte spine is too short to train a
+> stride prefetcher. The spine wins because the descent reads a
+> few adjacent cache lines instead of chasing probes through
+> the 8 KB array, so those lines can be in flight at once
+> (memory-level parallelism over a short contiguous read;
+> CLAUDE.md (gitignored), Findings).
 
 SSE2
   A venerable x86 SIMD extension. 128 bits wide. The fallback
@@ -601,6 +826,12 @@ SVE / SVE2
   this project, SVE is either absent (Apple silicon, Cortex-A76)
   or present but implemented at the same 128-bit width as
   NEON (Neoverse V2), so I did not end up using it.
+
+> Correction 2026-10-11: "absent" is imprecise for the M4, which
+> implements the Arm SME/SME2 extension with a Streaming SVE mode
+> (Arm architecture and Apple platform documentation; raised by the
+> 2026-10-11 review, not recorded in Text/corrections_2026-10.md);
+> it was not used in this project either way.
 
 u16
   Short for uint16_t, a 16-bit unsigned integer. What Roaring
@@ -622,6 +853,12 @@ zmm
   at once. The intended fast path on Intel server chips, though
   as noted above the Skylake-SP generation has frequency-license
   reasons to prefer the narrower 256-bit alternative.
+
+> Correction 2026-10-11: see the Skylake-SP and AVX-512 frequency
+> license entries above: the license level for 512-bit integer
+> compares on Skylake-SP is L1, not L2, and the shipped SKX build
+> executes no zmm instruction (Text/corrections_2026-10.md,
+> section 5).
 
 
 Works Cited

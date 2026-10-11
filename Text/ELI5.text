@@ -1,3 +1,5 @@
+> Correction notice 2026-10-11: corrected against Text/corrections_2026-10.md. The original explained Shar's loop as "independent loads issued in parallel" and said F wins on all six hosts; the Shar section was rewritten in place (it is a serial load-compare-select chain; F's win is hot-only, with the plain bsearch or the outer spine best cold and the outer spine D the Pi 5 pick). Other retracted claims are annotated in place with "> Correction 2026-10-11:" notes; the corrections document wins wherever the two disagree.
+
 # Shar's algorithm (ELI5)
 
 Regular binary search asks "is my number bigger or smaller than the middle?" and then branches left or right. Branches are slow when the CPU can't guess which way you'll go, because it has to wait for the answer before starting the next step.
@@ -13,12 +15,13 @@ Imagine you have a sorted list of 512 numbers and you're looking for one.
 
 After ~9 halvings, your pointer lands on the answer.
 
-**Why it's fast:**
+**Why it's fast (when the keys are in cache):**
 - The "slide or don't slide" decision is a `cmov` (conditional move) — no branch, no misprediction penalty.
-- Each step's *load* (`pointer[step]`) doesn't depend on the previous step's comparison result, so the CPU can issue all ~9 loads back-to-back and let out-of-order execution overlap them.
+- There is no side structure — no spine, no tree, nothing extra to build or keep warm. The 512 keys are all it touches.
+- The ~9 loads are *not* independent, though. The compiled loop is load → compare → `csel` → load: each step's address (`pointer[step]`) depends on the previous conditional select, so the loads form a serial dependent chain that the CPU cannot speculate past or overlap. Shar wins hot in spite of that chain, not because its loads overlap.
 - For non-power-of-two sizes, you start the pointer at `len - bit_floor(len)` instead of 0, so the first step lands inside the array.
 
-**Why it wins here:** our outer key array is only 512 × 2 bytes = 1 KB. That's too small for the CPU's stride prefetcher to help a traditional pointer-chasing spine descent. Shar turns the whole search into ~9 independent loads + cmovs, which every modern wide-OoO CPU eats for breakfast — hence F (Shar outer + compile-time n=4096 inner) winning on all six hosts.
+**Why it wins here — and where it doesn't:** our outer key array is only 512 × 2 bytes = 1 KB. That's too small for the CPU's stride prefetcher to help a traditional pointer-chasing spine descent, so with the keys in cache the branch-free, side-structure-free cmov chain is the cheapest outer search, and F (Shar outer + compile-time n=4096 inner) is the hot-mode winner: it beats the outer spine D hot 5/5 on five of six hosts (−14% to −54%; SKX hot_ser 4/5, −16.3%) and is a tie with it on the Pi 5 (4/5 at −6% in the archived runs, a tie in the repaired re-runs). That win is hot-only. When the keys are cold, every link of the chain that misses is paid in full, while a branchy `std::lower_bound` outer lets the core speculate ahead across mispredicted branches and overlap its misses — so the cold-best variant is C or D (bsearch or outer spine, each with the compile-time inner): C beats F 5/5 in both cold modes on EMR and GV4 (C is fastest in 5/5 GV4 runs and 5/5 EMR cold_bat runs, 4/5 EMR cold_ser runs), and D wins cold_bat 5/5 on the Pi 5 and cold_ser 5/5 on SKX. On the Pi 5 the repaired-harness re-runs (10 runs, pi5_runs/twolevel_paired_v2.txt) make the outer spine D the best variant by mean rank in hot_bat, hot_ser and cold_bat (fastest in 7/10, 8/10 and 7/10 runs), tied with F hot (F vs D +2.7% / +2.0%), while cold_ser is noise (seven different winners in ten runs) — so D is the Pi 5 ship recommendation (Text/corrections_2026-10.md sections 2.1, 2.3, 5, 6).
 
 Note: Shar's algorithm is still a binary search, so the input array must be sorted. It just replaces the `if (x < mid) go left else go right` branch with a branchless "slide the pointer or don't" step. The sortedness requirement is identical to regular binary search; only the control flow changes. In our case that's fine because the outer key array (the 512 container keys in a Roaring set) is already maintained in sorted order by construction — same invariant `std::lower_bound` / `bsearch` rely on.
 
@@ -32,15 +35,22 @@ Note: Shar's algorithm is still a binary search, so the input array must be sort
 Concretely, for a sorted array of 4096 `uint16_t`s with gap=32:
 
 1. **Pre-build the spine once:** copy every 32nd element into a small side-array. 4096 / 32 = 128 entries = 256 bytes (4 cache lines on Intel/Pi 5/GV4, or 1 line on M4 with gap=64).
+
+> Correction 2026-10-11: "4 cache lines" / "1 line" assumes the spine is cache-line aligned, which nothing enforces: std::vector allocations are 16-byte aligned, so a 256-byte spine usually spans five lines and a 128-byte one straddles two lines about 87.5% of the time (Text/corrections_2026-10.md §5).
+
 2. **To search:** walk the spine to find which 32-element block your target falls into. Then do a SIMD block-compare on those 32 elements in the original array.
 
 **Why "descent":** you don't binary-search the spine either — you do a **quaternary** descent (split into 4 at each step instead of 2). Three 4-way splits gets you through 128 entries (4³ = 64, close enough — a final binary step or block-load finishes it). Each tier picks one of 4 candidate positions using SIMD compares.
 
 **Why it's so much faster cold:**
-- The spine is 256 bytes and sequential. The CPU's stride prefetcher sees "oh, they're reading memory in order" and pulls the next lines into cache before you ask. Free.
-- You've reduced ~12 cold dependent DRAM loads to ~3 spine loads (mostly prefetched) + 1 block load in the original array.
+- The spine is 256 bytes and contiguous. The ~3 spine probes land in a handful of adjacent cache lines instead of being scattered across the 8 KB array, so the CPU can have those few lines in flight at once — memory-level parallelism over a short contiguous read. It is not the stride prefetcher doing this: a 256-byte spine is too short to train one.
+- You've reduced ~12 cold dependent DRAM loads to ~3 spine loads (from a few adjacent lines) + 1 block load in the original array.
 - The spine is so small it often stays hot in L1 even when the main array is cold.
 
 **Why it's the biggest win in the project:** on Pi 5, cold n=4096 goes from ~138 ns to ~70 ns (~2×). On M4, ~18 → ~6 (~3×). The main array doesn't change at all — you just added a 256-byte cheat sheet.
 
+> Correction 2026-10-11: these numbers do not match the archive. Regenerated bench_table.txt (per-cell medians of 5 runs, bench.cpp "cold" column, n=4096): Pi 5 `simd_quad_pi5` 299.0 → `+ spine` 150.7 ns; M4 Max `simd_quad_m4` 16.8 → `+ spine` 6.5 ns. The spine effect is present on both hosts in the archive, but bench.cpp's "cold" column has no cache flush and is LLC-resident on every host except the Pi 5, so on the M4 the gain is an LLC-hit effect, not DRAM (Text/corrections_2026-10.md §5).
+
 **The M4 gotcha:** on M4's 128-byte cache lines with gap=64, the spine shrinks to 128 bytes = *one* line. The streamer has nothing to latch onto (it needs to see ≥2 sequential lines to kick in), so the speedup mechanism partly breaks — which is why `simd_quad_m4_spine_4096` has that weird cold regression.
+
+> Correction 2026-10-11: the "structural" reading is now a hypothesis, not a finding. In bench.cpp the spine kernel's cold pass runs right after the non-spine kernel's cold pass with identical targets, so the block line is an L2 hit on Apple's large L2, while the dedicated `4096*` row runs after its own 32 MB warm sweep; the reported gap matches L2-hit vs SLC-hit latencies and the same asymmetry reproduces on the Pi 5. It needs a test on Apple hardware with an explicit flush before both measurements (Text/corrections_2026-10.md §5).
