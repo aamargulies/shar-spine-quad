@@ -1,0 +1,142 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+**Read `Text/corrections_2026-10.md` before quoting any number from this file or from the write-ups.** A full review on 2026-10-11 found four measurement/aggregation defects under most of the published comparisons (mis-aimed Eytzinger prefetch, ratio-of-medians across drifting runs, pre-2026-05-13 two-level cold numbers, unarchived 22-size plot curves). The kernels are correct and the large effects are real; the comparisons in this file were rewritten from paired per-run analysis. Where this file and the corrections document disagree, the corrections document wins.
+
+## Project goal
+
+Produce machine-optimized variants of the "SIMD Quad" search algorithm for sorted `uint16_t` arrays (sizes ~1–4096, as used in Roaring Bitmap containers). Six hosts: Raspberry Pi 5 (Cortex-A76), Apple M1 Pro (Firestorm), Apple M4 Max, Intel Skylake-SP (Xeon 8175M), Intel Emerald Rapids (Xeon 8559C, Raptor Cove cores), AWS Graviton 4 (Neoverse V2). Each CPU-family variant lives in its own `.c` file; `bench.cpp` is arch-aware and builds only the variants relevant to the host.
+
+Always refer to Intel hosts by microarchitecture ("Intel Skylake", "Intel Emerald Rapids") — they share `simd_quad_intel.c` but take different SIMD paths (AVX2 on SKX, zmm on EMR). On ARM, refer to cores by microarchitecture ("Cortex-A76" / "Firestorm" (M1) / "M4 P-core" / "Neoverse V2"). M1 Pro and M4 Max share `simd_quad_m4.c` (both 128-B-line / wide-OoO Apple P-cores); all M4 design decisions port to M1 Pro with no code changes. Pi 5 and Graviton 4 share every spine kernel byte for byte (see Files).
+
+## Files
+
+- `simd_quad.c` — reference. Bare function body (no `#include`s, uses `constexpr`, `bool` without `<stdbool.h>`), `#include`d into `bench.cpp` and `bench_twolevel.cpp`. Two paths via `__ARM_NEON`: NEON for ARM, SSE2 for x86.
+- `simd_quad_pi5.c` — Cortex-A76. gap=32, two `vld1q_u16_x2` loads + four `vceqq` block check, small-size fast paths [8,16)+[16,32), one speculative `__builtin_prefetch` per quat-loop iteration (kept for now, but the archived data say it is a net loss — see Findings), spine + `simd_quad_pi5_spine_{256,512,1024,2048,4096}` compile-time specializations. High-foot sizes {256, 1024, 4096} are hybrids (straight-line unroll + branchless 2-probe finish `lo = base + (spine[base] < pos) + (spine[base+1] < pos)`); low-foot {512, 2048} are pure unrolls. `_spine_4096` IS the hybrid; prior unroll retired.
+- `simd_quad_m4.c` — Apple M4 Max **and** M1 Pro. gap=64 (one 128-B cache line when aligned), two `vld1q_u16_x4` loads + eight `vceqq` block check, small-size fast paths [8,16)+[16,32)+[32,64), no prefetch, spine + `simd_quad_m4_spine_4096` (hybrid: 2 quat iters + branchless 4-probe finish). num_blocks=64, no binary tail (only gap=64 host). Single source file serves both Apple hosts.
+- `simd_quad_intel.c` — Intel server. gap=32, AVX-512 single-compare block check gated on `__AVX512VBMI2__` with 2× 256-bit AVX2 fallback on SKX; in-loop `_mm_prefetch` gated on the same proxy with opposite polarity (VBMI2 absent → kept; present → dropped). Spine + `simd_quad_intel_spine_{256,512,1024,2048,4096}` (same hybrid/unroll shape as Pi 5). Note `-march=x86-64-v4` does **not** define `__AVX512VBMI2__`; use `-march=icelake-server` or `-march=sapphirerapids` for the zmm path. Zen 4/5 define VBMI2 and will take the zmm/no-prefetch path untested.
+- `simd_quad_graviton.c` — AWS Graviton 4 / Neoverse V2. After comment stripping, every `simd_quad_graviton_spine*` function is identical to its `simd_quad_pi5_spine*` twin; the only code difference between the two files is the Pi 5 in-loop prefetch (absent here) plus the `_spine_padded` variants (present only here). Plain NEON, no SVE intrinsics. The `pi5s` and `gv4s` columns of `bench` therefore measure the same code.
+- `bench.cpp` — correctness + benchmark driver. `__ARM_NEON`/`__aarch64__` vs `__x86_64__` selects paths. ARM gets 9 algo columns (linear, binary, simd, pi5, pi5s, m4, m4s, gv4, gv4s). Canonical run `./bench 4000 5000`. Prints `4096*` A/B rows; on ARM `pi5_spine_4096` is timed twice at n=4096 (spine_N block and cross-host block) — aggregators should use the first row. **The "cold" column has no cache flush**: arrays are walked in allocation order with the same targets as the previous algorithm, and the ~35 MB footprint fits every LLC except the Pi 5's. It is a fair within-host A/B but not a cross-host "cold" comparison (comment above `bench_cold`).
+- `bench_twolevel.cpp` — 512 containers × 4096 inner, 4-mode harness (`hot_bat` / `hot_ser` / `cold_bat` / `cold_ser`). Variants A–G = {bsearch, outer spine, Shar} outer × {general-n, compile-time n=4096, Shar} inner; H/I = Eytzinger outer with Khuong & Morin line-prefetch (1-based layout, `kPrefOff = kGap/2`, line-aligned array, pad `kGap·(K+1)`) × {general-n, compile-time n=4096} inner; Lem = Lemire's published variant (bsearch outer + `simd_quad` inner, gap 16, no spine). argv: `[num_sets] [hot_reps] [mode hb|hs|cb|cs|all] [order_seed]`; a non-zero `order_seed` shuffles the order in which variants are timed within each mode pass (rows still print A..Lem). An untimed warm-up pass precedes the hot modes; `thrash_llc()` (512 MB) precedes every cold measurement. **"hot" means outer-hot, inner first-touch**: each set's 200 reps touch ~91 distinct containers once, so inner loads are DRAM-cold on Pi 5/SKX and L2/L3 hits on Apple/EMR/GV4 (F hot_bat on Pi 5: 61 ns at 12 sets, 213 ns at 200). Hot queries are ~50% outer misses; cold queries are 100% crafted hits. Arch flags: x86 default; ARM default (M4/M1, gap=64); `-DQUADSEARCH_ARM_PI5` (gap=32 + Pi 5 inner); `-DQUADSEARCH_ARM_GV4` (gap=32 + GV4 inner). Repaired 2026-10-11 (prefetch offset, pad, alignment, warm-up, order seed, thrash size); H/I numbers from before that date on any host are invalid.
+- `run_twolevel.sh HOST RUNS [BINARY]` — driver: RUNS runs with `order_seed = run index`, pinned to one core on Linux, governor/temperature recorded as `# key: value` header lines, output `HOST_runs/twolevel_v2_run{R}.txt`. `TWOLEVEL_FIRST=6` continues a campaign.
+- `compute_twolevel_paired.py HOST [--glob PATTERN] [--out FILE]` — **the aggregator to use for any X-vs-Y statement.** Per mode: per-cell medians (levels), run-level drift, per-run ranks, paired per-run deltas with sign counts for the quoted pairs, full paired-delta matrix. WIN = ≥80% of runs agree and |median| ≥ 3%; otherwise TIE. Outputs `HOST_runs/twolevel_paired.txt` (archived 2026-05-18 runs) and, for the Pi 5, `pi5_runs/twolevel_paired_v2.txt` (repaired harness, 10 runs).
+- `{host}_runs/compute_twolevel.py` — per-cell medians only (levels). Do not difference its medians across variants.
+- `plot.py` — inline per-machine datasets + plot generator. Main-bench dicts now hold only values derivable from `{host}_runs/rebench_run{1..5}.txt` (22 sizes for Pi 5, 10 power-of-two sizes for the other five hosts; the previous 22-size curves for those hosts had no raw source and were removed 2026-10-11). `*_twolevel` dicts are 2026-05-18 per-cell medians (levels; H/I pre-fix). Outputs the PNGs at repo root and `bench_table.txt`.
+- `{pi5,m4,m1,skx,emr,gv4}_runs/` — archived raw outputs + aggregators. `rebench_run*.txt` (main bench), `twolevel_run*.txt` (4-mode harness, 2026-05-18), `twolevel_paired.txt`, Pi 5 also `twolevel_v2_run{1..10}.txt` + `twolevel_paired_v2.txt` (2026-10-11). Never overwrite an archived run file; add new files.
+- `Text/corrections_2026-10.md` — authoritative list of retracted claims and replacements, with sources. `README.md` (root) — public summary, rewritten 2026-10-11. `Text/post.text` — blog write-up (being corrected). `Text/article.text` — Lemire's original post (third-party, CC BY), read only.
+- Also tracked but not described above: `simd_quad_*_profile.c`, `simd_quad_*_spine_family.{c,h}` + `gen_*_spine_family.py` (generated per-N families for the sweeps), `bench_sweep.cpp`, `bench_sweep_f_vs_lem.cpp`, `bench_profile_m4.cpp`, `check_pfC.cpp`, `openevolve_m4_spine_4096/` (OpenEvolve experiment; its starting program is the retired unroll, not the shipped hybrid), four compiled binaries and ~7,600 one-line sweep outputs (hygiene debt, see Open items).
+
+## Build
+
+```sh
+# Apple M4 Max
+clang++ -O3 -mcpu=apple-m4 -std=c++20 bench.cpp simd_quad_pi5.c simd_quad_m4.c simd_quad_graviton.c -o bench
+
+# Apple M1 Pro (shares simd_quad_m4.c)
+clang++ -O3 -mcpu=apple-m1 -std=c++20 bench.cpp simd_quad_pi5.c simd_quad_m4.c simd_quad_graviton.c -o bench
+# bench_twolevel uses the default ARM gap=64 path (no -D flag), same as M4 Max:
+clang++ -O3 -mcpu=apple-m1 -std=c++20 bench_twolevel.cpp simd_quad_m4.c -o bench_twolevel
+
+# Raspberry Pi 5
+g++ -O3 -mcpu=cortex-a76 -std=c++20 bench.cpp simd_quad_pi5.c simd_quad_m4.c simd_quad_graviton.c -o bench
+g++ -O3 -mcpu=cortex-a76 -std=c++20 -DQUADSEARCH_ARM_PI5 bench_twolevel.cpp simd_quad_pi5.c -o bench_twolevel
+
+# AWS Graviton 4 (Neoverse V2)
+g++ -O3 -mcpu=neoverse-v2 -std=c++20 bench.cpp simd_quad_pi5.c simd_quad_m4.c simd_quad_graviton.c -o bench
+g++ -O3 -mcpu=neoverse-v2 -std=c++20 -DQUADSEARCH_ARM_GV4 bench_twolevel.cpp simd_quad_graviton.c -o bench_twolevel
+
+# Intel w/ AVX-512 + VBMI2 (Ice Lake-SP, Sapphire/Emerald/Granite Rapids). NOT -march=x86-64-v4 (no VBMI2).
+g++ -O3 -march=sapphirerapids -std=c++20 bench.cpp simd_quad_intel.c -o bench
+
+# Intel Skylake-SP/X (family 6 model 85): AVX-512BW but no VBMI2; zmm gated off, -march=native picks the AVX2 path.
+g++ -O3 -march=native -std=c++20 bench.cpp simd_quad_intel.c -o bench
+
+# Intel / AMD AVX2-only (Haswell through Raptor Lake, Zen 1-3). Zen 4/5 define VBMI2 and take the zmm path untested.
+g++ -O3 -march=haswell -std=c++20 bench.cpp simd_quad_intel.c -o bench
+```
+
+Then `./bench 4000 5000` for the canonical intensity. `./bench` with no args runs a lighter (2000 × 2000) smoke test. Two-level campaign: `./run_twolevel.sh HOST 10` then `python3 compute_twolevel_paired.py HOST --glob 'HOST_runs/twolevel_v2_run*.txt' --out HOST_runs/twolevel_paired_v2.txt`.
+
+## Target hardware reference
+
+Cache line + MLP drive the gap/block-size decisions. A variant written for one cache-line size is rarely optimal on another.
+
+| | Pi 5 (A76) | M4 Max P-core | M1 Pro (Firestorm) | Skylake-SP (8175M) | Emerald Rapids (Raptor Cove) | Graviton 4 (Neoverse V2) |
+|---|---|---|---|---|---|---|
+| cache line | 64 B | 128 B | 128 B | 64 B | 64 B | 64 B |
+| SIMD | 128b NEON | 128b NEON | 128b NEON | 512b AVX-512 (AVX2 used) | 512b AVX-512 | 128b NEON |
+| L1D | 64 KB | 128 KB | 128 KB | 32 KB | 48 KB | 64 KB |
+| load pipes | 2 | 3 | 3 | 2 | 3 | 3 (review correction; was listed as 4) |
+| gap | 32 | 64 | 64 | 32 | 32 | 32 |
+| block check | 2× `vld1q_u16_x2` + 4 cmp + OR | 2× `vld1q_u16_x4` + 8 cmp + OR-tree | same as M4 | 2× ymm + 2 cmpeq + OR + movemask | 1× zmm + cmpeq + kortest | identical to Pi 5 |
+| spine @ n=4096 | 256 B (4 lines if aligned, usually 5) | 128 B (1 line if aligned, usually 2) | same as M4 | 256 B | 256 B | 256 B |
+| in-loop prefetch | kept in code; **archived A/B says net loss** (see Findings) | no (M1 A/B: +3% warm, 0/5) | no | kept (A/B inconclusive; no license argument applies, the gated build runs no zmm) | no (−4–13% warm / up to −18% cold when removed) | no (+10.8% warm / +5.6% cold when kept) |
+| AVX-512 license | n/a | n/a | n/a | light zmm ops → L1 (not L2); shipped build executes no zmm | negligible | n/a |
+
+"One block = one cache line" holds only for a line-aligned `carr`; the harnesses use `std::vector` (16-B aligned), so most blocks in the archived measurements straddle two lines (+14–30% cold at n=4096 on the Pi 5 in aligned-vs-misaligned A/Bs). No SVE/SVE2 on A76; Apple M4 implements SME with streaming SVE but no NEON-width advantage for u16 search. On Neoverse V2, SVE2's vector length is 128b. Run-to-run stability: whole-run drift is the dominant noise on the Pi 5 (1.5–1.6× across the archived two-level runs under the `ondemand` governor; 1.1× hot after the 2026-10-11 warm-up/pinning fix, still 2.4–2.9× cold because a cold cell is one pass of 200 queries); M4 Max 1.2–1.5×; M1 Pro 1.1–1.4×; SKX 1.0–1.25×; EMR and GV4 ~1.0–1.1× (bare metal). Always compare variants within a run (paired), never across per-variant medians.
+
+## Findings that should shape future work
+
+- **The spine is the single biggest optimization on every machine.** Pi 5 cold n=4096 ~2×; M4 ~3×; Intel/GV4 similar. Mechanism: the descent reads a contiguous 256 B instead of chasing probes through the 8 KB array (memory-level parallelism across the few spine lines), not a stride prefetcher — a 256 B spine is too short to train one.
+- **Speculative in-loop prefetch is a net loss on the Pi 5 by the project's own data, and was never a win.** `simd_quad_graviton` is `simd_quad_pi5` minus the prefetch line, so the Pi 5 bench's pi5 vs gv4 columns are the A/B: the prefetch kernel is slower cold at 13 of 14 sizes from n=128 up (+2% to +31%) and slower warm at 13 of 14 (`plot.py` pi5 dicts; per-run pairs in `pi5_runs/rebench_run*.txt`, e.g. n=2048 cold 5/5). Fresh interleaved A/Bs during the review agreed. The "~10–25% cold win" previously stated here had no supporting measurement anywhere in the repo. The prefetch also targets the start of block `base + n/2` while the next probe reads the end of a block (same line only if `carr` is 64-B aligned and n % 4 ∈ {0, 1}), and its address depends on the just-updated `base`, so it issues at the same dependency depth as the demand loads. Removed on M4/EMR/GV4 by measurement; kept on SKX because the A/B was inconclusive. **Open item: remove it from the Pi 5 kernel after a dedicated all-size A/B.**
+- **gap tracks cache line, not SIMD width.** Even with 512-bit registers, Intel gap=32 is right because the line is 64 B — a 64-element block spans two lines. Caveat: the one-line property needs an aligned `carr`; a Roaring integration should align container arrays and spines.
+- **gap=64 is not shippable on EMR or GV4.** Scratch `simd_quad_intel_gap64` (2026-04-30) was uniformly faster cold (−14 to −26%) but alternated sign warm: at n=512/2048, gap=64 was 45–67% *slower* warm. Same pattern on GV4. Scratches not committed.
+- **M1 Pro ports from M4 Max with zero code changes.** gap=64 / 128-B line / wide OoO / 3 load pipes all shared. Absolute numbers ~1.4× slower than M4 (M1 Pro clock ≈ 0.72× M4 Max).
+- **The Apple `_spine_4096` cold "structural regression" (+188–212%) may be a measurement-order artifact.** In `bench.cpp` the spine kernel's cold pass runs right after the non-spine kernel's cold pass with identical targets (block line = L2 hit on Apple's 12–16 MB L2), while the `4096*` row runs after its own 32 MB warm sweep (block line from SLC/DRAM). The gap matches L2-hit vs SLC-hit latency and the same asymmetry reproduces on the Pi 5. The 2026-05-14 decomposition on M1 Pro (full hybrid ~33.5 ns, descent-only ~8 ns, demand block load ~25 ns) is consistent with either explanation. Untested on Apple hardware with an explicit flush — do that before any further remediation (the OpenEvolve / sentinel / pfC efforts targeted this).
+- **SKX AVX-512 frequency license.** On 8175M the non-spine `intel` path with zmm enabled lost to SSE2 at n ≥ 2048 warm; light 512-bit integer ops move SKX to license L1 (not L2 as previously stated), which lowers the clock of the surrounding scalar loop. Gate zmm on `__AVX512VBMI2__` (Ice Lake-SP+), not `__AVX512BW__`. In the shipped gated build no zmm executes, so "the scalar loop is downclocked anyway" is not a reason to keep the SKX prefetch.
+- **Graviton 4 tracks the wide-OoO pattern (M4), not A76**, despite 64-B lines: warm n=4096 ≈ 16.2 ns, cold ≈ 34.6 ns (5-run medians, `gv4_runs/rebench_run*.txt`). Prefetch dropped. Its spine kernels are the Pi 5's code.
+- **Every host ships the hybrid at n=4096.** The hybrid (3 quat + branchless 2-probe finish, or 2 quat + 4-probe finish on gap=64) saves one dependent load-use round vs the retired unroll. Warm deltas (per-cell medians of 5): EMR −54.8%, SKX −28.9%, Pi 5 −16.9% (paired per-run median −31.0%), M1 −4.4%, M4 −2.6% (paired −1.1%; one cell differs by 0.01 ns, so call M4 a tie). **SKX caveat:** the hybrid is −32% warm (5/5) vs the general-n spine but +40% cold (paired per-run median; per-run −12%, +62%, +41%, +40%, −6%, hybrid faster in 2 of 5 runs) against a general-n control that is stable to ±0.6% in the same runs (`skx_runs/hybrid_run*.txt`), so "shared-tenant noise" does not explain it; the SKX hybrid may have a real cold cost. The earlier "~−1.5% warm on SKX" described the retired unroll.
+- **Compile-time `_spine_{256,512,1024,2048,4096}` family lives on GV4 / EMR / Pi 5.** GV4 medians vs general-n: warm −22 to −63%, cold −15 to −35% except n=2048 (+17%, weak: 4/5 with one −31.7% run). EMR: every size wins cold too (−34 to −46%). Pi 5: every size wins warm (−24 to −46%), only n=256 cold regresses (+42%, robust). GV4 `_spine_2048 cold +17%` is 4/5 with one −31.7% run — weak. SKX: family ported, per-size A/B not run.
+- **Two-level harness: which variant wins depends on host and cache state; F is not "strict-best" anywhere.** Paired per-run analysis of the archived 2026-05-18 runs (`{host}_runs/twolevel_paired.txt`; H/I pre-fix), best variant by mean rank per mode:
+
+  | host | hot_bat | hot_ser | cold_bat | cold_ser |
+  |---|---|---|---|---|
+  | Pi 5 (archived) | F (ties A,B,C,E,H,I) | E (F ties) | D 5/5 | F (ties C, D) |
+  | **Pi 5 (repaired harness, 10 runs)** | **D** 7/10 (B, E, F within 3%) | **D** 8/10 | **D** 7/10 (F +45%) | noise (C by rank) |
+  | M4 Max | F (I ties) | F 5/5 | E (F ties) | B |
+  | M1 Pro | I (F ties) | I (−10.9% vs F, 4/5) | F | A |
+  | SKX | F | F | C (D beats F 4/5) | D 5/5 |
+  | EMR | I (−0.7% vs F 5/5, negligible) | F 5/5 | C 5/5 | C 4/5 |
+  | GV4 | I (−10.8% vs F 5/5) | F 5/5 | C 5/5 | C 5/5 |
+
+  F vs D hot is a WIN for F on M4/M1/SKX/EMR/GV4 (−14% to −54%, 5/5 in every cell except SKX hot_ser, 4/5) and a tie on the Pi 5. Cold, D or C (compile-time inner behind a spine or a *branchy* bsearch outer) is usually best: F vs D cold_bat +31.8% Pi 5 (0/5), +6.6% SKX; cold_ser D wins on M4 (+16.2%), SKX (+16.9%), EMR (+17.7%). Mechanism for C's cold wins on EMR/GV4: the branchy `std::lower_bound` lets the core speculate loads ahead across mispredicted branches, whereas Shar's cmov chain is a serial load→cmp→csel→load dependency that cannot be speculated past (Khuong & Morin's branchy-vs-branch-free result). **Shar is not "nine independent loads in parallel"**; it wins hot because it has no mispredicts and no side structure. **Ship recommendation:** Pi 5 → D; SKX → F hot, D cold; EMR and GV4 → F hot (I ties/wins hot_bat pre-fix), C cold; M4 Max → F hot, E/B cold (noisy); M1 Pro → F or I hot (I's hot_ser edge is pre-fix), F cold_bat, A/E cold_ser (noisy). The 2026-05-13 "cold reversal" percentages quoted earlier here came from runs that were overwritten and have no raw source.
+- **Our stack beats the published Lemire reference at n=4096 on every mode on every host** (F vs Lem paired: −35% to −84% hot, −7% to −45% cold; 5/5 in 21 of 24 cells, 4/5 in 3; Pi 5 repaired harness: −37.5%/−39.4% hot 10/10, −30.5% cold_ser 8/10, cold_bat −17.3% 7/10 tie). **It does not hold across container sizes:** the M4 Max F-vs-Lemire sweep (`m4_runs/sweep_fvl_*`, 200 sizes, 5 runs, `m4_fvl_sweep_data.py`) has Lemire faster in all 5 runs at every size in the bands n=48–62 (hot_bat, medians 25–31%), n=81–124 (hot_bat, 5–33%), n=1–7 (cold_ser, 42–47%) and n=64–95 (cold_ser, 19–35%): the gap-64 kernel's [32,64) path is one vector load plus a scalar sweep of up to 31 elements, the general tail scans up to 63, and the spine is inert below n=256 on gap-64 hosts (128 on gap-32) via the `num_blocks <= 3` delegation. Lemire's gap-16 tail is at most 15. Open item: shorter small-n paths or a size-dependent dispatch.
+- **Variant G (Shar inner for n=4096) is catastrophic on every host — closed.** +67% to +455% hot vs F, F faster in 117 of 120 archived run-cells (every hot run-cell; G faster only in two Pi 5 and one SKX cold_bat runs) and 10/10 hot on the repaired Pi 5 harness. 12 dependent loads on an 8 KB working set; structural.
+- **Variants H/I (Eytzinger outer + Khuong & Morin prefetch) — all pre-2026-10-11 numbers invalid; repaired results exist for the Pi 5 only.** The prefetch used the paper's 0-based constant `3B/2 − 1` on the harness's 1-based layout, so it fetched node i+1's descendant line and never a node on the path; the pad (512 slots) was ~1/32 of the prefetch reach (the whole 1025-slot allocation ~1/16). In the review's three-run A/B (`pi5_runs/eytz_offset_ab/`, 100 sets × 200 reps, 2026-10-10) the corrected, line-aligned prefetch (I4, masked) beat the shipped offset in all 12 cells: cold_bat −31% to −10%, cold_ser −51% to −21%, hot −1.5% to −6.2% (gated variant I3: cold_bat −35% to −16%, cold_ser −55% to +3%); the shipped offset was slower than no prefetch at all in 5 of 6 cold cells (cold_bat +11% to +20%) and 4–7% slower hot. Repaired-harness Pi 5 results (10 runs): I vs F hot_bat +7.3% (I faster 2/10), hot_ser +8.6% (2/10), cold_bat −2.5% (tie), cold_ser +39.9% (3/10, noise); H vs E +5.6% / +10.0% / +13.3% / +12.9%; I vs D +10.2% / +11.1% / +53.2% / +18.1%. So on the A76 the Eytzinger outer stops being catastrophic cold but never beats Shar or the outer spine; **the Khuong & Morin outer does not pay off on the Pi 5.** Retracted: "I −22.5% hot_ser on Pi 5" (one F outlier run; I slower 4/5 archived, 8/10 repaired), "M4 cold_ser +103.9%" (+26.4% paired), "settled 6-host slow-inner predictor" (rests on M1 Pro alone, pre-fix). Still standing but pre-fix and in need of re-measurement: M1 Pro I hot_ser −10.9% (4/5) and GV4 I hot_bat −10.8% (5/5). Also note I pays one extra dependent load (`eytz_to_sorted`) that F does not; the prefetch depth is log2(B) = 5 levels at gap 32 and 6 at gap 64, not 4. Re-bench on the other five hosts: `./run_twolevel.sh HOST 10`.
+- **Methodology lessons (apply to every future measurement).** (1) Compare variants within a run and report sign counts + paired medians; never difference per-variant medians. (2) Five runs cannot reach p < 0.0625; use 10. (3) Randomise variant order (`order_seed`) and warm up before the first timed variant. (4) Record governor and temperature. (5) A cold cell of 200 queries is ~300 µs on the Pi 5 — one interrupt is a 10–50% error; cold verdicts need many runs. (6) Never overwrite an archived run file.
+
+## Code shape caveats
+
+- `simd_quad.c` is a bare function body — `#include`d into `bench.cpp` and `bench_twolevel.cpp` inside a TU with the right arch header already in scope. Don't compile standalone.
+- `simd_quad_m4.c` uses `vld1q_u16_x4` (NEON-only, AArch64-only). Shared between M4 Max and M1 Pro — any change needs re-benchmarking on both.
+- `simd_quad_graviton.c` is plain NEON (no SVE). Compiles on any AArch64 host; linked on all ARM hosts. Its spine kernels are byte-identical to the Pi 5's — change both or neither.
+- `simd_quad_intel.c` requires AVX2 (`#error` otherwise). zmm fast path via `__AVX512VBMI2__`: `-march=icelake-server`, `-march=sapphirerapids` enable it; `-march=x86-64-v4` and `-march=skylake-avx512` do not.
+- Compile-time `_spine_N` kernels take no cardinality and have no guard: a wrong-size input reads out of bounds or returns a silent false negative. Callers must dispatch on exact cardinality.
+- Laptop warm numbers get flaky under thermal/frequency hops. Plug M4 into AC. On the Pi 5 pin with `taskset` and record the governor (`ondemand` by default).
+
+## Normal workflow
+
+1. Edit one of the `simd_quad_*.c` files (or add a new one).
+2. Rebuild with the appropriate command above.
+3. `./bench 4000 5000` — correctness check prints `correctness: ok` then the table.
+4. For two-level comparisons: `./run_twolevel.sh HOST 10`, then `compute_twolevel_paired.py`; quote paired medians with sign counts.
+5. If adding a new dataset to plot, append to `plot.py` (only values derivable from an archived run file, with a provenance comment) and `python3 plot.py` to regenerate PNGs + `bench_table.txt`.
+
+## State and open items (as of 2026-10-11)
+
+Current state:
+
+- All six hosts benchmarked (main bench medians of 5 in `plot.py`, derivable from `{host}_runs/rebench_run*.txt`: 22 sizes Pi 5, 10 sizes elsewhere). All six have A–I + Lem on the 4-mode harness (2026-05-18, H/I pre-fix) with paired analyses in `{host}_runs/twolevel_paired.txt`. The Pi 5 has 10 repaired-harness runs (`twolevel_v2_run*.txt`, `twolevel_paired_v2.txt`).
+- `bench_twolevel.cpp` repaired 2026-10-11; `run_twolevel.sh` and `compute_twolevel_paired.py` added; kernel/bench comments corrected; `Text/corrections_2026-10.md` written; README rewritten at the repo root; write-ups corrected against the corrections document.
+
+Open items:
+
+1. **Re-bench H/I (and everything else) with the repaired harness on M4 Max, M1 Pro, SKX, EMR, GV4** — `./run_twolevel.sh HOST 10`, then the paired aggregator. Until then every H/I statement for those hosts is pre-fix.
+2. **Pi 5 in-loop prefetch**: run a dedicated all-size A/B (kernel with and without the line) and remove it if the archived result holds.
+3. **Alignment**: align `carr` and spines to the cache line in `bench.cpp` / `bench_twolevel.cpp` (or add an aligned-vs-misaligned row) and re-run the cold rows; state the alignment precondition in the kernel API.
+4. **`bench.cpp` cold column**: add a flush between algorithms (or rename the column) so cross-host cold comparisons mean something.
+5. **Apple `_spine_4096` cold regression**: test the measurement-order hypothesis on M1/M4 with an explicit flush before both measurements.
+6. **Small containers**: Lemire wins at n=48–62, 81–124 (hot) and n≤7, 64–95 (cold_ser) on M4 Max; design a shorter small-n path or a size-dependent dispatch, and run the F-vs-Lemire sweep on the other hosts.
+7. **Hygiene** (not touched in the 2026-10-11 pass): four tracked binaries, the Khuong & Morin PDF and three Knuth page scans (redistribution), `Text/article.text` attribution (CC BY), ~7,600 one-line sweep files, stale `Images/` PNG copies and six orphaned SVGs with factual errors, `.post.text.swp`, `openevolve_output/` not ignored. Removing already-pushed files needs a history rewrite — the user's call.
+8. ~~CLAUDE.md is gitignored~~ Tracked since 2026-10-11 so the decision record travels with the repo (it was ignored from the first commit until then; the 2026-10-11 rewrite is its first tracked version).
