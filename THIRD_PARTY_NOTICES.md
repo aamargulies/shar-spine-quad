@@ -13,7 +13,9 @@ commit f0a9538, 2026-05-11; attribution header prepended 2026-10-11, which also
 lists the differences from the live page). `simd_quad.c` is the post's
 reference kernel, as published on 2026-04-27, `#include`d by the harnesses as
 the "simd" / "Lem" baseline; it is not relicensed under MIT and its copyright
-stays with its author.
+stays with its author. `simd_quad_2026_10.c` (added 2026-10-11) is the same
+kernel as revised by Lemire on 2026-10-02, adapted the same way; it is the
+"Lem2" column of `bench_sweep_f_vs_lem` and has the same status.
 
 **The post.** <https://lemire.me/blog/2026/04/27/you-can-beat-the-binary-search/>,
 published 2026-04-27 (page metadata `2026-04-27T17:32:13+00:00`), updated
@@ -68,7 +70,9 @@ elements with overlapping SIMD loads in the beat-binary-search post."). The
 copies here are the 2026-04-27 version, whose "Initial Check" step is a linear
 scan below 16 elements; the live version compares against two overlapping SIMD
 loads instead. Every comparison in this repository against "Lemire's reference"
-is against the April version.
+is against the April version, except the Lem2 column of the F-vs-Lemire sweep
+(`bench_sweep_f_vs_lem.cpp`, since 2026-10-11), which runs the revised kernel
+from `simd_quad_2026_10.c` next to the April one.
 
 ## 2. Khuong & Morin, "Array Layouts for Comparison-Based Searching"
 

@@ -1,28 +1,47 @@
 // F vs Lemire-reference sweep over inner_n in [1, 8192].
 //
 // Forked from bench_twolevel.cpp (2026-05-20). Where bench_twolevel measures
-// 10 variants at fixed inner_n=4096, this sweep measures only:
-//   F   = Shar branchless outer (K=512) + general-n spine inner
-//         (the apples-to-apples form of F across all N -- the compile-time
-//          n=4096 hybrid only exists at n=4096; for the sweep we use the
-//          general-n spine inner for F)
-//   Lem = Lemire reference (bsearch outer + simd_quad inner, gap=16, no spine)
+// 10 variants at fixed inner_n=4096, this sweep measures, at one inner_n per
+// process:
+//   F    = Shar branchless outer (K=512) + the host's general-n spine inner
+//          (the apples-to-apples form of F across all N -- the compile-time
+//           n=4096 hybrid only exists at n=4096)
+//   Lem  = Lemire reference as published 2026-04-27 (bsearch outer +
+//          simd_quad inner, gap=16, no spine; simd_quad.c)
+//   Lem2 = the same with Lemire's kernel as revised 2026-10-02
+//          (simd_quad_2026_10.c: arrays under 16 elements are searched with
+//           two overlapping SIMD loads instead of a linear scan; identical to
+//           Lem from 16 elements up, so Lem2 vs Lem at n >= 16 is a noise
+//           gauge). Added 2026-10-11; the archived 2026-05-20 M4 campaign
+//          (m4_runs/sweep_fvl_raw.txt) has only F and Lem.
 //
 // Goal: trace F vs Lem across the full range, deliberately exceeding 4096 to
 // 8192 to see what happens beyond the "designed-for" Roaring container size.
 //
-// Below n=gap (n<64 on M4) the spine has no entries; the inner falls back to
-// simd_quad_m4 (small-size NEON fast paths). For n in this range F still
-// exists structurally (Shar outer + non-spine inner) and the F vs Lem ratio
-// is meaningful but the spine does no work.
+// Below n=gap the spine has no entries and the inner delegates to the host's
+// non-spine kernel (small-size fast paths); up to num_blocks <= 3 the spine
+// kernel delegates as well. For n in this range F still exists structurally
+// (Shar outer + non-spine inner) and the F vs Lem ratio is meaningful but the
+// spine does no work.
 //
-// Build (M4 Max):
-//   clang++ -O3 -mcpu=apple-m4 -std=c++20 \
-//       bench_sweep_f_vs_lem.cpp simd_quad_m4.c -o bench_sweep_f_vs_lem
+// Build:
+//   Apple M4 Max / M1 Pro (gap 64):
+//     clang++ -O3 -mcpu=apple-m4 -std=c++20 bench_sweep_f_vs_lem.cpp simd_quad_m4.c -o bench_sweep_f_vs_lem
+//   Raspberry Pi 5 (gap 32):
+//     g++ -O3 -mcpu=cortex-a76 -std=c++20 -DQUADSEARCH_ARM_PI5 bench_sweep_f_vs_lem.cpp simd_quad_pi5.c -o bench_sweep_f_vs_lem
+//   AWS Graviton 4 (gap 32):
+//     g++ -O3 -mcpu=neoverse-v2 -std=c++20 -DQUADSEARCH_ARM_GV4 bench_sweep_f_vs_lem.cpp simd_quad_graviton.c -o bench_sweep_f_vs_lem
+//   Intel (gap 32; see simd_quad_intel.c for the -march choice):
+//     g++ -O3 -march=native -std=c++20 bench_sweep_f_vs_lem.cpp simd_quad_intel.c -o bench_sweep_f_vs_lem
 //
-// Run: ./bench_sweep_f_vs_lem <inner_n> <mode:hb|hs|cb|cs> [num_sets=200] [hot_reps=200]
+// Run: ./bench_sweep_f_vs_lem <inner_n> <mode:hb|hs|cb|cs> [num_sets=200] [hot_reps=200] [order_seed=0]
+//   order_seed != 0 shuffles the order in which the three variants are timed
+//   (drivers pass the run index); 0 keeps the canonical F, Lem, Lem2 order,
+//   which is the F-then-Lem order of the archived M4 campaign.
 //
-// Single-mode-per-process so cold is genuinely cold.
+// Single-mode-per-process so cold is genuinely cold. Every variant is checked
+// against a scalar reference before timing (200 probes of each of the first
+// five sets; for inner_n <= 64 also every element and its two neighbours).
 
 #include <algorithm>
 #include <chrono>
@@ -35,22 +54,68 @@
 #include <set>
 #include <vector>
 
-#include <arm_neon.h>
+#if defined(__ARM_NEON) || defined(__aarch64__)
+  #define QUADSEARCH_ARCH_ARM 1
+  #include <arm_neon.h>
+#elif defined(__x86_64__) || defined(_M_X64)
+  #define QUADSEARCH_ARCH_X86 1
+  #include <immintrin.h>
+#else
+  #error "Unsupported architecture for bench_sweep_f_vs_lem"
+#endif
 
-// Lemire's reference simd_quad (gap=16, NEON). Bare function body.
+// Lemire's reference simd_quad as published 2026-04-27 (gap=16, no spine).
+// Bare function body; the arch header above supplies the intrinsics.
 #include "simd_quad.c"
+// Lemire's kernel as revised 2026-10-02 (defines simd_quad_2026_10).
+#include "simd_quad_2026_10.c"
 
-// M4 spine inner (general-n; falls back to simd_quad_m4 at n < gap).
+// Host inner kernel for F: general-n spine search + spine builder. Same
+// selection as bench_twolevel.cpp.
+#if QUADSEARCH_ARCH_X86
+bool simd_quad_intel_spine(const uint16_t *carr, const uint16_t *spine,
+                           int32_t cardinality, uint16_t pos);
+void simd_quad_intel_build_spine(const uint16_t *carr, int32_t cardinality,
+                                 uint16_t *spine);
+static constexpr int kGap = 32;
+#define INNER_SPINE       simd_quad_intel_spine
+#define INNER_BUILD_SPINE simd_quad_intel_build_spine
+#define INNER_NAME        "intel_spine"
+#elif defined(QUADSEARCH_ARM_PI5)
+bool simd_quad_pi5_spine(const uint16_t *carr, const uint16_t *spine,
+                         int32_t cardinality, uint16_t pos);
+void simd_quad_pi5_build_spine(const uint16_t *carr, int32_t cardinality,
+                               uint16_t *spine);
+static constexpr int kGap = 32;
+#define INNER_SPINE       simd_quad_pi5_spine
+#define INNER_BUILD_SPINE simd_quad_pi5_build_spine
+#define INNER_NAME        "pi5_spine"
+#elif defined(QUADSEARCH_ARM_GV4)
+bool simd_quad_graviton_spine(const uint16_t *carr, const uint16_t *spine,
+                              int32_t cardinality, uint16_t pos);
+void simd_quad_graviton_build_spine(const uint16_t *carr, int32_t cardinality,
+                                    uint16_t *spine);
+static constexpr int kGap = 32;
+#define INNER_SPINE       simd_quad_graviton_spine
+#define INNER_BUILD_SPINE simd_quad_graviton_build_spine
+#define INNER_NAME        "graviton_spine"
+#else
+// Apple M4 Max / M1 Pro: the default ARM build, gap 64.
 bool simd_quad_m4_spine(const uint16_t *carr, const uint16_t *spine,
                         int32_t cardinality, uint16_t pos);
 void simd_quad_m4_build_spine(const uint16_t *carr, int32_t cardinality,
                               uint16_t *spine);
-
 static constexpr int kGap = 64;
+#define INNER_SPINE       simd_quad_m4_spine
+#define INNER_BUILD_SPINE simd_quad_m4_build_spine
+#define INNER_NAME        "m4_spine"
+#endif
 
 using clock_type = std::chrono::steady_clock;
 
-static constexpr size_t kThrashBytes = 256u * 1024u * 1024u;
+// 512 MB, as in bench_twolevel.cpp: larger than any LLC on the target list
+// (the 2026-05-20 M4 campaign used 256 MB).
+static constexpr size_t kThrashBytes = 512u * 1024u * 1024u;
 static void thrash_llc() {
     static std::vector<uint8_t> scratch;
     if (scratch.empty()) scratch.assign(kThrashBytes, 0);
@@ -84,8 +149,8 @@ static ContainerSet make_set(std::mt19937 &rng, int num_containers, int inner_n)
         int num_blocks = inner_n / kGap;
         s.containers[i].spine.resize(num_blocks);
         if (num_blocks > 0) {
-            simd_quad_m4_build_spine(s.containers[i].carr.data(), inner_n,
-                                     s.containers[i].spine.data());
+            INNER_BUILD_SPINE(s.containers[i].carr.data(), inner_n,
+                              s.containers[i].spine.data());
         }
     }
     return s;
@@ -118,8 +183,8 @@ static bool lookup_F(const ContainerSet &s, uint32_t v) {
     int idx = find_container_shar(s, (uint16_t)(v >> 16));
     if (idx < 0) return false;
     const auto &c = s.containers[idx];
-    return simd_quad_m4_spine(c.carr.data(), c.spine.data(),
-                              (int32_t)c.carr.size(), (uint16_t)v);
+    return INNER_SPINE(c.carr.data(), c.spine.data(),
+                       (int32_t)c.carr.size(), (uint16_t)v);
 }
 
 static bool lookup_Lem(const ContainerSet &s, uint32_t v) {
@@ -127,6 +192,14 @@ static bool lookup_Lem(const ContainerSet &s, uint32_t v) {
     if (idx < 0) return false;
     const auto &c = s.containers[idx];
     return simd_quad(c.carr.data(), (int32_t)c.carr.size(), (uint16_t)v);
+}
+
+// Same outer as Lem, Lemire's 2026-10-02 kernel inside.
+static bool lookup_Lem2(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_bsearch(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return simd_quad_2026_10(c.carr.data(), (int32_t)c.carr.size(), (uint16_t)v);
 }
 
 template <typename Fn>
@@ -205,7 +278,7 @@ static double bench_cold_serial(const std::vector<ContainerSet> &sets,
 int main(int argc, char **argv) {
     if (argc < 3) {
         std::fprintf(stderr,
-                     "usage: %s <inner_n> <mode:hb|hs|cb|cs> [num_sets=200] [hot_reps=200]\n",
+                     "usage: %s <inner_n> <mode:hb|hs|cb|cs> [num_sets=200] [hot_reps=200] [order_seed=0]\n",
                      argv[0]);
         return 2;
     }
@@ -213,6 +286,7 @@ int main(int argc, char **argv) {
     const char *mode = argv[2];
     int num_sets  = (argc > 3) ? std::atoi(argv[3]) : 200;
     int hot_reps  = (argc > 4) ? std::atoi(argv[4]) : 200;
+    unsigned order_seed = (argc > 5) ? (unsigned)std::strtoul(argv[5], nullptr, 10) : 0u;
 
     if (inner_n < 1) {
         std::fprintf(stderr, "inner_n must be >= 1\n");
@@ -221,8 +295,10 @@ int main(int argc, char **argv) {
 
     constexpr int num_containers = 512;
 
-    std::printf("# bench_sweep_f_vs_lem inner_n=%d mode=%s num_sets=%d hot_reps=%d\n",
-                inner_n, mode, num_sets, hot_reps);
+    std::printf("# bench_sweep_f_vs_lem inner_n=%d mode=%s num_sets=%d hot_reps=%d order_seed=%u gap=%d inner=%s\n",
+                inner_n, mode, num_sets, hot_reps, order_seed, kGap, INNER_NAME);
+    std::printf("# variants: F = Shar outer + %s inner; Lem = bsearch outer + simd_quad (2026-04-27); "
+                "Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02)\n", INNER_NAME);
 
     std::mt19937 rng(0xB17F17);
     std::vector<ContainerSet> sets;
@@ -248,25 +324,62 @@ int main(int argc, char **argv) {
         targets.push_back(std::move(ts));
     }
 
-    // Correctness: F and Lem must agree on every probe across a sample.
+    // Correctness: every variant must agree with a scalar reference
+    // (std::lower_bound over the keys, then std::binary_search in the
+    // container) on 200 probes of each of the first five sets; for small
+    // inner_n also on every element of those sets' containers and on the
+    // values just below and above each element, which exercises the
+    // overlapping-load paths of simd_quad_2026_10 at every cardinality.
+    auto ref_lookup = [&](const ContainerSet &s, uint32_t v) {
+        int idx = find_container_bsearch(s, (uint16_t)(v >> 16));
+        if (idx < 0) return false;
+        const auto &c = s.containers[idx].carr;
+        return std::binary_search(c.begin(), c.end(), (uint16_t)v);
+    };
+    auto check = [&](const ContainerSet &s, int si, uint32_t t) {
+        bool r = ref_lookup(s, t);
+        bool rF = lookup_F(s, t), rL = lookup_Lem(s, t), rL2 = lookup_Lem2(s, t);
+        if (rF != r || rL != r || rL2 != r) {
+            std::fprintf(stderr,
+                         "MISMATCH inner_n=%d set=%d t=%u ref=%d F=%d Lem=%d Lem2=%d\n",
+                         inner_n, si, t, (int)r, (int)rF, (int)rL, (int)rL2);
+            return false;
+        }
+        return true;
+    };
     for (int si = 0; si < std::min(5, num_sets); si++) {
-        for (int k = 0; k < 200; k++) {
-            uint32_t t = targets[si][k];
-            bool rF = lookup_F(sets[si], t);
-            bool rL = lookup_Lem(sets[si], t);
-            if (rF != rL) {
-                std::fprintf(stderr,
-                             "MISMATCH inner_n=%d set=%d t=%u F=%d Lem=%d\n",
-                             inner_n, si, t, rF, rL);
-                return 1;
+        for (int k = 0; k < 200; k++)
+            if (!check(sets[si], si, targets[si][k])) return 1;
+        if (inner_n <= 64) {
+            for (int ci = 0; ci < num_containers; ci++) {
+                const auto &c = sets[si].containers[ci].carr;
+                uint32_t hi = uint32_t(sets[si].keys[ci]) << 16;
+                for (uint16_t e : c) {
+                    if (!check(sets[si], si, hi | e)) return 1;
+                    if (e > 0 && !check(sets[si], si, hi | (uint32_t)(e - 1))) return 1;
+                    if (e < 65535 && !check(sets[si], si, hi | (uint32_t)(e + 1))) return 1;
+                }
             }
         }
     }
 
     auto NaN = std::numeric_limits<double>::quiet_NaN();
-    double F_val = NaN, Lem_val = NaN;
+    // Variants in canonical order; the RESULT line always prints F, Lem, Lem2.
+    const char *names[3] = {"F", "Lem", "Lem2"};
+    bool (*fns[3])(const ContainerSet &, uint32_t) = {lookup_F, lookup_Lem, lookup_Lem2};
+    double vals[3] = {NaN, NaN, NaN};
+    int order[3] = {0, 1, 2};
+    if (order_seed != 0) {
+        std::mt19937 g(order_seed * 1000003u + (unsigned)inner_n * 7919u
+                       + (unsigned)(unsigned char)mode[0] * 131u + (unsigned)(unsigned char)mode[1]);
+        std::shuffle(order, order + 3, g);
+    }
+    std::printf("# timing order:");
+    for (int i : order) std::printf(" %s", names[i]);
+    std::printf("\n");
 
-    // Equal-cache-state warmup so neither variant pays first-touch DRAM cost.
+    // Equal-cache-state warmup so no variant pays first-touch DRAM cost: all
+    // three variants run over every set before each timed variant.
     auto warmup_hot = [&](auto fn) {
         volatile uint64_t acc = 0;
         for (size_t si = 0; si < sets.size(); si++) {
@@ -277,42 +390,26 @@ int main(int argc, char **argv) {
         }
         (void)acc;
     };
-    auto warm_both_hot = [&]() {
-        warmup_hot(lookup_F);
-        warmup_hot(lookup_Lem);
-    };
+    auto warm_all_hot = [&]() { for (int i = 0; i < 3; i++) warmup_hot(fns[i]); };
 
     if (std::strcmp(mode, "hb") == 0) {
-        warm_both_hot();
-        F_val   = bench_hot_batched(sets, targets, hot_reps, lookup_F);
-        warm_both_hot();
-        Lem_val = bench_hot_batched(sets, targets, hot_reps, lookup_Lem);
+        for (int i : order) { warm_all_hot(); vals[i] = bench_hot_batched(sets, targets, hot_reps, fns[i]); }
     } else if (std::strcmp(mode, "hs") == 0) {
-        warm_both_hot();
-        F_val   = bench_hot_serial(sets, targets, hot_reps, lookup_F);
-        warm_both_hot();
-        Lem_val = bench_hot_serial(sets, targets, hot_reps, lookup_Lem);
+        for (int i : order) { warm_all_hot(); vals[i] = bench_hot_serial(sets, targets, hot_reps, fns[i]); }
     } else if (std::strcmp(mode, "cb") == 0) {
         // Discard one cold pass so process-startup TLB/page-fault costs
-        // don't bias whichever variant is measured first (per CLAUDE.md
-        // memory: cold-bench-process-startup).
-        bench_cold_batched(sets, targets, lookup_F);
-        thrash_llc();
-        F_val   = bench_cold_batched(sets, targets, lookup_F);
-        thrash_llc();
-        Lem_val = bench_cold_batched(sets, targets, lookup_Lem);
+        // don't bias whichever variant is measured first.
+        bench_cold_batched(sets, targets, fns[order[0]]);
+        for (int i : order) { thrash_llc(); vals[i] = bench_cold_batched(sets, targets, fns[i]); }
     } else if (std::strcmp(mode, "cs") == 0) {
-        bench_cold_serial(sets, targets, lookup_F);
-        thrash_llc();
-        F_val   = bench_cold_serial(sets, targets, lookup_F);
-        thrash_llc();
-        Lem_val = bench_cold_serial(sets, targets, lookup_Lem);
+        bench_cold_serial(sets, targets, fns[order[0]]);
+        for (int i : order) { thrash_llc(); vals[i] = bench_cold_serial(sets, targets, fns[i]); }
     } else {
         std::fprintf(stderr, "unknown mode '%s' (use hb/hs/cb/cs)\n", mode);
         return 2;
     }
 
-    std::printf("RESULT inner_n=%d mode=%s F=%.4f Lem=%.4f\n",
-                inner_n, mode, F_val, Lem_val);
+    std::printf("RESULT inner_n=%d mode=%s F=%.4f Lem=%.4f Lem2=%.4f\n",
+                inner_n, mode, vals[0], vals[1], vals[2]);
     return 0;
 }
