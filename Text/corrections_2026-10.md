@@ -194,7 +194,15 @@ The variant-G conclusion stands.
   5/5 at every size; the paired bands are 81–128 and 60–156 (+167–197)
   rather than 81–124 and 64–95, and smaller Lemire wins exist at hot_bat
   30–31, 146–190, 224–240, hot_ser 112–124 and cold_bat 54–62, 102–109,
-  116–124. The code
+  116–124. Pi 5 re-run (2026-10-11, campaign `sweep_fvl2`,
+  `pi5_runs/sweep_fvl2_raw.txt`, 179 sizes, 5 runs, against the 2026-04-27
+  and the revised 2026-10-02 kernel; `pi5_runs/sweep_fvl2_findings.md`): no
+  hot Lemire band at all on the gap-32 kernel (F faster at 48–62 by 15–33%
+  and at 81–128 by 2–25%), Lemire ahead in cold_ser below n ≈ 265 (WIN 44 /
+  F 6 / TIE 46 over 96 sizes, mostly 3–13%) and F above n ≈ 320 (67 / 0 /
+  11); the revised kernel changes no verdict; and the identical-code pair
+  (both Lemire kernels, n ≥ 16) shows the 5-run WIN rule firing at 16–23%
+  of sizes, so single-size bands are noise. The code
   explains the bands: the gap-64 kernel's [32,64) path is one vector load
   plus a scalar sweep of up to 31 elements, the general tail scans up to 63
   elements, and the spine is inert below n = 256 on 128-byte-line hosts

@@ -94,7 +94,10 @@ n=1-7 and n=60-156 (cold_ser) by paired per-run analysis (5/5 runs at
 every size only in the 48-62 band; m4_runs/sweep_fvl_paired.txt), because the gap-64
 kernel's small-n paths fall back to scalar sweeps and the spine is
 inert below n=256 on 128-byte-line hosts (m4_runs/sweep_fvl_paired.txt,
-corrections section 2.3). An earlier draft quoted "426 ns -> 33 ns"
+corrections section 2.3). On the Pi 5 (gap 32) those hot bands do not
+exist: F wins hot at essentially every size and Lemire is ahead only in
+cold_ser below n~265, against both his April and his revised October
+kernel (campaign sweep_fvl2, pi5_runs/sweep_fvl2_findings.md). An earlier draft quoted "426 ns -> 33 ns"
 (~13x) on the Pi 5; that came from a two-mode harness whose cold query
 missed the outer keys ~99% of the time and had no cache flush between
 variants, and it is retracted. Under the fixed harness the same A -> F

@@ -87,12 +87,13 @@ specializations for n ∈ {256, 512, 1024, 2048, 4096} where measured.
   branchy `std::lower_bound` (C) or the outer spine (D) usually wins because
   the core can speculate ahead across a branchy search but not past a cmov
   chain. On the Pi 5 the outer spine (D) is best or tied-best in three modes.
-* **Lemire's kernel is still faster for small containers.** The only sweep
-  across container sizes (M4 Max, 200 sizes, 5 runs) has Lemire ahead, by paired
+* **Lemire's kernel is still faster for small containers on the M4 Max, and for cold serial lookups below n ≈ 265 on the Pi 5.** The M4 Max sweep
+  across container sizes (200 sizes, 5 runs) has Lemire ahead, by paired
   per-run analysis (`m4_runs/sweep_fvl_paired.txt`), in the bands n = 48–62
   and 81–128 (hot_bat, medians 5–32%) and n ≤ 7 and 60–156 (cold_ser,
   6–47%), with narrower wins at a few other sizes below 256: the gap-64
   kernel's small-n paths end in long scalar sweeps and the spine is inert below n = 256 on 128-byte-line hosts.
+  The Pi 5 sweep (`pi5_runs/sweep_fvl2_raw.txt`, 179 sizes, 5 runs, against both the 2026-04-27 kernel and Lemire's revised 2026-10-02 kernel; `pi5_runs/sweep_fvl2_findings.md`) has no such hot bands: F is faster hot at essentially every size (+8% to +72%), while in cold_ser Lemire is ahead below n ≈ 265 (a paired WIN at 44 of 96 sizes, mostly by 3–13%) and F above n ≈ 320 (67 of 78, by 3–41%). The revised kernel changes no verdict. Five runs resolve long bands, not single sizes: on identical code (the two Lemire kernels from n = 16 up) the WIN rule still fires at 16–23% of sizes.
 * **The Eytzinger + prefetch outer (Khuong & Morin 2017) does not pay off on
   the Pi 5** once the prefetch is aimed correctly: I is 7–9% slower than F
   hot and never beats D. Its M1 Pro hot_ser edge (−11%, 4/5) and Graviton 4
@@ -122,6 +123,8 @@ kernel property (see the corrections document, section 5).
 ![warm: best strategy per host vs Lemire SIMD reference](bench_best_warm.png)
 
 ![cold column: best strategy per host vs Lemire SIMD reference](bench_best_cold.png)
+
+![F vs Lemire across container sizes on the Pi 5 (campaign sweep_fvl2): paired per-run deltas, negative = Lemire faster](bench_pi5_sweep_fvl2_delta.png)
 
 Curves show 22 sizes for the Pi 5 and the 10 power-of-two sizes for the
 other hosts; only values with an archived raw run are plotted.
@@ -189,7 +192,7 @@ before the table. `./bench_twolevel [sets] [reps] [hb|hs|cb|cs|all] [order_seed]
 - The main bench's "cold" column is not a cache flush; the two-level harness's "hot" modes are hot only for the 1 KB outer array.
 - "One block = one cache line" requires a line-aligned array. The harnesses use `std::vector` (16-byte alignment), so most blocks straddle two lines; a Roaring integration should align container arrays and spines.
 - The Pi 5 kernel's in-loop prefetch is a net loss by the project's own data and should be removed after a dedicated A/B.
-- Every "vs Lemire" number is against the 2026-04-27 version of his kernel (`simd_quad.c`). Lemire revised the post and its code on 2026-10-02 (arrays under 16 elements are now searched with two overlapping SIMD loads instead of a linear scan), so the small-container bands may differ against the revised kernel.
+- Every "vs Lemire" number is against the 2026-04-27 version of his kernel (`simd_quad.c`). Lemire revised the post and its code on 2026-10-02 (arrays under 16 elements are now searched with two overlapping SIMD loads instead of a linear scan), so the M4 Max small-container bands may differ against the revised kernel; on the Pi 5 both kernels were measured (campaign `sweep_fvl2`, 2026-10-11) and the revision changes no verdict against F.
 - Repository hygiene was addressed on 2026-10-11: the compiled binaries were untracked; the Khuong & Morin PDF, the three Knuth scans and the stale `Images/` renders and diagrams were removed from the tip (third-party material is cited in `THIRD_PARTY_NOTICES.md`); and the 7,600 per-cell sweep output files were folded into `m4_runs/sweep_raw.txt`, `m4_runs/sweep_fvl_raw.txt` and `pi5_runs/sweep_raw.txt` (`consolidate_sweep.py`). The published history was rewritten the same day with `git filter-repo` to purge the PDF, the scans and the binaries, so commit hashes from the 2026-07-03 pre-migration snapshot onward changed; clones made before then must be re-cloned or hard-reset to `origin/main`.
 
 ## Background
