@@ -17,9 +17,9 @@ archived {host}_runs/rebench_run{1..5}.txt):
 
 SKX is slowest in both columns: ~1.5x EMR and ~1.7x GV4 warm, ~3.6x EMR
 and ~3.8x GV4 "cold" at n=4096. But the cold gap is not a core
-comparison. bench.cpp's "cold" column has no cache flush: it walks the
-arrays in allocation order with the same targets the previous algorithm
-just used, and its ~35 MB footprint fits the last-level cache of every
+comparison. bench.cpp's "cold" column had no cache flush when these were taken
+(one was added on 2026-10-11): it walked the arrays in allocation order
+with the same targets the previous algorithm had just used, and its ~35 MB footprint fits the last-level cache of every
 host except the Pi 5 -- SKX's 33 MB L3 included (corrections section 5).
 So all three servers' cold cells are last-level-cache hits in an
 unflushed harness, and the 0.28x / 0.26x ratios compare cache levels,

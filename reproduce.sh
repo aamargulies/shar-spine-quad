@@ -180,7 +180,13 @@ num_runs = int(sys.argv[4]) if len(sys.argv) > 4 else 1
 #
 # Any re-measurement on the same microarchitecture should land within ~2-10%
 # warm, ~5-25% cold (Pi 5 two-level levels: up to ~2x run-to-run, see
-# pi5_runs/twolevel_paired.txt).
+# pi5_runs/twolevel_paired.txt) -- for the cold cells only where the cache
+# state matches: the main-bench cold cells below predate the cache flush added
+# to bench.cpp on 2026-10-11 (Text/corrections_2026-10.md section 5), when the
+# column was an L2/L3/SLC hit on every host but the Pi 5. A fresh, flushed cold
+# cell is therefore expected to come out far higher than the archive on those
+# hosts; treat main-bench cold deltas as uninformative until the archives are
+# regenerated with the flushed harness.
 archived = {
     # Pi 5 (Cortex-A76). Main bench: rebench_run{1..5}.txt dated 2026-05-12,
     # taken after the hybrid A/B of the same day (pi5_runs/hybrid_summary.txt),
@@ -397,8 +403,12 @@ print()
 print("Notes:")
 print("  - 'measured' is the per-cell median across the run blocks found in the")
 print("    logs (last '4096*' A/B row of each run; the F row of each run).")
-print("  - Warm deltas within ~10%, cold within ~25% are consistent with")
-print("    measurement variance across machines of the same microarchitecture.")
+print("  - Warm deltas within ~10% are consistent with measurement variance across")
+print("    machines of the same microarchitecture. The archived main-bench COLD cells")
+print("    predate the cache flush added to bench.cpp on 2026-10-11 (they were")
+print("    L2/L3/SLC hits on every host but the Pi 5), so a flushed run's cold cells")
+print("    are expected to be much higher; main-bench cold deltas are not")
+print("    informative until the archives are regenerated with the flushed harness.")
 print("  - Archived two-level numbers are per-cell medians (levels) of five runs")
 print(f"    from {host}_runs/twolevel_summary.txt (2026-05-18); whole runs drift")
 print("    1.4-2.2x on some hosts, so use compute_twolevel_paired.py, not these")

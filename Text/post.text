@@ -28,16 +28,18 @@ know while reading. (1) Unless a sentence says otherwise, the
 single-lookup figures below are the archived 5-run medians of
 ./bench 4000 5000 in bench_table.txt (from
 {host}_runs/rebench_run{1..5}.txt); the first draft quoted
-single development runs. (2) bench.cpp's "cold" column has no
-cache flush: it walks the arrays in allocation order with the
-same targets the previous algorithm just used, and its ~35 MB
-footprint fits the last-level cache of every host except the
-Pi 5. So "cold" is a DRAM miss on the Pi 5 (for n > 256) and an
+single development runs. (2) bench.cpp's "cold" column had no
+cache flush when these numbers were taken: it walked the arrays in
+allocation order with the same targets the previous algorithm had
+just used, and its ~35 MB footprint fits the last-level cache of
+every host except the Pi 5. So "cold" is a DRAM miss on the Pi 5 (for n > 256) and an
 L2/L3/SLC hit on every other host - Skylake-SP included, alongside
 the M4, Emerald Rapids and Graviton 4 - and every cross-host "cold"
 comparison in this post compares cache levels, not cores
-(corrections section 5). The in-text corrections below
-say so where it matters.]
+(corrections section 5). Later on 2026-10-11 bench.cpp gained a
+512 MB flush before every cold pass; every number in this post
+predates it and no host has been re-run with it yet. The in-text
+corrections below say so where it matters.]
 
 The Pi 5 has four Arm Cortex-A76 cores at 2.4 GHz, 128-bit NEON
 vectors (no SVE), a 64 KB L1 data cache per core, 512 KB of L2
@@ -57,9 +59,9 @@ std::find 3.7x), which is unremarkable. The "cold" column
 widens that gap to 13-30x at n=4096 (bench_table.txt), which I
 originally took for the interesting part - but most of it is
 the harness, not the core:
-bench.cpp's cold pass has no cache flush, and the ~35 MB working
-set stays in the M4's on-chip caches while it misses to DRAM on
-the Pi 5 (see the note above). On the Intel side, Skylake-SP
+bench.cpp's cold pass had no cache flush when these were taken
+(see the note above), so the ~35 MB working set stayed in the M4's
+on-chip caches while it missed to DRAM on the Pi 5. On the Intel side, Skylake-SP
 turns out to punish the "obvious" AVX-512 port with a frequency-
 license downclock (license level L1 for these light integer ops)
 that makes the tuned variant slower than the generic SSE2
@@ -228,8 +230,9 @@ benchmark generates 4000 random sorted arrays per size and
 performs membership queries in warm mode (each array queried
 5000 times consecutively, simulating cache hits) and cold mode
 (each array queried once, cycling through thousands of arrays).
-There is no explicit cache flush in cold mode; it relies on the
-~35 MB cycle outrunning the caches, which it does on the Pi 5 for
+The archived runs had no explicit cache flush in cold mode (bench.cpp
+gained one on 2026-10-11, after every number in this post); they
+relied on the ~35 MB cycle outrunning the caches, which it does on the Pi 5 for
 n > 256 (at n <= 256 the set is L2/L3-resident even here) and
 does not do on the larger-cache hosts later in this post
 (corrections section 5).
@@ -253,9 +256,9 @@ Now the cold-cache picture, which is the interesting one:
 [bench_cold.png]
 
 This is where the spine earns its keep - and the Pi 5 is the one
-host where bench.cpp's cold column really is cold at these sizes:
-the ~35 MB working set does not fit its 2 MB L3, so these are DRAM
-misses (corrections section 5). Cold-cache queries at large n are
+host where bench.cpp's cold column was really cold in these archived
+runs: the ~35 MB working set does not fit its 2 MB L3, so these are
+DRAM misses (corrections section 5). Cold-cache queries at large n are
 dominated by memory latency, not arithmetic. The reference SIMD
 Quad and the plain Pi 5 variant sit just under 300 ns at n=4096
 (296.3 and 299.0). The spine variant does the same query in
@@ -398,14 +401,15 @@ at n=4096, the cold/warm ratio for the plain pi5 variant is
 read this as "cold cache is genuinely a smaller problem on Apple
 silicon - a big OoO window plus an aggressive hardware prefetcher
 plus unified LPDDR5X is doing an enormous amount of hidden work."
-Most of it is not that. bench.cpp's cold pass has no cache flush;
-it walks ~35 MB of arrays in allocation order with the targets
-the previous algorithm just used. That footprint fits the M4's L2
+Most of it is not that. The archived bench.cpp cold pass had no
+cache flush; it walked ~35 MB of arrays in allocation order with the
+targets the previous algorithm had just used. That footprint fits the M4's L2
 and SLC and does not fit the Pi 5's 2 MB L3. The Pi 5 column is
 DRAM misses; the M4 column is on-chip cache hits. The ratio
 measures cache capacity, not latency hiding. How much better the
 M4 core actually hides a real DRAM miss is an open question that
-needs a flushed cold column (corrections section 5).
+needs a flushed cold column (corrections section 5; bench.cpp has had
+one since later on 2026-10-11, the re-run is pending).
 
 This does not mean the spine stops mattering on the M4. On Pi 5
 cold n=4096 the spine saves ~148 ns (299.0 -> 150.7), roughly
@@ -607,8 +611,8 @@ std::binary_search - 3.2x, about the same ratio (bench_table.txt).
 On the Intel side, EMR is the first host where the pattern from
 the Apple host reappears: warm and cold ratios look similar and
 the spine pays in both regimes. Part of the reason is the same as
-on the M4: the 8559C's L3 is ~260 MB, so bench.cpp's unflushed
-cold pass is an L3 hit here, not a DRAM miss.
+on the M4: the 8559C's L3 is ~260 MB, so bench.cpp's then-unflushed
+cold pass was an L3 hit here, not a DRAM miss.
 
 Two observations worth pulling out, with that caveat attached.
 At n=4096 cold, EMR's intel+spine (37.2 ns) is 3.6x faster than
@@ -619,8 +623,8 @@ box and one on a shared-tenant one, and cross-host "cold"
 comparisons from this column compare cache levels, not cores. So
 it says little about the two cores; my earlier framing of it as
 "different memory subsystems, six years of uarch in between" is
-withdrawn, and the 3.6x itself is unexplained pending a flushed
-cold column. Second, SKX's and the Pi 5's cold cells (132.7 and
+withdrawn, and the 3.6x itself is unexplained pending a re-run with
+the flushed cold column. Second, SKX's and the Pi 5's cold cells (132.7 and
 150.7 ns) are the two large ones in the table; what either core
 does with a real DRAM miss is not measured here.
 
@@ -775,8 +779,8 @@ Among the other three, GV4 and EMR are a hair apart despite a
 level register width is not what matters. What this row cannot
 say is how well any of these cores hides a real DRAM miss relative
 to another - my earlier "memory wins are uarch-and-tenancy wins"
-reading of it is withdrawn (corrections section 5). A flushed cold
-column for bench.cpp is an open item.
+reading of it is withdrawn (corrections section 5). bench.cpp has had a flushed cold
+column since later on 2026-10-11; the re-run with it is the open item.
 
 Graviton 4: the ARM server case
 
@@ -893,10 +897,10 @@ having anything wider than 128-bit NEON and the x86 host having
 AVX-512BW. I originally read this as a core-generation story
 ("CPU generation matters more than vendor"). The harness cannot
 support that reading: both cells are last-level-cache hits in
-bench.cpp's unflushed cold column (corrections section 5), SKX's
+bench.cpp's then-unflushed cold column (corrections section 5), SKX's
 on a shared-tenant box, and cross-host "cold" comparisons from
 that column compare cache levels, not cores. The 4x gap is
-unexplained pending a flushed cold column. What survives is the
+unexplained pending a re-run with the flushed cold column. What survives is the
 narrower point that register width is irrelevant to this column;
 what the two cores do with a real DRAM miss is not measured here.
 
@@ -1037,7 +1041,7 @@ stack beats Lemire's published variant in all 24 n=4096 cells (-35%
 to -84% hot, -7% to -45% cold), but his is faster at several small
 container sizes on the M4 Max. Still open: remove the Pi 5 in-loop
 prefetch (needs a kernel A/B); align container arrays and spines to
-cache lines; give bench.cpp a real cache flush; look at whether the
+cache lines; re-run bench.cpp's now-flushed (2026-10-11) cold column on every host; look at whether the
 tail-block scalar sweep can merge into the SIMD path without
 branching; and see whether AMX on Emerald Rapids has anything to
 offer (probably not for 16-bit integers, but worth a look). Let

@@ -1,4 +1,4 @@
-Per-cell medians of 5 runs of ./bench 4000 5000. '-' = size not in that host's archived sweep: M4 Max / M1 Pro / SKX / EMR / GV4 rebench_run{1..5}.txt (2026-05-01) cover only the 10 power-of-two sizes; Pi 5 (2026-05-12) covers all 22.
+Per-cell medians of 5 runs of ./bench 4000 5000, taken with the pre-flush bench.cpp (no cache flush before 2026-10-11, so the cold column is DRAM-cold only on the Pi 5, and there only for n > 256; Text/corrections_2026-10.md section 5). '-' = size not in that host's archived sweep: M4 Max / M1 Pro / SKX / EMR / GV4 rebench_run{1..5}.txt (2026-05-01) cover only the 10 power-of-two sizes; Pi 5 (2026-05-12) covers all 22.
 
 === WARM CACHE (ns/query) ===
 algorithm                         machine       8     11     16     23     32     47     64     89    128    177    256    333    512    617   1001   1024   1234   1777   2048   2999   3967   4096

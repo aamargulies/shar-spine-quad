@@ -108,8 +108,9 @@ the LLC (512 MB thrash) before every cold cell and uses crafted hits;
 its "hot" modes keep only the 1 KB outer hot, so inner loads are
 first touches (DRAM-cold on Pi 5 / SKX, L2/L3 hits on Apple / EMR /
 GV4) -- cross-host "cold" comparisons compare cache levels, not
-cores. bench.cpp's own "cold" column has no flush at all, so treat it
-as within-host only. Arrays and spines are std::vector allocations
+cores. bench.cpp's own "cold" column had no flush when the archived
+numbers were taken (one was added on 2026-10-11; no re-run yet), so
+treat it as within-host only. Arrays and spines are std::vector allocations
 (16-byte aligned), so most blocks straddle two cache lines;
 misalignment costs +14-30% cold at n=4096 on the Pi 5 and a Roaring
 integration must align them. The Pi 5 drifts ~50% run to run
@@ -129,10 +130,11 @@ Happy to take suggestions, especially on the Apple-silicon cold
 regression for the compile-time n=4096 spine (the shipped hybrid;
 bench_table.txt 5-run medians: M4 Max 6.50 -> 21.94 ns cold, M1 Pro
 11.10 -> 32.12 ns). The current best hypothesis is a measurement-order
-artifact in bench.cpp (the general-n kernel's cold pass leaves the
-block line L2-warm for the next kernel, while the dedicated 4096 row
-runs after its own warm sweep); it needs a flush-before-both test on
-Apple hardware (corrections section 5).
+artifact in the pre-flush bench.cpp (the general-n kernel's cold pass
+left the block line L2-warm for the next kernel, while the dedicated
+4096 row ran after its own warm sweep); it needs a flush-before-both
+test on Apple hardware, which bench.cpp has provided since 2026-10-11
+(the re-run is pending; corrections section 5).
 ```
 
 ## Logistics

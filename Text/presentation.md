@@ -26,7 +26,7 @@ Show the 6-host table: Pi 5, M1 Pro, M4 Max, Xeon Skylake, Xeon Emerald Rapids, 
 **4. Finding #1: the "spine" — one idea, one direction on every CPU (2 min)**
 - Problem: quaternary search does 3 dependent loads before it can even start looking. On cold cache = 3 DRAM round-trips.
 - Fix: precompute a tiny "spine" of sample points — 256 bytes, read as a few adjacent cache lines. The win is memory-level parallelism over that short contiguous read, not a stride prefetcher (a 256-byte spine is too short to train one).
-- Result: faster cold at n=4096 on every CPU, but not uniformly 2–3×. `bench_table.txt` 5-run medians, non-spine → spine, cold ns/query: Pi 5 299.0 → 150.7, M4 Max 16.8 → 6.5, M1 Pro 37.1 → 11.1, Skylake 180.9 → 132.7, Emerald Rapids 64.9 → 37.2, Graviton 4 65.0 → 34.6 — about 2–3× on the ARM/Apple cores, under 2× on the x86 and Graviton servers. One idea, same direction everywhere. Caveat: `bench.cpp`'s "cold" column has no cache flush (corrections §5), so compare within a host only.
+- Result: faster cold at n=4096 on every CPU, but not uniformly 2–3×. `bench_table.txt` 5-run medians, non-spine → spine, cold ns/query: Pi 5 299.0 → 150.7, M4 Max 16.8 → 6.5, M1 Pro 37.1 → 11.1, Skylake 180.9 → 132.7, Emerald Rapids 64.9 → 37.2, Graviton 4 65.0 → 34.6 — about 2–3× on the ARM/Apple cores, under 2× on the x86 and Graviton servers. One idea, same direction everywhere. Caveat: `bench.cpp`'s "cold" column had no cache flush when these were taken (corrections §5; one was added on 2026-10-11), so compare within a host only.
 - *This is the part where AI was great* — writing 6 variants of the same idea tuned per-uarch is boring, mechanical, and exactly where models excel.
 
 **5. Finding #2: where intuition was wrong (2 min) — "lowlights"**
@@ -145,7 +145,7 @@ Format below: each section has **SLIDE** (what the audience sees) and **SAY** (w
 > **Fix**: precompute a tiny sorted sample of the array. Scan it sequentially first.
 >
 > ### Result: faster cold on every CPU — about 2–3× on ARM/Apple, under 2× on the x86/Graviton servers.
-> *(memory-level parallelism over a 256-byte contiguous read — too short to train a stride prefetcher; `bench_table.txt` n=4096 medians, within-host comparison only — `bench.cpp`'s cold column is unflushed)*
+> *(memory-level parallelism over a 256-byte contiguous read — too short to train a stride prefetcher; `bench_table.txt` n=4096 medians, within-host comparison only — `bench.cpp`'s cold column was unflushed when these were taken)*
 
 **SAY**
 > The first big optimization — and the only one that wins on every machine, at least for full-size containers — is something we called the "spine."

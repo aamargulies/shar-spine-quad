@@ -310,9 +310,10 @@ as unmeasured until those sizes are re-run and archived.
   lets the core speculate ahead across mispredicted branches, which is why
   C is the cold winner on EMR and GV4 — the same mechanism Khuong & Morin
   report for branchy vs branch-free search out of cache.
-* **The cache-state labels.** `bench.cpp`'s "cold" column has no cache
-  flush: it walks the arrays in allocation order with the same targets the
-  previous algorithm just used, and the ~35 MB footprint fits the LLC of
+* **The cache-state labels.** `bench.cpp`'s "cold" column had no cache
+  flush in any archived run (see the update at the end of this bullet): it
+  walked the arrays in allocation order with the same targets the previous
+  algorithm had just used, and the ~35 MB footprint fits the LLC of
   every host except the Pi 5 (and at n ≤ 256 is L2/L3-resident on the Pi 5
   too). `bench_twolevel`'s "hot" modes keep only the 1 KB outer hot: each
   set's 200 reps touch ~91 distinct containers once each, so inner loads
@@ -321,6 +322,43 @@ as unmeasured until those sizes are re-run and archived.
   213 ns at 200. Hot modes also send ~50% outer-miss queries while cold
   modes are 100% crafted hits. Cross-host "cold" comparisons therefore
   compare cache levels, not cores.
+  *Update, later on 2026-10-11:* `bench.cpp` now calls a copy of the
+  two-level harness's 512 MB `thrash_llc()` before every cold pass and prints a
+  `# cold column:` provenance line (nothing renamed). The description above
+  holds for every archived `rebench_run*.txt` (none has the line) and for
+  the `plot.py` dicts and figures built from them; the first flushed run is
+  `pi5_runs/rebench_flushed_run1.txt` (Pi 5, 2026-10-12, one run, pinned to
+  core 3, `# key: value` header lines with date, build, compiler, governor
+  and temperature); no other host has been re-run. What that one run shows
+  (levels, not verdicts): (a) the flush evicts at canonical intensity — the
+  n = 8 cold cells are 38–74 ns against 5–18 ns in the archive, and the
+  n = 4096 spine cells sit 1.3–1.5× above the archived level (`pi5s` 223 ns
+  against 146–160; `pi5` 382 against 289–319), so pre-flush only the array
+  lines were cold on the Pi 5 while the 1 MB of spines, the pointer and
+  target vectors and probably the TLB were warm; the spine's cold win at
+  n = 4096 stands (`pi5s` −42% against `pi5`; archive −50%); (b) flushed,
+  the m4 hybrid is faster cold than the general-n m4 spine on the Pi 5
+  (`m4_spine_4096` 194.9 ns against `m4_spine` 211.6, −8%) where the
+  pre-flush archive had it slower in 4 of 5 runs (+2% to +18%) — consistent
+  with the measurement-order explanation of the Apple regression below, but
+  one run on the wrong host; (c) the warm cells match the archive's fast
+  mode within ±6% at every size (`pi5s` at n = 23: +15%), which exposes a
+  property of the archive: the five `rebench_run*.txt` have a slow mode
+  1.45–1.50× above the fast one, uniform across the nine columns of a row
+  (1.47–1.51 at n = 16 — consistent with a clock step under `ondemand`,
+  2.4 GHz against ~1.6); run 1 is slow at almost every size and run 5 at
+  none, so the `plot.py` Pi 5 warm medians inherit the slow mode at n = 11,
+  16, 23 and 128 in most columns and in single columns at 8, 32 and 512
+  (within-row A/Bs unaffected; absolute small-n warm levels inflated by up
+  to 1.5×), while the flushed run sat in the fast mode throughout — the
+  512 MB thrash between cold passes plausibly keeps the clock up; (d) the
+  `linear` baseline column is 2.5–3.5× faster than the archive from n = 64
+  up (633 against ~2,200 ns warm at n = 4096) because GCC 17.0.0 (20260704)
+  auto-vectorizes `std::find` over `uint16_t` (`-fopt-info-vec`: "loop
+  vectorized using 16 byte vectors"); the archive was built with
+  GCC 15 (`plot.py` provenance comment; the run files record no compiler,
+  the flushed-run header does) — a toolchain change, not the flush, in a
+  baseline column, not a studied kernel. The two-level "hot" caveat is unchanged.
 * **Variant A was always timed first with no warm-up**, so its hot cells
   carried first-touch costs; the repaired harness runs an untimed warm-up
   pass and randomises the timing order.
@@ -351,13 +389,16 @@ as unmeasured until those sizes are re-run and archived.
   table's block-check descriptions ("x2 + 2 cmp" vs "x2 + 4 cmp") are
   wrong for both: both do two `vld1q_u16_x2` loads and four compares.
 * **The Apple `_spine_4096` "structural cold regression" may be a
-  measurement-order artifact.** In `bench.cpp` the spine kernel's cold
-  pass runs right after the non-spine kernel's cold pass with identical
-  targets, so the block line is an L2 hit on Apple's large L2, while the
-  dedicated `4096*` row runs after its own 32 MB warm sweep. The reported
+  measurement-order artifact.** In the pre-flush `bench.cpp` the spine
+  kernel's cold pass ran right after the non-spine kernel's cold pass with
+  identical targets, so the block line was an L2 hit on Apple's large L2,
+  while the dedicated `4096*` row ran after its own 32 MB warm sweep. The reported
   gap matches L2-hit vs SLC-hit latencies and the same asymmetry
   reproduces on the Pi 5. This is a hypothesis that needs a test on Apple
-  hardware (run both measurements after an explicit flush). The OpenEvolve
+  hardware (run both measurements after an explicit flush; since later on
+  2026-10-11 `bench.cpp` does exactly that, so the test is a re-run on
+  M1/M4; on the Pi 5 the first flushed run, 2026-10-12, removes the
+  asymmetry — point (b) of the cache-state bullet's update). The OpenEvolve
   starting program is also the retired unroll, not the shipped hybrid.
 * **Provenance.** CLAUDE.md is gitignored yet is the only record of most
   decisions; `bench_twolevel.cpp` cited a "fix note in CLAUDE.md" that did
@@ -428,4 +469,7 @@ sweep files, stale PNG copies). The hygiene items were addressed later
 on 2026-10-11 (binaries untracked; PDF, scans and `Images/` removed from
 the tip and cited in `THIRD_PARTY_NOTICES.md`; sweep files folded into
 `*_raw.txt`; the published history was rewritten the same day to purge
-the PDF, the scans and the binaries).
+the PDF, the scans and the binaries). The cache flush for `bench.cpp`'s
+cold column was also added later on 2026-10-11 (see the update in section
+5); the archived main-bench runs predate it, and the first flushed run
+(Pi 5, one run) followed on 2026-10-12 as `pi5_runs/rebench_flushed_run1.txt`.

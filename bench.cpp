@@ -304,18 +304,63 @@ static double bench_warm(Fn q, size_t num_arrays,
     return ns / (double)(num_arrays * repeats);
 }
 
-// "cold" column caveat (Text/corrections_2026-10.md, section 5): there is
-// no cache flush here. Arrays are visited in allocation order, each with
-// the same target the previous algorithm just used on it, and at the
-// canonical 4000 arrays the per-size footprint (~35 MB at n=4096, 2 MB at
-// n=256) fits the LLC of every host except the Pi 5. So this column is a
-// DRAM miss on the Pi 5 at large n, an L3/SLC hit on Apple / EMR / GV4 /
-// SKX, and L2/L3-resident everywhere at n <= 256. Cross-host comparisons
-// of this column compare cache levels, not cores. Within one host the
-// column is still a fair A/B between algorithms at the same size.
+// LLC thrash before every cold measurement (added 2026-10-11; same size and
+// shape as bench_twolevel.cpp's thrash_llc, so "cold" means the same thing
+// in both harnesses): a stride-64 volatile write over 512 MB, intended to
+// evict the arrays, spines and target vectors from every cache level on
+// every host in the project (the largest LLC is Emerald Rapids' ~260 MB L3).
+// Verified on the Pi 5 (A76) only: a 1 MB thrash moves the n=8/16 cold
+// cells out of L1, and the default 512 MB at canonical intensity
+// (pi5_runs/rebench_flushed_run1.txt, 2026-10-12) puts the n=8 cold cells
+// at 38-74 ns against 5-18 ns in the pre-flush archive and the n=4096
+// spine cells 1.3-1.5x above it (pre-flush, only the array lines were cold
+// there; the spines, the pointer and target vectors and probably the TLB
+// were still warm). On the other hosts inspect the
+// first flushed run before quoting a cross-host cold number -- small-n cold
+// cells must sit at DRAM latency, not at the archived ~1.5 ns M4 / ~2.5 ns
+// EMR levels; Intel LLCs use scan-resistant insertion and 512 MB is only
+// ~2x the EMR L3. Before this date bench_cold had no flush, so every archived
+// main-bench run (e.g. {host}_runs/rebench_run*.txt, hybrid_run*.txt,
+// shipped_run*.txt, fullsweep_run*.txt) has a cold column that was a DRAM
+// miss on the Pi 5 at n > 256 only, L2/L3-resident at n <= 256 there, and
+// an L2/L3/SLC hit on the other five hosts (Text/corrections_2026-10.md,
+// section 5); the plot.py dicts derived from them are not comparable with
+// output of this version, which prints a "# cold column:" provenance line.
+// The size can be overridden at build time, e.g.
+// -DQUADSEARCH_THRASH_BYTES='(1ull<<20)' for a quick functional check; the
+// default build writes ~114 GB per ./bench run (one 512 MB pass per cold
+// measurement, 228 of them on ARM, 133 on x86) and holds a 512 MB scratch
+// buffer.
+#ifndef QUADSEARCH_THRASH_BYTES
+#define QUADSEARCH_THRASH_BYTES (512ull * 1024ull * 1024ull)
+#endif
+static constexpr size_t kThrashBytes = QUADSEARCH_THRASH_BYTES;
+static_assert(kThrashBytes >= 64, "QUADSEARCH_THRASH_BYTES must cover at least one cache line");
+
+static void thrash_llc() {
+    static std::vector<uint8_t> scratch;
+    if (scratch.empty()) scratch.assign(kThrashBytes, 0);
+    // Stride-64 write touches every line. volatile pointer prevents the
+    // compiler from eliding the stores.
+    volatile uint8_t *p = scratch.data();
+    for (size_t i = 0; i < kThrashBytes; i += 64) p[i] = (uint8_t)i;
+}
+
+// One query per array, arrays visited in allocation order, after
+// thrash_llc(). The thrash is outside the timed region. What is timed is
+// the first touch since the flush of every array (and spine, target and
+// pointer vector), with every cache level full of dirty scratch lines and
+// the TLB cold -- not an isolated DRAM miss per query: at small n the 4000
+// arrays are adjacent malloc chunks, so the pass is a prefetcher-assisted
+// sequential heap sweep. All of that is identical for every algorithm at a
+// given size, so within one host the column remains a fair A/B, with one
+// asymmetry worth knowing: the spine columns also read the spine-pointer
+// vector (24 B per array, sequential), which the flush makes cold too and
+// which the non-spine columns never touch.
 template <typename Fn>
 static double bench_cold(Fn q, size_t num_arrays,
                          const std::vector<uint16_t> &targets) {
+    thrash_llc();
     volatile uint64_t acc = 0;
     auto t0 = clock_type::now();
     for (size_t i = 0; i < num_arrays; i++) {
@@ -334,6 +379,10 @@ int main(int argc, char **argv) {
     int num_arrays = (argc > 1) ? std::atoi(argv[1]) : 2000;
     int warm_reps  = (argc > 2) ? std::atoi(argv[2]) : 2000;
 
+    // Provenance line for archived outputs: files without it predate the
+    // cold-column flush (parsers key on numeric rows, so '#' lines are inert).
+    std::printf("\n# cold column: thrash_llc() %.1f MB before every cold pass "
+                "(flush added 2026-10-11)\n", (double)kThrashBytes / 1048576.0);
 #if QUADSEARCH_ARCH_ARM
     std::printf("\n%-6s | %-76s | %-76s\n", "size",
         "warm ns/q:  linear  binary  simd   pi5   pi5s    m4   m4s   gv4   gv4s",
@@ -539,7 +588,7 @@ int main(int argc, char **argv) {
         // warm sawtooth vs straight-line unroll is visible. Note that at
         // n=4096 simd_quad_pi5_spine_4096 is also timed in the cross-host
         // block further down, so archives carry two rows for it per run;
-        // aggregators should use the first.
+        // aggregators use the last (cross-host) row, as {host}_runs/compute_medians.py does.
         if (size == 256 || size == 512 || size == 1024 ||
             size == 2048 || size == 4096) {
             double w_pin = 0, c_pin = 0;

@@ -2,7 +2,7 @@
 
 > Correction notice 2026-10-11: preserved as written (lab note, 2026-05
 > unroll era). The "Shipped best" and EMR tables below are the retired
-> unroll's numbers, the "cold" figures come from bench.cpp's unflushed
+> unroll's numbers, the "cold" figures come from bench.cpp's then-unflushed
 > cold column, and the Shar mechanism is misdescribed. Retracted claims
 > are annotated in place with "> Correction 2026-10-11:" notes; the
 > authoritative list of retractions and replacement numbers is
@@ -29,8 +29,8 @@ a refutation of anything in the literature.
 > gv4_runs/hybrid_summary.txt), 18.92 vs the unroll's 26.60 on SKX
 > (-28.9% warm, 5/5, skx_runs/hybrid_summary.txt) and 17.75 vs 24.50 on
 > the Pi 5 (-27.6% warm, pi5_runs/hybrid_summary.txt). (2) "2-3x cold"
-> is from bench.cpp's "cold" column, which has no cache flush and is
-> LLC-resident on every host except the Pi 5
+> is from bench.cpp's "cold" column, which had no cache flush before
+> 2026-10-11 and was LLC-resident on every host except the Pi 5
 > (Text/corrections_2026-10.md §5).
 
 
@@ -50,8 +50,9 @@ Cold-cache results at n=4096: Pi 5 ~2×, M4 ~3×, SKX/EMR/GV4 ~2–3×. Not
 tuning — a structural change to the memory access pattern.
 
 > Correction 2026-10-11: these are within-host ratios from bench.cpp's
-> "cold" column, which has no cache flush: it walks the arrays in
-> allocation order with the targets the previous algorithm just used,
+> "cold" column, which had no cache flush before 2026-10-11: it walked
+> the arrays in allocation order with the targets the previous algorithm
+> had just used,
 > and the ~35 MB footprint fits the LLC of every host except the Pi 5.
 > The ratios stand as measured but describe LLC-hit, not DRAM-cold,
 > behaviour on five of the six hosts, and cross-host "cold" comparisons
@@ -189,7 +190,7 @@ AVX-512 issue limit where there's nothing left to win.
 > (emr_runs/hybrid_summary.txt, shipped_run 5-run medians; -63.6% warm /
 > -34.5% cold vs the general-n spine; -54.8% warm vs the unroll), so EMR
 > is not "warm-cache a wash" against the 13.8 ns reference. The cold
-> numbers are from bench.cpp's unflushed cold column
+> numbers are from bench.cpp's then-unflushed cold column
 > (Text/corrections_2026-10.md §5).
 
 Separately: the `simd_quad_intel` warm regression vs. the SSE2 reference
@@ -325,7 +326,7 @@ exciting title, more accurate.
 > hybrid the compile-time n=4096 kernel is below the reference on all
 > six hosts (regenerated bench_table.txt, warm n=4096: 15.98 vs 31.1
 > Pi 5, 3.71 vs 6.3 M4 Max, 6.05 vs 9.2 M1 Pro, 18.92 vs 33.0 SKX, 6.50
-> vs 13.8 EMR, 7.00 vs 15.2 GV4). "2-3x cold" is bench.cpp's unflushed
+> vs 13.8 EMR, 7.00 vs 15.2 GV4). "2-3x cold" is bench.cpp's then-unflushed
 > cold column (Text/corrections_2026-10.md §5). The two-level
 > F-vs-Lemire result holds at n=4096 (F faster in all 24 host x mode
 > cells, -35% to -84% hot, -7% to -45% cold, §2.2) but not across

@@ -22,6 +22,13 @@ only the 10 power-of-two sizes present in their archived
 {host}_runs/rebench_run{1..5}.txt files; each dict is paired with its own
 size list (m4_sizes, ...) and the plotting / table code indexes by that
 list. See the PROVENANCE comment above each dict.
+
+Cache state (2026-10-11): every main-bench dict below comes from the
+pre-flush bench.cpp, whose cold column had no cache flush (DRAM-cold only on the
+Pi 5, and there only for n > 256; Text/corrections_2026-10.md section 5). bench.cpp now writes
+512 MB before every cold pass and prints a "# cold column:" line, so its
+output is not comparable with these dicts: add new dicts with their own
+provenance rather than mixing.
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -60,6 +67,14 @@ label_strs  = [str(s) for s in label_sizes]
 # comparison at the "m4 variant" / "gv4 variant" row.
 # Verified 2026-10-11: all 396 cells (22 sizes x 9 columns x warm/cold)
 # reproduce exactly as per-cell medians of pi5_runs/rebench_run{1..5}.txt.
+# Caveat (2026-10-12, found by comparing with the first flushed run,
+# pi5_runs/rebench_flushed_run1.txt): the five runs have a slow mode
+# 1.45-1.50x above the fast one, uniform across the nine columns of a row
+# (consistent with a clock step under the ondemand governor), and these warm
+# medians sit in the slow mode at n = 11, 16, 23 and 128 in most columns and
+# in single columns at 8, 32 and 512. Within-row A/Bs are unaffected; the
+# absolute small-n warm levels there are inflated by up to 1.5x. The cold
+# dicts below are pre-flush (see Text/corrections_2026-10.md, section 5).
 pi5_warm = {
     "linear (std::find)":          [   8.90,    8.50,   18.30,   21.90,   25.20,   34.50,   37.70,   50.30,  104.00,   96.60,  138.30,  178.60,  272.00,  403.90,  552.00,  546.00,  649.90,  961.10, 1090.80, 1558.00, 2208.70, 2195.80],
     "binary (std::binary_search)": [  20.60,   25.20,   32.10,   33.50,   33.00,   36.50,   33.40,   35.70,   55.60,   42.40,   45.80,   47.80,   57.30,   53.40,   68.60,   57.50,   59.10,   62.10,   63.30,   66.60,   68.50,   68.60],
@@ -353,10 +368,10 @@ skx_spine_4096 = {"warm": 18.92, "cold": 185.01}
 # ("hybrid: warm 3.71 cold 21.94"). The "Measured 2026-05-01" and the
 # 4.34 -> 3.65 / 6.47 -> 18.65 figures above describe the retired unroll
 # measured in rebench_run{1..5}.txt (2026-05-01), not these values.
-# [NOTE 2026-10-11: the 'structural' reading is now a hypothesis. The spine kernel's cold pass
-#  runs right after the non-spine pass with identical targets (L2 hit) while the 4096* row runs
+# [NOTE 2026-10-11: the 'structural' reading is now a hypothesis. In the pre-flush bench.cpp the spine kernel's cold pass
+#  ran right after the non-spine pass with identical targets (L2 hit) while the 4096* row ran
 #  after its own 32 MB sweep; the same asymmetry reproduces on the Pi 5. Untested with a flush on
-#  Apple hardware. Text/corrections_2026-10.md section 5.]
+#  Apple hardware (bench.cpp flushes since later on 2026-10-11; re-run pending). Text/corrections_2026-10.md section 5.]
 m4_spine_4096 = {"warm": 3.71, "cold": 21.94}
 # Pi 5 (Cortex-A76) simd_quad_pi5_spine_4096, gap=32 -> 128 spine entries ->
 # 256 B = 4 cache lines. Shape is the 2026-05-12 hybrid (3-iter quaternary
@@ -410,7 +425,7 @@ pi5_spine_4096 = {"warm": 15.98, "cold": 111.85}
 # and "6.31 -> 6.16" above describe the retired unroll measured in
 # rebench_run{1..5}.txt (median 6.16 warm / 32.70 cold), not these values.
 # [NOTE 2026-10-11: same caveat as the M4 block: a measurement-order hypothesis, untested with a
-#  flush; the +194% is +196% from the 4096* rows (openevolve_m4_spine_4096/README.md note).]
+#  flush (bench.cpp flushes since later on 2026-10-11; re-run pending); the +194% is +196% from the 4096* rows (openevolve_m4_spine_4096/README.md note).]
 m1_spine_4096 = {"warm": 6.05, "cold": 32.12}
 
 # Intel Emerald Rapids two-level spine micro-bench, median of 5 runs
@@ -1606,7 +1621,9 @@ def table_text():
     ]
 
     lines = []
-    lines.append("Per-cell medians of 5 runs of ./bench 4000 5000. '-' = size not in that "
+    lines.append("Per-cell medians of 5 runs of ./bench 4000 5000, taken with the pre-flush "
+                 "bench.cpp (no cache flush before 2026-10-11, so the cold column is DRAM-cold only on "
+                 "the Pi 5, and there only for n > 256; Text/corrections_2026-10.md section 5). '-' = size not in that "
                  "host's archived sweep: M4 Max / M1 Pro / SKX / EMR / GV4 "
                  "rebench_run{1..5}.txt (2026-05-01) cover only the 10 power-of-two sizes; "
                  "Pi 5 (2026-05-12) covers all 22.")

@@ -122,7 +122,7 @@ Cold cache → 3 trips to DRAM.
 
 <div class="big">Result: <strong>faster cold on every CPU</strong> — about 2–3× on ARM/Apple, under 2× on the servers.</div>
 
-<p class="pause">(memory-level parallelism over a 256-byte contiguous read — too short to train a stride prefetcher; bench_table.txt n=4096 medians, within-host only — bench.cpp's cold column is unflushed)</p>
+<p class="pause">(memory-level parallelism over a 256-byte contiguous read — too short to train a stride prefetcher; bench_table.txt n=4096 medians, within-host only — bench.cpp's cold column was unflushed when these were taken)</p>
 
 <!--
 The first big optimization — and the only one that wins on every machine, at least for full-size containers — is the "spine."

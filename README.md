@@ -38,7 +38,7 @@ specializations for n ∈ {256, 512, 1024, 2048, 4096} where measured.
 
 * **The spine is the biggest single win on every host**: roughly 2× on the
   Pi 5 (a true DRAM miss) and 2.6× on the M4 Max (3.3× on the M1 Pro, where
-  the main bench's cold column is an L2/SLC hit) at n = 4096. The
+  the pre-flush main bench's cold column was an L2/SLC hit) at n = 4096. The
   mechanism is a short contiguous read with memory-level parallelism, not a
   hardware stride prefetcher.
 * **Compile-time specialization at n = 4096 ("hybrid": straight-line descent
@@ -114,11 +114,15 @@ specializations for n ∈ {256, 512, 1024, 2048, 4096} where measured.
 Sources: `{host}_runs/rebench_run*.txt` for the spine column; the hybrid
 column from `{host}_runs/hybrid_run*.txt` (M4 Max, M1 Pro, Skylake),
 `emr_runs/shipped_run*.txt`, `gv4_runs/fullsweep_run*.txt` and the Pi 5
-rebench rows, as recorded in `plot.py`. Two caveats: the main bench's "cold"
-column has no cache flush, so it is a DRAM miss on the Pi 5 but an L2/L3 hit
-on the other hosts (compare within a host, not across hosts); and the Apple
-hybrid cold numbers may be a measurement-order artifact rather than a
-kernel property (see the corrections document, section 5).
+rebench rows, as recorded in `plot.py`. Two caveats: these main-bench cold
+numbers were measured before `bench.cpp` got its cache flush (added
+2026-10-11), so in them "cold" is a DRAM miss on the Pi 5 but an L2/L3 hit
+on the other hosts (compare within a host, not across hosts; a flushed
+re-run on every host is pending — so far one run on the Pi 5,
+`pi5_runs/rebench_flushed_run1.txt`, 2026-10-12, where the small-n cold cells
+come out at 38–99 ns against 5–20 ns in the archive); and the Apple hybrid cold numbers may be
+a measurement-order artifact rather than a kernel property (see the
+corrections document, section 5).
 
 ![warm: best strategy per host vs Lemire SIMD reference](bench_best_warm.png)
 
@@ -134,7 +138,7 @@ other hosts; only values with an archived raw run are plotted.
 ```sh
 ./reproduce.sh            # detects host, builds, runs bench + bench_twolevel, compares to archived medians
 ./reproduce.sh --runs 5   # per-cell median of 5 runs
-./reproduce.sh --quick    # lighter 2000×2000 intensity
+./reproduce.sh --quick    # lighter 2000×2000 intensity (every cold pass still runs the 512 MB flush)
 
 # Two-level campaign with randomised variant order, then paired analysis
 ./run_twolevel.sh pi5 10
@@ -176,7 +180,7 @@ before the table. `./bench_twolevel [sets] [reps] [hb|hs|cb|cs|all] [order_seed]
 
 - `simd_quad.c` — Lemire's reference kernel (NEON / SSE2), `#include`d as a bare body.
 - `simd_quad_pi5.c`, `simd_quad_m4.c`, `simd_quad_intel.c`, `simd_quad_graviton.c` — tuned kernels, spines, compile-time families. The Graviton spine kernels are byte-identical to the Pi 5 ones.
-- `bench.cpp` — correctness check + per-size warm/"cold" table for every kernel linked on the host.
+- `bench.cpp` — correctness check + per-size warm/"cold" table for every kernel linked on the host; since 2026-10-11 a 512 MB cache flush precedes every cold pass (the archived `rebench_run*.txt` predate it; flushed runs are archived as `{host}_runs/rebench_flushed_run*.txt`, so far one on the Pi 5).
 - `bench_twolevel.cpp` — 512 containers × 4096 inner, variants A–I + Lem, four modes (hot/cold × batched/serial), randomised timing order, warm-up pass, 512 MB cache flush before each cold cell.
 - `run_twolevel.sh`, `compute_twolevel_paired.py` — run campaigns and aggregate them with paired per-run statistics.
 - `plot.py` — datasets (only archive-derivable values) + figure generator; writes the PNGs and `bench_table.txt`.
@@ -189,7 +193,7 @@ before the table. `./bench_twolevel [sets] [reps] [hb|hs|cb|cs|all] [order_seed]
 ## Known limitations and open items
 
 - Variants H and I were measured with a mis-aimed prefetch on five of six hosts; only the Pi 5 has been re-run. The two-level dicts in `plot.py` and the bar chart label them "pre-fix".
-- The main bench's "cold" column is not a cache flush; the two-level harness's "hot" modes are hot only for the 1 KB outer array.
+- The archived main-bench "cold" columns, and the `plot.py` dicts and figures built from them, were measured before `bench.cpp` got its cache flush (2026-10-11), so they are DRAM-cold only on the Pi 5, and there only for the array lines at n > 256; the flushed harness has one run on the Pi 5 (`pi5_runs/rebench_flushed_run1.txt`, 2026-10-12: the n = 8 cold cells are 38–74 ns against 5–18 ns in the archive, and the n = 4096 spine cells sit 1.3–1.5× above it) and none on the other hosts. The two-level harness's "hot" modes are hot only for the 1 KB outer array.
 - "One block = one cache line" requires a line-aligned array. The harnesses use `std::vector` (16-byte alignment), so most blocks straddle two lines; a Roaring integration should align container arrays and spines.
 - The Pi 5 kernel's in-loop prefetch is a net loss by the project's own data and should be removed after a dedicated A/B.
 - Every "vs Lemire" number is against the 2026-04-27 version of his kernel (`simd_quad.c`). Lemire revised the post and its code on 2026-10-02 (arrays under 16 elements are now searched with two overlapping SIMD loads instead of a linear scan), so the M4 Max small-container bands may differ against the revised kernel; on the Pi 5 both kernels were measured (campaign `sweep_fvl2`, 2026-10-11) and the revision changes no verdict against F.

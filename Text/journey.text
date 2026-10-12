@@ -5,7 +5,7 @@ The SIMD Quad journey
 > written, as a record of the project's history. A review on
 > 2026-10-11 found that several of its numbers came from a retired
 > two-mode bench_twolevel harness, from per-cell medians taken
-> across drifting runs, or from bench.cpp's unflushed "cold"
+> across drifting runs, or from bench.cpp's then-unflushed "cold"
 > column, and that some hardware statements were wrong. Retracted
 > claims are annotated in place below with "> Correction
 > 2026-10-11:" notes. The authoritative list of retractions and
@@ -181,9 +181,9 @@ next to the data the CPU is reading now.
 
 > Correction 2026-10-11: "roughly 2x to 3x faster" here (and
 > "another 2-3x" above) are within-host ratios from bench.cpp's
-> "cold" column, which has no cache flush: it walks the arrays in
-> allocation order with the targets the previous algorithm just
-> used, and the ~35 MB footprint fits the LLC of every host except
+> "cold" column, which had no cache flush before 2026-10-11: it walked
+> the arrays in allocation order with the targets the previous
+> algorithm had just used, and the ~35 MB footprint fits the LLC of every host except
 > the Pi 5. The ratios stand as measured but describe LLC-hit, not
 > DRAM-cold, behaviour on five of the six hosts
 > (Text/corrections_2026-10.md, section 5).
@@ -456,9 +456,10 @@ latency: it has the smallest L2, the slowest DRAM, and the
 longest round-trip. The Skylake number is dominated by
 shared-tenancy noise on the EC2 instance I rented.
 
-> Correction 2026-10-11: bench.cpp's "cold" column has no cache
-> flush: it walks the arrays in allocation order with the targets
-> the previous algorithm just used, and the ~35 MB footprint fits
+> Correction 2026-10-11: bench.cpp's "cold" column had no cache
+> flush when these were taken (one was added on 2026-10-11): it walked
+> the arrays in allocation order with the targets the previous
+> algorithm had just used, and the ~35 MB footprint fits
 > the LLC of every host except the Pi 5, so this cross-host
 > ranking compares cache levels, not cores
 > (Text/corrections_2026-10.md, section 5). The Pi 5 is the only
@@ -536,11 +537,12 @@ execution-engine quirks.
 > runs, 4/5 EMR cold_ser runs) (sections 2.1-2.3; paired, 5
 > runs, {host}_runs/twolevel_paired.txt). The Apple _spine_4096
 > "structural" cold regression may be a measurement-order
-> artifact of bench.cpp: the spine kernel's cold pass runs right
-> after the non-spine kernel's cold pass with identical targets,
-> so the block line is an L2 hit, and the same asymmetry
+> artifact of the pre-flush bench.cpp: the spine kernel's cold pass
+> ran right after the non-spine kernel's cold pass with identical
+> targets, so the block line was an L2 hit, and the same asymmetry
 > reproduces on the Pi 5; this is a hypothesis that needs a test
-> on Apple hardware (section 5).
+> on Apple hardware, which the flushed bench.cpp (2026-10-11) now
+> provides (section 5).
 
 Each of those surprises became a paragraph in the findings
 section of the technical write-up. None of them were predictable

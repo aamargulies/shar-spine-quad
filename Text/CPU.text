@@ -78,11 +78,12 @@ earlier explanation ("the 1-line spine is too small for the streamer to
 engage, so three tier misses land on the critical path") is withdrawn:
 the project's own 2026-05-14 decomposition found the spine tiers are L1
 hits and the floor is the demand block load, and the regression may be
-a measurement-order artifact — in `bench.cpp` the grid's spine cold pass
-runs right after the non-spine cold pass with identical targets (block
-line L2-resident), while the dedicated `4096*` row runs after its own
-32 MB warm sweep (block line from SLC/DRAM); the gap matches L2-hit vs
-SLC-hit latency. Hypothesis pending a flushed test on Apple hardware
+a measurement-order artifact — in the pre-flush `bench.cpp` the grid's
+spine cold pass ran right after the non-spine cold pass with identical
+targets (block line L2-resident), while the dedicated `4096*` row ran
+after its own 32 MB warm sweep (block line from SLC/DRAM); the gap
+matches L2-hit vs SLC-hit latency. Hypothesis pending a flushed test on
+Apple hardware, which `bench.cpp` provides since 2026-10-11
 (corrections section 5).
 
 
@@ -179,9 +180,10 @@ measurement and is withdrawn.
 | EMR      | 18.0 |  37.2 | ~2.1×     |
 | GV4      | 16.2 |  34.6 | ~2.1×     |
 
-Read the "Cold" column with care: `bench.cpp` has no cache-flush pass.
-Its cold column walks the arrays in allocation order with the same
-targets the previous algorithm just used, and the ~35 MB footprint fits
+Read the "Cold" column with care: when these were taken `bench.cpp` had
+no cache-flush pass (one was added on 2026-10-11; no host has been re-run).
+Its cold column walked the arrays in allocation order with the same
+targets the previous algorithm had just used, and the ~35 MB footprint fits
 the last-level cache of every host except the Pi 5 (and at n ≤ 256 is
 L2/L3-resident on the Pi 5 too). So "cold" is a DRAM miss on the Pi 5
 (2 MB L3) and an L2 / L3 / SLC hit on every other host, SKX included —
