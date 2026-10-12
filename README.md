@@ -88,10 +88,11 @@ specializations for n ∈ {256, 512, 1024, 2048, 4096} where measured.
   the core can speculate ahead across a branchy search but not past a cmov
   chain. On the Pi 5 the outer spine (D) is best or tied-best in three modes.
 * **Lemire's kernel is still faster for small containers.** The only sweep
-  across container sizes (M4 Max, 200 sizes, 5 runs) has Lemire ahead in
-  all 5 runs at every size in the bands n = 48–62 and 81–124 (hot, medians
-  5–33%) and n ≤ 7 and 64–95 (cold_ser, 19–47%): the gap-64 kernel's small-n paths end in long
-  scalar sweeps and the spine is inert below n = 256 on 128-byte-line hosts.
+  across container sizes (M4 Max, 200 sizes, 5 runs) has Lemire ahead, by paired
+  per-run analysis (`m4_runs/sweep_fvl_paired.txt`), in the bands n = 48–62
+  and 81–128 (hot_bat, medians 5–32%) and n ≤ 7 and 60–156 (cold_ser,
+  6–47%), with narrower wins at a few other sizes below 256: the gap-64
+  kernel's small-n paths end in long scalar sweeps and the spine is inert below n = 256 on 128-byte-line hosts.
 * **The Eytzinger + prefetch outer (Khuong & Morin 2017) does not pay off on
   the Pi 5** once the prefetch is aimed correctly: I is 7–9% slower than F
   hot and never beats D. Its M1 Pro hot_ser edge (−11%, 4/5) and Graviton 4

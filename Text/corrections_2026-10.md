@@ -185,10 +185,16 @@ The variant-G conclusion stands.
   host." → True for **n = 4096 containers** (F faster than Lem in all 24
   cells, 5/5 in 21 and 4/5 in 3). It is **not** true across container
   sizes: the unreported M4 Max F-vs-Lemire sweep (`m4_runs/sweep_fvl_*`,
-  200 sizes, 5 runs, `m4_fvl_sweep_data.py`) shows Lemire faster than F in
-  all 5 runs at every size in the bands n = 48–62 (hot_bat, medians 25–31%),
-  n = 81–124 (hot_bat, 5–33%), n = 1–7 (cold_ser, 42–47%) and n = 64–95
-  (cold_ser, 19–35%). The code
+  200 sizes, 5 runs, `m4_fvl_sweep_data.py`) shows Lemire faster than F
+  in the bands n = 48–62 (hot_bat, medians 25–31%), n = 81–124 (hot_bat,
+  5–33%), n = 1–7 (cold_ser, 42–47%) and n = 64–95 (cold_ser, 19–35%) by
+  per-cell medians. The paired per-run re-analysis of 2026-10-11
+  (`m4_runs/sweep_fvl_paired.txt`, `compute_sweep_fvl.py`) keeps all four
+  as WINs (Lemire faster in ≥4 of 5 runs, |median| ≥ 3%) but only 48–62 is
+  5/5 at every size; the paired bands are 81–128 and 60–156 (+167–197)
+  rather than 81–124 and 64–95, and smaller Lemire wins exist at hot_bat
+  30–31, 146–190, 224–240, hot_ser 112–124 and cold_bat 54–62, 102–109,
+  116–124. The code
   explains the bands: the gap-64 kernel's [32,64) path is one vector load
   plus a scalar sweep of up to 31 elements, the general tail scans up to 63
   elements, and the spine is inert below n = 256 on 128-byte-line hosts

@@ -89,10 +89,11 @@ n=4096 containers our best stack (Shar outer + compile-time n=4096
 inner) is faster in all 24 host x mode cells, -35% to -84% hot and -7%
 to -45% cold (paired, 5 runs, {host}_runs/twolevel_paired.txt;
 corrections section 2.2). It is not a win at every container size: on
-M4 Max, Lemire's variant is faster in 5/5 runs at n=48-62 and n=81-124
-(hot_bat) and at n=1-7 and n=64-95 (cold_ser), because the gap-64
+M4 Max, Lemire's variant is faster at n=48-62 and n=81-128 (hot_bat) and at
+n=1-7 and n=60-156 (cold_ser) by paired per-run analysis (5/5 runs at
+every size only in the 48-62 band; m4_runs/sweep_fvl_paired.txt), because the gap-64
 kernel's small-n paths fall back to scalar sweeps and the spine is
-inert below n=256 on 128-byte-line hosts (m4_runs/sweep_fvl_summary.txt,
+inert below n=256 on 128-byte-line hosts (m4_runs/sweep_fvl_paired.txt,
 corrections section 2.3). An earlier draft quoted "426 ns -> 33 ns"
 (~13x) on the Pi 5; that came from a two-mode harness whose cold query
 missed the outer keys ~99% of the time and had no cache flush between
