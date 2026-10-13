@@ -1,0 +1,318 @@
+Paired per-run aggregation of main-bench runs on host 'cfl' (Intel Coffee Lake (i9-9980HK, 2019 MacBook Pro))
+files (10): rebench_flushed_run1.txt, rebench_flushed_run2.txt, rebench_flushed_run3.txt, rebench_flushed_run4.txt, rebench_flushed_run5.txt, rebench_flushed_run6.txt, rebench_flushed_run7.txt, rebench_flushed_run8.txt, rebench_flushed_run9.txt, rebench_flushed_run10.txt
+columns: linear binary simd intel intels; sizes: 22 (8..4096); cell names: simd, intel, simdA, binary, intelA, intels, linear, binaryA, intelsA, linearA, intel_spine_256, intel_spine_512, intel_spine_pad, intel_spine_1024, intel_spine_2048, intel_spine_4096
+date: 2026-10-12T20:47:27-07:00 .. 2026-10-12T21:09:15-07:00 (10 distinct)
+host: Linux 7.2.9-2-t2-resolute x86_64
+machine: mb2019
+command: taskset -c 15 ./bench 4000 5000
+build: g++ -O3 -march=native -std=c++20 bench.cpp simd_quad_intel.c -o bench  (bench.cpp with the thrash_llc() cold flush of 2026-10-11 and the 'nA' aligned rows of 2026-10-12, default QUADSEARCH_THRASH_BYTES; -march=native = skylake, AVX2 path)
+compiler: g++ (GCC) 17.0.0 20260824 (experimental)
+governor: performance
+temperature: 55.0..91.0 C (temp_before/temp_after)
+harness note: aligned rows: each 'nA' row repeats the warm and cold columns of the plain row above it on 64-byte-aligned copies of the same arrays and spines (added 2026-10-12); plain rows use std::vector storage, 16-byte aligned
+harness note: cold column: thrash_llc() 512.0 MB before every cold pass (flush added 2026-10-11)
+exit statuses: 0
+
+Deltas are B/A - 1 in percent for a pair 'B vs A'; negative means B is faster. Levels are ns/query.
+WIN(X) = X faster in >= 80% of the paired runs (ceil(0.8 n)) AND |median paired delta| >= 3%; otherwise TIE; n/a = fewer than 3 paired runs.
+
+====================================================================================================
+run-level drift (geometric mean over the plain-column cells every run has, per run)
+====================================================================================================
+  warm  run1: 18.94, run2: 19.11, run3: 20.60, run4: 20.22, run5: 20.01, run6: 19.37, run7: 19.82, run8: 20.54, run9: 20.80, run10: 20.07  (max/min = 1.10x over 110 shared cells)
+  cold  run1: 48.06, run2: 48.15, run3: 52.91, run4: 62.02, run5: 49.32, run6: 49.38, run7: 50.31, run8: 49.43, run9: 52.92, run10: 46.95  (max/min = 1.32x over 110 shared cells)
+
+====================================================================================================
+levels, warm: per-cell medians (ns/query) over the runs that have the cell [runs]
+====================================================================================================
+    n          simd        intel        simdA       binary       intelA       intels       linear      binaryA      intelsA      linearA intel_spine_256 intel_spine_512 intel_spine_pad intel_spine_1024 intel_spine_2048 intel_spine_4096
+    8     10.60[10]     7.90[10]    10.50[10]    16.85[10]     7.50[10]     7.70[10]     9.50[10]    17.10[10]     7.60[10]     9.45[10]            -            -            -            -            -            -
+   11     11.80[10]    10.85[10]    11.80[10]    18.00[10]    10.90[10]    10.85[10]    10.90[10]    18.10[10]    10.80[10]    10.70[10]            -            -            -            -            -            -
+   16      8.80[10]     7.00[10]     8.80[10]    21.10[10]     6.80[10]     7.75[10]    12.00[10]    21.10[10]     7.65[10]    11.80[10]            -            -            -            -            -            -
+   23     14.15[10]    12.95[10]    14.10[10]    22.40[10]    12.50[10]    12.95[10]    14.10[10]    22.40[10]    12.90[10]    13.85[10]            -            -            -            -            -            -
+   32      9.45[10]     9.20[10]     9.50[10]    25.20[10]     8.60[10]     8.95[10]    10.60[10]    25.30[10]     8.90[10]     8.60[10]            -            -     9.05[10]            -            -            -
+   47     15.70[10]    14.40[10]    15.75[10]    26.45[10]    13.70[10]    14.50[10]    13.75[10]    26.50[10]    14.10[10]    13.95[10]            -            -    14.57[10]            -            -            -
+   64     10.50[10]     9.70[10]    10.55[10]    29.40[10]     9.30[10]    10.30[10]    11.60[10]    29.30[10]    10.10[10]     9.30[10]            -            -    10.11[10]            -            -            -
+   89     13.50[10]    16.30[10]    13.45[10]    30.10[10]    16.15[10]    17.00[10]    13.65[10]    30.15[10]    16.80[10]    14.10[10]            -            -    16.75[10]            -            -            -
+  128     11.35[10]    10.60[10]    11.35[10]    34.05[10]    10.30[10]    10.10[10]    13.80[10]    33.10[10]    10.20[10]    12.30[10]            -            -    10.26[10]            -            -            -
+  177     14.20[10]    13.60[10]    14.20[10]    35.65[10]    13.40[10]    13.10[10]    16.10[10]    34.00[10]    13.00[10]    14.50[10]            -            -    12.23[10]            -            -            -
+  256     12.80[10]    11.50[10]    12.90[10]    39.30[10]    11.30[10]    10.90[10]    17.90[10]    38.50[10]    10.90[10]    16.55[10]     8.13[10]            -    10.22[10]            -            -            -
+  333     15.00[10]    14.50[10]    15.00[10]    40.85[10]    14.30[10]    13.00[10]    21.50[10]    40.10[10]    12.85[10]    21.40[10]            -            -    13.25[10]            -            -            -
+  512     14.00[10]    13.70[10]    14.00[10]    44.45[10]    13.50[10]    12.10[10]    25.65[10]    44.40[10]    12.00[10]    23.80[10]            -     9.94[10]    12.47[10]            -            -            -
+  617     17.70[10]    17.40[10]    17.70[10]    45.10[10]    17.10[10]    14.90[10]    32.10[10]    44.80[10]    14.60[10]    29.20[10]            -            -    15.09[10]            -            -            -
+ 1001     17.60[10]    17.25[10]    17.50[10]    48.80[10]    16.90[10]    14.60[10]    44.70[10]    48.80[10]    14.40[10]    40.60[10]            -            -    14.89[10]            -            -            -
+ 1024     15.80[10]    14.70[10]    15.80[10]    49.10[10]    14.55[10]    13.20[10]    40.85[10]    48.55[10]    12.90[10]    44.70[10]            -            -    12.45[10]     9.68[10]            -            -
+ 1234     17.40[10]    18.85[10]    17.40[10]    49.50[10]    18.60[10]    15.90[10]    55.70[10]    49.20[10]    15.65[10]    54.30[10]            -            -    15.06[10]            -            -            -
+ 1777     18.75[10]    17.35[10]    18.70[10]    52.20[10]    17.00[10]    14.80[10]    69.50[10]    51.95[10]    14.50[10]    68.65[10]            -            -    14.99[10]            -            -            -
+ 2048     17.40[10]    17.15[10]    17.40[10]    53.65[10]    16.80[10]    14.50[10]    77.30[10]    52.70[10]    14.30[10]    76.25[10]            -            -    14.81[10]            -    10.36[10]            -
+ 2999     20.00[10]    20.50[10]    19.90[10]    55.50[10]    20.10[10]    17.20[10]   110.45[10]    56.15[10]    16.70[10]   105.65[10]            -            -    15.12[10]            -            -            -
+ 3967     20.00[10]    20.45[10]    20.10[10]    57.00[10]    20.10[10]    17.35[10]   157.40[10]    56.80[10]    17.00[10]   136.50[10]            -            -    15.10[10]            -            -            -
+ 4096     20.00[10]    18.55[10]    19.90[10]    57.10[10]    18.40[10]    15.60[10]   135.90[10]    57.05[10]    15.40[10]   134.70[10]            -            -    14.92[10]            -            -    11.09[10]
+
+====================================================================================================
+levels, cold: per-cell medians (ns/query) over the runs that have the cell [runs]
+====================================================================================================
+    n          simd        intel        simdA       binary       intelA       intels       linear      binaryA      intelsA      linearA intel_spine_256 intel_spine_512 intel_spine_pad intel_spine_1024 intel_spine_2048 intel_spine_4096
+    8     14.15[10]    11.20[10]    15.50[10]    20.90[10]    12.30[10]    11.55[10]    13.30[10]    20.75[10]    12.85[10]    13.90[10]            -            -            -            -            -            -
+   11     14.75[10]    14.90[10]    17.20[10]    22.00[10]    16.80[10]    14.75[10]    13.90[10]    22.80[10]    17.15[10]    16.55[10]            -            -            -            -            -            -
+   16     12.60[10]    11.00[10]    14.05[10]    24.60[10]    12.75[10]    11.45[10]    14.60[10]    25.10[10]    13.60[10]    15.45[10]            -            -            -            -            -            -
+   23     18.25[10]    18.30[10]    17.85[10]    26.50[10]    18.35[10]    18.00[10]    16.80[10]    26.65[10]    18.40[10]    16.95[10]            -            -            -            -            -            -
+   32     17.85[10]    16.60[10]    18.85[10]    32.25[10]    17.35[10]    15.50[10]    22.65[10]    33.35[10]    16.70[10]    24.25[10]            -            -    18.13[10]            -            -            -
+   47     24.90[10]    22.95[10]    22.65[10]    34.10[10]    20.75[10]    20.80[10]    26.70[10]    31.35[10]    21.05[10]    23.60[10]            -            -    27.62[10]            -            -            -
+   64     19.70[10]    22.10[10]    16.90[10]    37.15[10]    16.45[10]    23.20[10]    24.20[10]    34.20[10]    17.25[10]    22.05[10]            -            -    39.18[10]            -            -            -
+   89     25.60[10]    30.10[10]    23.15[10]    40.45[10]    24.15[10]    31.60[10]    27.35[10]    36.75[10]    25.15[10]    25.10[10]            -            -    44.70[10]            -            -            -
+  128     25.15[10]    24.05[10]    22.10[10]    45.50[10]    21.90[10]    25.70[10]    27.95[10]    42.75[10]    33.05[10]    25.85[10]            -            -    41.20[10]            -            -            -
+  177     31.50[10]    29.25[10]    34.50[10]    48.85[10]    30.35[10]    31.45[10]    32.95[10]    47.45[10]    36.25[10]    29.80[10]            -            -    44.10[10]            -            -            -
+  256     37.35[10]    35.30[10]    40.35[10]    57.05[10]    33.55[10]    35.05[10]    38.40[10]    54.85[10]    34.40[10]    33.90[10]    30.47[10]            -    46.48[10]            -            -            -
+  333     43.30[10]    43.25[10]    49.10[10]    58.80[10]    48.90[10]    39.80[10]    41.80[10]    61.95[10]    38.40[10]    41.80[10]            -            -    54.87[10]            -            -            -
+  512     48.40[10]    48.50[10]    54.45[10]    67.35[10]    55.20[10]    41.60[10]    50.85[10]    71.45[10]    36.25[10]    52.65[10]            -    31.59[10]    56.17[10]            -            -            -
+  617     77.15[10]    80.05[10]    79.25[10]    79.50[10]    79.25[10]    57.20[10]    68.10[10]    79.35[10]    39.55[10]    63.20[10]            -            -    71.25[10]            -            -            -
+ 1001     82.00[10]    84.20[10]    84.50[10]    92.30[10]    85.65[10]    65.45[10]    92.20[10]    91.75[10]    41.00[10]    91.40[10]            -            -    71.05[10]            -            -            -
+ 1024     77.70[10]    75.10[10]    75.00[10]    93.30[10]    69.00[10]    60.25[10]    92.95[10]    87.45[10]    38.60[10]    89.90[10]            -            -    67.28[10]    40.74[10]            -            -
+ 1234     92.10[10]   116.05[10]    99.85[10]   101.80[10]   128.00[10]    70.40[10]   113.85[10]   109.75[10]    51.25[10]   120.45[10]            -            -    69.35[10]            -            -            -
+ 1777    144.80[10]   115.80[10]   135.55[10]   129.55[10]   108.95[10]    81.70[10]   167.35[10]   117.95[10]    48.85[10]   153.65[10]            -            -    79.73[10]            -            -            -
+ 2048    112.30[10]   113.85[10]   109.50[10]   126.35[10]   109.95[10]    81.95[10]   177.55[10]   122.70[10]    49.65[10]   173.05[10]            -            -    79.72[10]            -    47.69[10]            -
+ 2999    162.40[10]   159.80[10]   160.95[10]   149.65[10]   161.05[10]    94.90[10]   262.20[10]   152.50[10]    60.20[10]   260.65[10]            -            -    93.78[10]            -            -            -
+ 3967    169.75[10]   169.90[10]   166.55[10]   167.85[10]   164.95[10]    98.10[10]   338.25[10]   166.30[10]    63.20[10]   335.35[10]            -            -    92.88[10]            -            -            -
+ 4096    167.70[10]   161.00[10]   167.85[10]   168.25[10]   159.90[10]    95.80[10]   342.80[10]   168.10[10]    60.25[10]   338.35[10]            -            -    92.00[10]            -            -    60.80[10]
+
+====================================================================================================
+paired: intels vs intel  (delta = intels/intel - 1 per run; negative = intels faster)
+cell = median delta %, sign count ('-k/n' = intels faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+    8     -2.53%  -9/10     -0.20 ns TIE              +2.72%  +7/10     +0.30 ns TIE         
+   11     +0.00%   0/10     +0.00 ns TIE              -0.99%  -7/10     -0.15 ns TIE         
+   16    +10.63% +10/10     +0.75 ns WIN(intel)       +5.51%  +7/10     +0.60 ns TIE         
+   23     +0.77%  +6/10     +0.10 ns TIE              -1.39%  -7/10     -0.25 ns TIE         
+   32     -2.19% -10/10     -0.20 ns TIE              -6.86%  -9/10     -1.10 ns WIN(intels) 
+   47     +0.69%  +6/10     +0.10 ns TIE             -10.32% -10/10     -2.70 ns WIN(intels) 
+   64     +6.19% +10/10     +0.60 ns WIN(intel)       +4.98% +10/10     +1.20 ns WIN(intel)  
+   89     +3.70% +10/10     +0.60 ns WIN(intel)       +3.24% +10/10     +1.00 ns WIN(intel)  
+  128     -4.72% -10/10     -0.50 ns WIN(intels)      +5.60%  +9/10     +1.30 ns WIN(intel)  
+  177     -3.68% -10/10     -0.50 ns WIN(intels)      +6.37%  +9/10     +1.80 ns WIN(intel)  
+  256     -5.22% -10/10     -0.60 ns WIN(intels)      +0.97%  +6/10     +0.40 ns TIE         
+  333    -10.34% -10/10     -1.50 ns WIN(intels)      -7.39% -10/10     -3.15 ns WIN(intels) 
+  512    -11.68%  -9/10     -1.60 ns WIN(intels)     -15.78%  -9/10     -7.80 ns WIN(intels) 
+  617    -14.37%  -8/10     -2.50 ns WIN(intels)     -28.69% -10/10    -22.25 ns WIN(intels) 
+ 1001    -15.12% -10/10     -2.60 ns WIN(intels)     -24.96% -10/10    -20.80 ns WIN(intels) 
+ 1024    -10.20% -10/10     -1.50 ns WIN(intels)     -18.17% -10/10    -13.10 ns WIN(intels) 
+ 1234    -15.47% -10/10     -2.90 ns WIN(intels)     -39.47% -10/10    -45.15 ns WIN(intels) 
+ 1777    -14.74%  -8/10     -2.55 ns WIN(intels)     -29.06% -10/10    -33.35 ns WIN(intels) 
+ 2048    -15.12%  -9/10     -2.60 ns WIN(intels)     -28.68%  -9/10    -31.90 ns WIN(intels) 
+ 2999    -15.69%  -9/10     -3.20 ns WIN(intels)     -40.73% -10/10    -64.70 ns WIN(intels) 
+ 3967    -14.99%  -7/10     -3.05 ns TIE             -42.44% -10/10    -72.70 ns WIN(intels) 
+ 4096    -15.68%  -9/10     -2.90 ns WIN(intels)     -40.70% -10/10    -65.40 ns WIN(intels) 
+  verdicts: warm: WIN(intels) 13, WIN(intel) 3, TIE 6; cold: WIN(intels) 13, WIN(intel) 4, TIE 5
+
+====================================================================================================
+paired: linearA vs linear  (delta = linearA/linear - 1 per run; negative = linearA faster)
+cell = median delta %, sign count ('-k/n' = linearA faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+    8     -0.53%  -5/10     -0.05 ns TIE              +3.76%  +9/10     +0.50 ns WIN(linear) 
+   11     -1.83%  -8/10     -0.20 ns TIE             +17.67% +10/10     +2.50 ns WIN(linear) 
+   16     -1.67%  -9/10     -0.20 ns TIE              +6.43%  +9/10     +0.95 ns WIN(linear) 
+   23     -2.12%  -9/10     -0.30 ns TIE              +1.19%  +6/10     +0.20 ns TIE         
+   32    -19.05%  -9/10     -2.00 ns WIN(linearA)     +5.74%  +9/10     +1.30 ns WIN(linear) 
+   47     +2.17%  +9/10     +0.30 ns TIE             -10.11%  -9/10     -2.70 ns WIN(linearA)
+   64    -19.83% -10/10     -2.30 ns WIN(linearA)    -10.54% -10/10     -2.55 ns WIN(linearA)
+   89     +4.03% +10/10     +0.55 ns WIN(linear)      -8.57%  -9/10     -2.35 ns WIN(linearA)
+  128    -10.87% -10/10     -1.50 ns WIN(linearA)     -8.01% -10/10     -2.25 ns WIN(linearA)
+  177     -9.94% -10/10     -1.60 ns WIN(linearA)     -7.57% -10/10     -2.45 ns WIN(linearA)
+  256     -7.30%  -8/10     -1.30 ns WIN(linearA)    -12.11% -10/10     -4.65 ns WIN(linearA)
+  333     -0.47%  -6/10     -0.10 ns TIE              +0.72%  +6/10     +0.30 ns TIE         
+  512     -7.02% -10/10     -1.80 ns WIN(linearA)     +2.77%  +7/10     +1.40 ns TIE         
+  617     -9.19%  -8/10     -2.95 ns WIN(linearA)     -8.42%  -7/10     -5.90 ns TIE         
+ 1001     -9.17%  -9/10     -4.10 ns WIN(linearA)     +0.11%  +5/10     +0.05 ns TIE         
+ 1024     +9.31%  +9/10     +3.80 ns WIN(linear)      -3.73%  -8/10     -3.45 ns WIN(linearA)
+ 1234     -2.51% -10/10     -1.40 ns TIE              +2.96%  +6/10     +3.60 ns TIE         
+ 1777     -1.22% -10/10     -0.85 ns TIE              -5.56%  -8/10     -9.30 ns WIN(linearA)
+ 2048     -1.49%  -9/10     -1.15 ns TIE              -2.44%  -9/10     -4.40 ns TIE         
+ 2999     -4.14%  -9/10     -4.55 ns WIN(linearA)     -1.14%  -6/10     -3.00 ns TIE         
+ 3967     -0.48%  -7/10     -0.65 ns TIE              -0.70%  -7/10     -2.35 ns TIE         
+ 4096     -1.13%  -8/10     -1.55 ns TIE              -1.00%  -7/10     -3.40 ns TIE         
+  verdicts: warm: WIN(linearA) 9, WIN(linear) 2, TIE 11; cold: WIN(linearA) 8, WIN(linear) 4, TIE 10
+
+====================================================================================================
+paired: binaryA vs binary  (delta = binaryA/binary - 1 per run; negative = binaryA faster)
+cell = median delta %, sign count ('-k/n' = binaryA faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+    8     +1.48%  +8/10     +0.25 ns TIE              -0.96%  -8/10     -0.20 ns TIE         
+   11     +0.56%  +9/10     +0.10 ns TIE              +3.64%  +9/10     +0.80 ns WIN(binary) 
+   16     -0.24%  -5/10     -0.05 ns TIE              +2.25%  +8/10     +0.55 ns TIE         
+   23     +0.00%   0/10     +0.00 ns TIE              +1.32%  +8/10     +0.35 ns TIE         
+   32     +0.00%   0/10     +0.00 ns TIE              +3.25%  +9/10     +1.05 ns WIN(binary) 
+   47     +0.00%   0/10     +0.00 ns TIE              -6.62%  -9/10     -2.25 ns WIN(binaryA)
+   64     -0.17%  -5/10     -0.05 ns TIE              -7.68% -10/10     -2.85 ns WIN(binaryA)
+   89     +0.17%  +5/10     +0.05 ns TIE              -7.98%  -9/10     -3.15 ns WIN(binaryA)
+  128     -2.79% -10/10     -0.95 ns TIE              -6.55% -10/10     -3.00 ns WIN(binaryA)
+  177     -4.63% -10/10     -1.65 ns WIN(binaryA)     -1.53%  -6/10     -0.75 ns TIE         
+  256     -2.29% -10/10     -0.90 ns TIE              -1.10%  -7/10     -0.60 ns TIE         
+  333     -2.08%  -9/10     -0.85 ns TIE              +4.10%  +9/10     +2.40 ns WIN(binary) 
+  512     +0.00%   0/10     +0.00 ns TIE              +4.27%  +7/10     +2.85 ns TIE         
+  617     -0.44%  -9/10     -0.20 ns TIE              +3.60%  +6/10     +2.65 ns TIE         
+ 1001     +0.00%   0/10     +0.00 ns TIE              -3.63%  -6/10     -3.35 ns TIE         
+ 1024     -0.92%  -7/10     -0.45 ns TIE              -6.30%  -8/10     -5.80 ns WIN(binaryA)
+ 1234     -0.81%  -8/10     -0.40 ns TIE              +8.71%  +6/10     +8.75 ns TIE         
+ 1777     -0.57%  -7/10     -0.30 ns TIE              -8.44%  -8/10    -11.10 ns WIN(binaryA)
+ 2048     -2.05%  -9/10     -1.10 ns TIE              -0.94%  -8/10     -1.20 ns TIE         
+ 2999     +0.35%  +5/10     +0.20 ns TIE              -0.15%  -5/10     -0.25 ns TIE         
+ 3967     -0.44%  -7/10     -0.25 ns TIE              -1.01%  -6/10     -1.70 ns TIE         
+ 4096     +0.00%   0/10     +0.00 ns TIE              -0.29%  -5/10     -0.50 ns TIE         
+  verdicts: warm: WIN(binaryA) 1, WIN(binary) 0, TIE 21; cold: WIN(binaryA) 6, WIN(binary) 3, TIE 13
+
+====================================================================================================
+paired: simdA vs simd  (delta = simdA/simd - 1 per run; negative = simdA faster)
+cell = median delta %, sign count ('-k/n' = simdA faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+    8     -0.47%  -5/10     -0.05 ns TIE              +9.03%  +8/10     +1.30 ns WIN(simd)   
+   11     +0.00%   0/10     +0.00 ns TIE             +16.55% +10/10     +2.40 ns WIN(simd)   
+   16     +0.00%   0/10     +0.00 ns TIE             +13.12%  +9/10     +1.60 ns WIN(simd)   
+   23     +0.00%   0/10     +0.00 ns TIE              -1.64%  -7/10     -0.30 ns TIE         
+   32     +0.00%   0/10     +0.00 ns TIE              +5.92%  +7/10     +1.05 ns TIE         
+   47     +0.00%   0/10     +0.00 ns TIE              -7.33%  -7/10     -1.80 ns TIE         
+   64     +0.00%   0/10     +0.00 ns TIE             -14.06% -10/10     -2.80 ns WIN(simdA)  
+   89     +0.00%   0/10     +0.00 ns TIE              -7.01%  -8/10     -1.70 ns WIN(simdA)  
+  128     +0.00%   0/10     +0.00 ns TIE             -13.52% -10/10     -3.40 ns WIN(simdA)  
+  177     +0.00%   0/10     +0.00 ns TIE             +15.23%  +7/10     +4.65 ns TIE         
+  256     +0.00%   0/10     +0.00 ns TIE              +6.70%  +6/10     +2.35 ns TIE         
+  333     +0.00%   0/10     +0.00 ns TIE             +14.19%  +9/10     +6.15 ns WIN(simd)   
+  512     +0.00%   0/10     +0.00 ns TIE              +7.09%  +7/10     +3.45 ns TIE         
+  617     +0.28%  +5/10     +0.05 ns TIE              +6.99%  +6/10     +5.25 ns TIE         
+ 1001     -0.28%  -5/10     -0.05 ns TIE              +0.91%  +5/10     +0.70 ns TIE         
+ 1024     +0.00%   0/10     +0.00 ns TIE              -2.28%  -7/10     -1.75 ns TIE         
+ 1234     +0.00%   0/10     +0.00 ns TIE              +5.86%  +6/10     +5.50 ns TIE         
+ 1777     +0.00%   0/10     +0.00 ns TIE              -7.20%  -6/10    -10.40 ns TIE         
+ 2048     +0.00%   0/10     +0.00 ns TIE              -1.76%  -6/10     -2.00 ns TIE         
+ 2999     -0.25%  -5/10     -0.05 ns TIE              -1.17%  -6/10     -1.95 ns TIE         
+ 3967     -0.25%  -5/10     -0.05 ns TIE              -2.04%  -8/10     -3.45 ns TIE         
+ 4096     -0.50%  -5/10     -0.10 ns TIE              -1.23%  -7/10     -2.10 ns TIE         
+  verdicts: warm: WIN(simdA) 0, WIN(simd) 0, TIE 22; cold: WIN(simdA) 3, WIN(simd) 4, TIE 15
+
+====================================================================================================
+paired: intelA vs intel  (delta = intelA/intel - 1 per run; negative = intelA faster)
+cell = median delta %, sign count ('-k/n' = intelA faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+    8     -5.06% -10/10     -0.40 ns WIN(intelA)     +11.52%  +9/10     +1.25 ns WIN(intel)  
+   11     +0.00%   0/10     +0.00 ns TIE             +13.49% +10/10     +2.00 ns WIN(intel)  
+   16     -2.90% -10/10     -0.20 ns TIE             +15.32%  +9/10     +1.70 ns WIN(intel)  
+   23     -3.08% -10/10     -0.40 ns WIN(intelA)      -0.28%  -5/10     -0.05 ns TIE         
+   32     -6.52%  -9/10     -0.60 ns WIN(intelA)      +2.86%  +6/10     +0.50 ns TIE         
+   47     -4.20% -10/10     -0.60 ns WIN(intelA)     -10.55%  -8/10     -2.40 ns WIN(intelA) 
+   64     -4.12%  -8/10     -0.40 ns WIN(intelA)     -24.36% -10/10     -5.50 ns WIN(intelA) 
+   89     -1.23%  -9/10     -0.20 ns TIE             -19.75%  -8/10     -6.05 ns WIN(intelA) 
+  128     -2.83%  -9/10     -0.30 ns TIE             -10.39%  -9/10     -2.50 ns WIN(intelA) 
+  177     -1.47%  -9/10     -0.20 ns TIE              +6.60%  +8/10     +1.90 ns WIN(intel)  
+  256     -1.74% -10/10     -0.20 ns TIE              -5.03%  -6/10     -1.85 ns TIE         
+  333     -1.38%  -9/10     -0.20 ns TIE             +13.88% +10/10     +6.00 ns WIN(intel)  
+  512     -1.46%  -7/10     -0.20 ns TIE              +8.04%  +8/10     +3.85 ns WIN(intel)  
+  617     -1.72%  -7/10     -0.30 ns TIE              -2.52%  -6/10     -2.00 ns TIE         
+ 1001     -1.73%  -9/10     -0.30 ns TIE              +1.80%  +7/10     +1.50 ns TIE         
+ 1024     -1.02% -10/10     -0.15 ns TIE              -9.38%  -8/10     -7.05 ns WIN(intelA) 
+ 1234     -1.84% -10/10     -0.35 ns TIE              +9.24%  +6/10    +10.95 ns TIE         
+ 1777     -2.30% -10/10     -0.40 ns TIE              -2.34%  -7/10     -2.75 ns TIE         
+ 2048     -1.74% -10/10     -0.30 ns TIE              -3.91%  -7/10     -4.35 ns TIE         
+ 2999     -1.95%  -9/10     -0.40 ns TIE              +1.57%  +7/10     +2.50 ns TIE         
+ 3967     -1.71% -10/10     -0.35 ns TIE              -3.00%  -8/10     -5.10 ns WIN(intelA) 
+ 4096     -0.81%  -9/10     -0.15 ns TIE              -1.80%  -6/10     -2.95 ns TIE         
+  verdicts: warm: WIN(intelA) 5, WIN(intel) 0, TIE 17; cold: WIN(intelA) 6, WIN(intel) 6, TIE 10
+
+====================================================================================================
+paired: intelsA vs intels  (delta = intelsA/intels - 1 per run; negative = intelsA faster)
+cell = median delta %, sign count ('-k/n' = intelsA faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+    8     -1.30% -10/10     -0.10 ns TIE             +13.36%  +9/10     +1.55 ns WIN(intels) 
+   11     -0.46%  -5/10     -0.05 ns TIE             +15.81% +10/10     +2.30 ns WIN(intels) 
+   16     -1.31%  -8/10     -0.10 ns TIE             +18.65%  +9/10     +2.20 ns WIN(intels) 
+   23     -0.77%  -6/10     -0.10 ns TIE              +4.13%  +7/10     +0.75 ns TIE         
+   32     -1.11%  -6/10     -0.10 ns TIE              +6.93%  +7/10     +1.10 ns TIE         
+   47     -2.09%  -9/10     -0.30 ns TIE              +6.33%  +7/10     +1.25 ns TIE         
+   64     -1.46%  -9/10     -0.15 ns TIE             -25.83%  -8/10     -6.00 ns WIN(intelsA)
+   89     -0.59%  -7/10     -0.10 ns TIE             -20.20%  -8/10     -6.15 ns WIN(intelsA)
+  128     +0.99%  +7/10     +0.10 ns TIE             +27.57% +10/10     +7.20 ns WIN(intels) 
+  177     -0.76%  -6/10     -0.10 ns TIE             +23.23%  +9/10     +6.80 ns WIN(intels) 
+  256     +0.00%   0/10     +0.00 ns TIE              +2.78%  +5/10     +0.90 ns TIE         
+  333     -1.15%  -8/10     -0.15 ns TIE              -1.95%  -6/10     -0.75 ns TIE         
+  512     -1.65% -10/10     -0.20 ns TIE             -14.61%  -6/10     -6.15 ns TIE         
+  617     -2.01% -10/10     -0.30 ns TIE             -32.13% -10/10    -18.40 ns WIN(intelsA)
+ 1001     -1.37%  -9/10     -0.20 ns TIE             -37.34% -10/10    -24.30 ns WIN(intelsA)
+ 1024     -2.27% -10/10     -0.30 ns TIE             -36.38% -10/10    -22.25 ns WIN(intelsA)
+ 1234     -1.88%  -9/10     -0.30 ns TIE             -25.85% -10/10    -18.05 ns WIN(intelsA)
+ 1777     -2.03% -10/10     -0.30 ns TIE             -38.40% -10/10    -31.50 ns WIN(intelsA)
+ 2048     -1.71%  -9/10     -0.25 ns TIE             -40.39%  -9/10    -32.90 ns WIN(intelsA)
+ 2999     -2.91%  -9/10     -0.50 ns TIE             -36.86% -10/10    -34.75 ns WIN(intelsA)
+ 3967     -1.74%  -9/10     -0.30 ns TIE             -35.53% -10/10    -35.00 ns WIN(intelsA)
+ 4096     -1.28% -10/10     -0.20 ns TIE             -36.96% -10/10    -35.30 ns WIN(intelsA)
+  verdicts: warm: WIN(intelsA) 0, WIN(intels) 0, TIE 22; cold: WIN(intelsA) 11, WIN(intels) 5, TIE 6
+
+====================================================================================================
+paired: intel_spine_256 vs intels  (delta = intel_spine_256/intels - 1 per run; negative = intel_spine_256 faster)
+cell = median delta %, sign count ('-k/n' = intel_spine_256 faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+  256    -25.60% -10/10     -2.79 ns WIN(intel_spine_256)    -15.83%  -9/10     -5.75 ns WIN(intel_spine_256)
+  verdicts: warm: WIN(intel_spine_256) 1, WIN(intels) 0, TIE 0; cold: WIN(intel_spine_256) 1, WIN(intels) 0, TIE 0
+
+====================================================================================================
+paired: intel_spine_512 vs intels  (delta = intel_spine_512/intels - 1 per run; negative = intel_spine_512 faster)
+cell = median delta %, sign count ('-k/n' = intel_spine_512 faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+  512    -17.85% -10/10     -2.16 ns WIN(intel_spine_512)    -23.80% -10/10    -10.53 ns WIN(intel_spine_512)
+  verdicts: warm: WIN(intel_spine_512) 1, WIN(intels) 0, TIE 0; cold: WIN(intel_spine_512) 1, WIN(intels) 0, TIE 0
+
+====================================================================================================
+paired: intel_spine_1024 vs intels  (delta = intel_spine_1024/intels - 1 per run; negative = intel_spine_1024 faster)
+cell = median delta %, sign count ('-k/n' = intel_spine_1024 faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+ 1024    -26.70% -10/10     -3.52 ns WIN(intel_spine_1024)    -32.38% -10/10    -19.64 ns WIN(intel_spine_1024)
+  verdicts: warm: WIN(intel_spine_1024) 1, WIN(intels) 0, TIE 0; cold: WIN(intel_spine_1024) 1, WIN(intels) 0, TIE 0
+
+====================================================================================================
+paired: intel_spine_2048 vs intels  (delta = intel_spine_2048/intels - 1 per run; negative = intel_spine_2048 faster)
+cell = median delta %, sign count ('-k/n' = intel_spine_2048 faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+ 2048    -28.90% -10/10     -4.19 ns WIN(intel_spine_2048)    -43.49% -10/10    -35.35 ns WIN(intel_spine_2048)
+  verdicts: warm: WIN(intel_spine_2048) 1, WIN(intels) 0, TIE 0; cold: WIN(intel_spine_2048) 1, WIN(intels) 0, TIE 0
+
+====================================================================================================
+paired: intel_spine_4096 vs intels  (delta = intel_spine_4096/intels - 1 per run; negative = intel_spine_4096 faster)
+cell = median delta %, sign count ('-k/n' = intel_spine_4096 faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+ 4096    -29.17%  -9/10     -4.55 ns WIN(intel_spine_4096)    -36.24% -10/10    -34.80 ns WIN(intel_spine_4096)
+  verdicts: warm: WIN(intel_spine_4096) 1, WIN(intels) 0, TIE 0; cold: WIN(intel_spine_4096) 1, WIN(intels) 0, TIE 0
+
+====================================================================================================
+paired: intel_spine_pad vs intels  (delta = intel_spine_pad/intels - 1 per run; negative = intel_spine_pad faster)
+cell = median delta %, sign count ('-k/n' = intel_spine_pad faster in k of n runs), median ns delta, verdict
+====================================================================================================
+    n                      warm                                          cold                    
+   32     +1.45%  +9/10     +0.13 ns TIE             +15.94%  +8/10     +2.47 ns WIN(intels) 
+   47     +0.35%  +5/10     +0.05 ns TIE             +31.90%  +9/10     +6.67 ns WIN(intels) 
+   64     -1.70% -10/10     -0.18 ns TIE             +69.56% +10/10    +16.04 ns WIN(intels) 
+   89     -0.91%  -7/10     -0.15 ns TIE             +40.17% +10/10    +12.91 ns WIN(intels) 
+  128     +1.44% +10/10     +0.15 ns TIE             +57.94% +10/10    +15.05 ns WIN(intels) 
+  177     -6.48% -10/10     -0.84 ns WIN(intel_spine_pad)    +41.64% +10/10    +13.10 ns WIN(intels) 
+  256     -6.24%  -9/10     -0.68 ns WIN(intel_spine_pad)    +31.88%  +8/10    +10.83 ns WIN(intels) 
+  333     +1.92% +10/10     +0.25 ns TIE             +39.34% +10/10    +15.14 ns WIN(intels) 
+  512     +3.06%  +9/10     +0.37 ns WIN(intels)     +32.39%  +9/10    +13.46 ns WIN(intels) 
+  617     +1.31%  +8/10     +0.19 ns TIE             +32.95%  +8/10    +17.76 ns WIN(intels) 
+ 1001     +1.71% +10/10     +0.25 ns TIE              +6.82% +10/10     +4.46 ns WIN(intels) 
+ 1024     -5.72% -10/10     -0.75 ns WIN(intel_spine_pad)    +11.42%  +9/10     +6.73 ns WIN(intels) 
+ 1234     -5.66% -10/10     -0.91 ns WIN(intel_spine_pad)     -1.36%  -5/10     -0.95 ns TIE         
+ 1777     +1.67%  +8/10     +0.25 ns TIE              +0.58%  +5/10     +0.48 ns TIE         
+ 2048     +2.08%  +9/10     +0.30 ns TIE              +0.39%  +6/10     +0.30 ns TIE         
+ 2999    -12.88% -10/10     -2.21 ns WIN(intel_spine_pad)     -0.97%  -7/10     -0.93 ns TIE         
+ 3967    -12.92% -10/10     -2.23 ns WIN(intel_spine_pad)     -5.32% -10/10     -5.20 ns WIN(intel_spine_pad)
+ 4096     -4.62% -10/10     -0.72 ns WIN(intel_spine_pad)     -4.27%  -9/10     -4.10 ns WIN(intel_spine_pad)
+  verdicts: warm: WIN(intel_spine_pad) 7, WIN(intels) 1, TIE 10; cold: WIN(intel_spine_pad) 2, WIN(intels) 12, TIE 4
+
+generated 2026-10-12T21:43:03 by compute_bench_paired.py cfl --out cfl_runs/rebench_flushed_paired.txt

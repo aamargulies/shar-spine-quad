@@ -1,0 +1,52 @@
+# date: 2026-10-12T21:14:54-07:00
+# host: Linux 7.2.9-2-t2-resolute x86_64
+# command: taskset -c 15 ./bench_twolevel 200 200 all 3
+# governor: performance
+two-level spine micro-bench
+num_sets=200 hot_reps=200 num_containers=512 inner_n=4096 mode=all order_seed=3 gap=32 desc_align=64 desc_size=64
+per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
+correctness: ok
+
+timing order hot_bat: F D E G I C H Lem B A
+timing order hot_ser: D H F C G Lem B A E I
+timing order cold_bat: B F A H D I G Lem C E
+timing order cold_ser: H I Lem D E C G B A F
+
+var   description                                                  hot_bat     hot_ser    cold_bat    cold_ser
+----  --------------------------------------------------------  ----------  ----------  ----------  ----------
+A     bsearch outer + general-n spine inner                          85.78      104.98      328.04      334.87
+B     two-level spine + general-n spine inner                        72.33       79.17      387.89      346.92
+C     bsearch outer + compile-time n=4096 inner                      76.47       91.59      242.62      330.27
+D     two-level spine + compile-time n=4096 inner                    86.96       62.47      290.12      345.07
+E     Shar branchless outer + general-n spine inner                  59.73       60.09      343.87      367.93
+F     Shar branchless outer + compile-time n=4096 inner             128.91       57.83      287.68      345.61
+G     Shar outer + Shar inner (n=4096, no spine)                    181.32      175.10      370.19      516.79
+H     Eytzinger outer + K&M PF + general-n spine inner               71.65       70.61      477.51      455.49
+I     Eytzinger outer + K&M PF + compile-time n=4096 inner           70.72       67.44      336.43      433.88
+Lem   Lemire reference (bsearch outer + simd_quad inner)            152.36      165.79      426.42      426.80
+
+deltas vs A (hot_bat  hot_ser  cold_bat  cold_ser):
+  B   vs A:    -15.7%    -24.6%    +18.2%     +3.6%
+  C   vs A:    -10.9%    -12.8%    -26.0%     -1.4%
+  D   vs A:     +1.4%    -40.5%    -11.6%     +3.0%
+  E   vs A:    -30.4%    -42.8%     +4.8%     +9.9%
+  F   vs A:    +50.3%    -44.9%    -12.3%     +3.2%
+  G   vs A:   +111.4%    +66.8%    +12.8%    +54.3%
+  H   vs A:    -16.5%    -32.7%    +45.6%    +36.0%
+  I   vs A:    -17.6%    -35.8%     +2.6%    +29.6%
+  Lem vs A:    +77.6%    +57.9%    +30.0%    +27.5%
+
+deltas vs D (outer spine + n=4096 inner):
+  E   vs D:    -31.3%     -3.8%    +18.5%     +6.6%
+  F   vs D:    +48.2%     -7.4%     -0.8%     +0.2%
+  G   vs D:   +108.5%   +180.3%    +27.6%    +49.8%
+
+deltas vs F (Shar outer + n=4096 inner, ship recommendation):
+  G   vs F:    +40.7%   +202.8%    +28.7%    +49.5%
+  H   vs F:    -44.4%    +22.1%    +66.0%    +31.8%
+  I   vs F:    -45.1%    +16.6%    +16.9%    +25.5%
+
+deltas vs Lemire reference (how much our stack improves on the published baseline):
+  A   vs Lem:   -43.7%    -36.7%    -23.1%    -21.5%
+  D   vs Lem:   -42.9%    -62.3%    -32.0%    -19.1%
+  F   vs Lem:   -15.4%    -65.1%    -32.5%    -19.0%

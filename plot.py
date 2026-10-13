@@ -247,6 +247,78 @@ gv4_cold = {
 }
 have_gv4 = len(gv4_warm["simd_quad_graviton"]) == len(gv4_sizes)
 
+# Intel Coffee Lake (Core i9-9980HK, the user's 2019 MacBook Pro "i9" under
+# Ubuntu; host tag cfl). Onboarded 2026-10-12. GCC 17.0.0 20260824 with
+# -O3 -march=native (= skylake: AVX2, no AVX-512), so simd_quad_intel takes
+# the 2x ymm block check and keeps the in-loop prefetch, as on Skylake-SP.
+#
+# PROVENANCE: cfl_runs/rebench_flushed_run{1..10}.txt (2026-10-12, turbo on,
+# package 55-91 C, run-level warm drift 1.10x), all 22 sizes, per-cell
+# median of the 10 runs of `./bench 4000 5000` as printed by
+# `compute_bench_paired.py cfl --plot-dicts cfl` (plain rows; the 'nA'
+# line-aligned rows are in cfl_runs/rebench_flushed_paired.txt). UNLIKE every
+# other main-bench dict in this file these runs come from the FLUSHED
+# bench.cpp (512 MB thrash before every cold pass, 2026-10-11), so the cold
+# column is a genuine DRAM/L3 miss: plotted on its own figures only and kept
+# out of the cross-host facets and tables below, which are pre-flush. A
+# second set with turbo disabled (rebench_flushed_noturbo_run{1..10}.txt,
+# 2.4 GHz base clock, drift 1.00x) reproduces every paired verdict at ~1.9x
+# the ns; these turbo-on levels are the ones that describe the laptop.
+cfl_sizes = sizes
+cfl_warm = {
+    "linear (std::find)":          [   9.50,   10.90,   12.00,   14.10,   10.60,   13.75,   11.60,   13.65,   13.80,   16.10,   17.90,   21.50,   25.65,   32.10,   44.70,   40.85,   55.70,   69.50,   77.30,  110.45,  157.40,  135.90],
+    "binary (std::binary_search)": [  16.85,   18.00,   21.10,   22.40,   25.20,   26.45,   29.40,   30.10,   34.05,   35.65,   39.30,   40.85,   44.45,   45.10,   48.80,   49.10,   49.50,   52.20,   53.65,   55.50,   57.00,   57.10],
+    "simd_quad (reference)":       [  10.60,   11.80,    8.80,   14.15,    9.45,   15.70,   10.50,   13.50,   11.35,   14.20,   12.80,   15.00,   14.00,   17.70,   17.60,   15.80,   17.40,   18.75,   17.40,   20.00,   20.00,   20.00],
+    "simd_quad_intel":             [   7.90,   10.85,    7.00,   12.95,    9.20,   14.40,    9.70,   16.30,   10.60,   13.60,   11.50,   14.50,   13.70,   17.40,   17.25,   14.70,   18.85,   17.35,   17.15,   20.50,   20.45,   18.55],
+    "simd_quad_intel + spine":     [   7.70,   10.85,    7.75,   12.95,    8.95,   14.50,   10.30,   17.00,   10.10,   13.10,   10.90,   13.00,   12.10,   14.90,   14.60,   13.20,   15.90,   14.80,   14.50,   17.20,   17.35,   15.60],
+}
+cfl_cold = {
+    "linear (std::find)":          [  13.30,   13.90,   14.60,   16.80,   22.65,   26.70,   24.20,   27.35,   27.95,   32.95,   38.40,   41.80,   50.85,   68.10,   92.20,   92.95,  113.85,  167.35,  177.55,  262.20,  338.25,  342.80],
+    "binary (std::binary_search)": [  20.90,   22.00,   24.60,   26.50,   32.25,   34.10,   37.15,   40.45,   45.50,   48.85,   57.05,   58.80,   67.35,   79.50,   92.30,   93.30,  101.80,  129.55,  126.35,  149.65,  167.85,  168.25],
+    "simd_quad (reference)":       [  14.15,   14.75,   12.60,   18.25,   17.85,   24.90,   19.70,   25.60,   25.15,   31.50,   37.35,   43.30,   48.40,   77.15,   82.00,   77.70,   92.10,  144.80,  112.30,  162.40,  169.75,  167.70],
+    "simd_quad_intel":             [  11.20,   14.90,   11.00,   18.30,   16.60,   22.95,   22.10,   30.10,   24.05,   29.25,   35.30,   43.25,   48.50,   80.05,   84.20,   75.10,  116.05,  115.80,  113.85,  159.80,  169.90,  161.00],
+    "simd_quad_intel + spine":     [  11.55,   14.75,   11.45,   18.00,   15.50,   20.80,   23.20,   31.60,   25.70,   31.45,   35.05,   39.80,   41.60,   57.20,   65.45,   60.25,   70.40,   81.70,   81.95,   94.90,   98.10,   95.80],
+}
+have_cfl = len(cfl_warm["simd_quad_intel"]) == len(cfl_sizes)
+
+# Raspberry Pi 5, FLUSHED harness, second board "eight" (same model, idle).
+# PROVENANCE: pi5_runs/rebench_flushed_eight_run{1..10}.txt (2026-10-12/13,
+# bench_flush_al built on trixie with GCC 17.0.0 20260704, -O3
+# -mcpu=cortex-a76, kernel blob f7c140b8 i.e. WITH the in-loop prefetch that
+# was removed on 2026-10-13 -- the gv4 columns are that kernel without it),
+# all 22 sizes, per-cell median of the 10 runs as printed by
+# `compute_bench_paired.py pi5 --glob 'pi5_runs/rebench_flushed_eight_run*.txt'
+# --plot-dicts pi5_flushed` (plain rows; the line-aligned 'nA' rows are in
+# pi5_runs/rebench_flushed_eight_paired.txt). Run-level drift 1.00x warm,
+# 1.14x cold; the archived pi5_warm/pi5_cold dicts above are the PRE-FLUSH
+# 2026-05-13 runs on the first board (slow-mode warm cells, cold = DRAM miss
+# only at n > 256). Plotted on its own two figures; kept out of the
+# cross-host facets and tables, which are pre-flush on every host.
+pi5_flushed_sizes = sizes
+pi5_flushed_warm = {
+    "linear (std::find)":          [   7.10,    9.60,    7.10,   10.60,    8.80,   14.70,   13.40,   18.80,   23.40,   32.60,   43.40,   58.30,   83.30,  101.10,  160.50,  162.60,  196.70,  279.60,  319.40,  465.80,  615.55,  632.80],
+    "binary (std::binary_search)": [  18.00,   20.00,   22.40,   24.80,   27.20,   29.70,   32.50,   35.25,   38.00,   40.80,   43.40,   45.80,   49.75,   51.20,   55.90,   55.80,   57.40,   60.50,   61.60,   64.80,   66.90,   67.00],
+    "simd_quad (reference)":       [   9.20,   11.70,    7.10,   13.30,    9.70,   18.70,   12.00,   17.40,   15.10,   21.50,   17.90,   22.50,   21.50,   27.80,   27.60,   24.55,   27.40,   30.70,   27.55,   30.30,   30.50,   30.30],
+    "simd_quad_pi5":               [   4.40,    8.80,    4.70,   12.10,    7.60,   15.90,   10.50,   18.90,   13.20,   19.40,   16.60,   21.45,   20.30,   27.80,   27.60,   23.60,   30.90,   27.70,   27.50,   33.90,   34.00,   30.60],
+    "simd_quad_pi5 + spine":       [   4.55,    9.00,    4.80,   12.50,    6.40,   15.00,   10.80,   19.10,   11.10,   15.70,   12.90,   16.00,   14.80,   19.80,   19.60,   16.90,   22.10,   19.70,   19.50,   24.70,   24.80,   21.90],
+    "simd_quad_m4":                [   4.70,    9.10,    4.80,   12.60,    5.60,   15.60,    9.40,   17.40,   12.10,   21.30,   14.10,   18.80,   17.70,   23.80,   29.00,   20.60,   27.40,   28.80,   24.10,   27.70,   27.80,   27.20],
+    "simd_quad_m4 + spine":        [   4.70,    9.00,    5.10,   12.30,    5.70,   15.70,    8.10,   15.90,   12.20,   21.05,   12.70,   15.70,   14.70,   19.30,   23.40,   16.80,   22.00,   23.10,   19.40,   22.20,   22.20,   21.80],
+    "simd_quad_graviton":          [   4.40,    8.70,    4.70,   12.20,    7.70,   15.90,   10.40,   18.90,   12.80,   18.70,   15.90,   19.80,   18.80,   25.70,   25.50,   22.10,   28.80,   25.60,   25.40,   31.80,   31.90,   28.50],
+    "simd_quad_graviton + spine":  [   4.60,    8.90,    4.80,   12.50,    6.50,   15.00,   10.80,   19.30,   11.00,   15.90,   13.00,   16.00,   14.80,   19.80,   19.60,   17.30,   22.40,   19.70,   19.50,   24.50,   24.60,   22.20],
+}
+pi5_flushed_cold = {
+    "linear (std::find)":          [  41.90,   49.05,   58.20,   36.00,   71.60,   81.25,   85.10,   93.80,  109.85,  131.55,  161.50,  186.40,  222.25,  220.50,  334.15,  336.20,  420.15,  466.95,  512.65,  664.80,  803.10,  818.25],
+    "binary (std::binary_search)": [  45.30,   55.60,   61.15,   38.40,   72.65,   78.30,   88.45,  101.80,  119.00,  143.55,  166.15,  192.60,  196.60,  212.45,  247.40,  247.60,  296.20,  303.60,  318.55,  368.05,  392.90,  430.30],
+    "simd_quad (reference)":       [  43.30,   49.35,   61.75,   34.55,   56.85,   60.45,   77.50,   80.15,  116.20,  143.90,  170.35,  206.40,  192.95,  265.10,  273.15,  231.45,  297.10,  301.20,  320.90,  336.30,  346.75,  367.55],
+    "simd_quad_pi5":               [  38.65,   47.05,   52.60,   34.95,   59.15,   66.90,   77.05,   85.25,  117.50,  154.00,  170.60,  205.25,  182.20,  260.75,  272.30,  207.60,  310.85,  302.50,  323.55,  340.85,  369.05,  349.70],
+    "simd_quad_pi5 + spine":       [  47.25,   55.75,   62.25,   42.40,   73.85,   79.95,   86.10,   91.80,  123.45,  145.90,  140.15,  158.60,  143.35,  152.45,  116.00,  149.35,  143.20,  181.10,  179.50,  193.10,  203.70,  189.85],
+    "simd_quad_m4":                [  38.40,   46.55,   56.80,   35.00,   66.10,   73.30,   84.55,   92.95,  117.95,  137.10,  175.85,  177.30,  152.60,  205.20,  229.35,  224.05,  277.60,  309.10,  274.65,  322.75,  350.30,  335.40],
+    "simd_quad_m4 + spine":        [  46.60,   55.35,   64.55,   42.55,   75.20,   80.85,   93.65,  104.85,  125.70,  142.80,  166.55,  172.00,  125.30,  156.65,  169.25,  151.45,  172.75,  199.00,  166.80,  183.35,  194.55,  183.90],
+    "simd_quad_graviton":          [  38.75,   46.30,   51.50,   34.55,   55.20,   67.40,   76.95,   84.75,  117.10,  154.00,  171.75,  191.30,  177.70,  213.00,  236.90,  223.55,  300.60,  294.65,  266.95,  339.20,  350.65,  336.25],
+    "simd_quad_graviton + spine":  [  47.30,   54.65,   63.15,   43.45,   74.50,   79.80,   86.35,   92.45,  127.50,  149.55,  141.50,  160.60,  141.80,  151.55,  137.25,  149.10,  148.95,  177.40,  170.70,  199.60,  207.00,  189.20],
+}
+have_pi5_flushed = len(pi5_flushed_warm["simd_quad_pi5"]) == len(pi5_flushed_sizes)
+
 # Apple M1 Pro (Firestorm P-core). Per-cell median across 5 runs of
 # `./bench 4000 5000`, 2026-05-01, Apple clang 21 with -O3 -mcpu=apple-m1.
 # Raw outputs in m1_runs/rebench_run{1..5}.txt; aggregation via
@@ -962,6 +1034,14 @@ if have_emr:
 if have_gv4:
     lineplot(gv4_sizes, gv4_warm, "AWS Graviton 4 (Arm Neoverse V2) - warm cache", "bench_gv4_warm.png")
     lineplot(gv4_sizes, gv4_cold, "AWS Graviton 4 (Arm Neoverse V2) - cold cache", "bench_gv4_cold.png")
+if have_pi5_flushed:
+    # Flushed harness, second board (2026-10-12/13): these two figures only; see the dict comment.
+    lineplot(pi5_flushed_sizes, pi5_flushed_warm, "Raspberry Pi 5 (Cortex-A76, board 'eight') - warm cache (flushed harness, 10 runs)", "bench_pi5_flushed_warm.png")
+    lineplot(pi5_flushed_sizes, pi5_flushed_cold, "Raspberry Pi 5 (Cortex-A76, board 'eight') - cold cache (512 MB flush before every pass, 10 runs)", "bench_pi5_flushed_cold.png")
+if have_cfl:
+    # Flushed harness (2026-10-12): these two figures only; see the cfl dict comment.
+    lineplot(cfl_sizes, cfl_warm, "Intel Coffee Lake (i9-9980HK) - warm cache (flushed harness, turbo on)", "bench_cfl_warm.png")
+    lineplot(cfl_sizes, cfl_cold, "Intel Coffee Lake (i9-9980HK) - cold cache (512 MB flush before every pass, turbo on)", "bench_cfl_cold.png")
 
 
 # --- Cross-machine comparison: a faceted view (one subplot per host, all

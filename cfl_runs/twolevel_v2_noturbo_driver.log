@@ -1,0 +1,10 @@
+run 1 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run1.txt
+run 2 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run2.txt
+run 3 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run3.txt
+run 4 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run4.txt
+run 5 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run5.txt
+run 6 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run6.txt
+run 7 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run7.txt
+run 8 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run8.txt
+run 9 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run9.txt
+run 10 (of 1..10) -> cfl_runs/twolevel_v2_noturbo_run10.txt
