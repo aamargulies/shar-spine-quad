@@ -9,7 +9,8 @@ Usage (from the repo root):
 
     HOST        pi5, m4, m1, skx, emr, gv4 ...: selects HOST_runs/ (or --dir)
     --prefix    per-cell file prefix (default sweep_fvl2, the three-variant
-                campaigns; the archived 2026-05-20 M4 campaign is sweep_fvl)
+                campaigns; the archived 2026-05-20 M4 campaign is sweep_fvl;
+                the five-variant campaigns since 2026-10-12 are sweep_fvl3)
     --dir       directory holding the cells (default HOST_runs)
     --runs      comma-separated run indices to use (default: every run found)
     --list      size list file (one N per line); restricts the sizes and
@@ -25,6 +26,8 @@ Examples:
         -> m4_runs/sweep_fvl_paired.txt and m4_sweep_fvl_data.py
     python3 compute_sweep_fvl.py pi5
         -> pi5_runs/sweep_fvl2_paired.txt and pi5_sweep_fvl2_data.py
+    python3 compute_sweep_fvl.py pi5 --prefix sweep_fvl3
+        -> pi5_runs/sweep_fvl3_paired.txt and pi5_sweep_fvl3_data.py
 
 Input
 -----
@@ -38,9 +41,11 @@ driver writes '# host:', '# date:', '# governor:', '# temp_c:' and
 num_sets=... hot_reps=... [order_seed=... gap=... inner=...]',
 '# variants: ...' and '# timing order: ...' -- and one line
 
-    RESULT inner_n=<N> mode=<hb|hs|cb|cs> F=<ns> Lem=<ns> [Lem2=<ns>]
+    RESULT inner_n=<N> mode=<hb|hs|cb|cs> F=<ns> Lem=<ns> [Lem2=<ns>] [Fb=<ns> LemS=<ns>]
 
-(ns per query; Lem2 is absent in the archived M4 campaign). A cell without
+(ns per query; Lem2 is absent in the archived M4 campaign, Fb and LemS --
+the bsearch-outer + spine-inner and Shar-outer + Lemire-inner cross
+variants -- exist from the 2026-10-12 harness on). A cell without
 a RESULT line (for example one ending in '# FAILED exit 1'), or whose RESULT
 disagrees with its file name about inner_n or mode, is reported and skipped.
 Modes: hb = hot_bat, hs = hot_ser, cb = cold_bat, cs = cold_ser.
@@ -66,6 +71,11 @@ medians (levels) are still printed, for absolute numbers only. With five
 runs even 5/5 is suggestive rather than conclusive (a two-sided sign test
 cannot reach p < 0.0625); ten runs are better.
 
+Each pair also gets the paired absolute delta B - A in ns (per run, median
+over runs). For the outer x inner pairs of the five-variant harness that is
+the quantity of interest: a cost that sits in the outer search should be a
+constant number of ns across sizes, so the report summarises it by size band.
+
 Output
 ------
 The report (--out) holds the campaign facts, the run-level drift gauge,
@@ -84,9 +94,25 @@ import sys
 
 MODES = ("hb", "hs", "cb", "cs")
 MODE_NAMES = {"hb": "hot_bat", "hs": "hot_ser", "cb": "cold_bat", "cs": "cold_ser"}
-CANONICAL_VARIANTS = ("F", "Lem", "Lem2")
+CANONICAL_VARIANTS = ("F", "Lem", "Lem2", "Fb", "LemS")
 # (B, A): the pair's delta is (B/A - 1) * 100 per run, negative = B faster.
-CANONICAL_PAIRS = (("Lem", "F"), ("Lem2", "F"), ("Lem2", "Lem"))
+# The first three compare the Lemire kernels with F; the last four are the
+# single-factor contrasts of the {Shar, bsearch} outer x {spine, Lemire}
+# inner square (Fb = bsearch + spine, LemS = Shar + Lemire): Fb vs F and
+# Lem vs LemS read "bsearch outer vs Shar outer" (negative = bsearch faster)
+# with the spine and the Lemire inner respectively; Fb vs Lem and F vs LemS
+# read "spine inner vs Lemire inner" (negative = spine faster) with the
+# bsearch and the Shar outer respectively.
+CANONICAL_PAIRS = (("Lem", "F"), ("Lem2", "F"), ("Lem2", "Lem"),
+                   ("Fb", "F"), ("Lem", "LemS"), ("Fb", "Lem"), ("F", "LemS"))
+PAIR_ROLE = {
+    "Fb vs F": "outer: bsearch vs Shar, spine inner",
+    "Lem vs LemS": "outer: bsearch vs Shar, Lemire inner",
+    "Fb vs Lem": "inner: spine vs Lemire, bsearch outer",
+    "F vs LemS": "inner: spine vs Lemire, Shar outer",
+}
+# Size bands for the absolute-delta summary (inclusive bounds).
+NS_BANDS = ((1, 32), (33, 128), (129, 265), (266, 512), (513, 1024), (1025, 2048), (2049, 4096), (4097, 1 << 30))
 HOST_LABEL = {
     "pi5": "Raspberry Pi 5 (Cortex-A76)",
     "m4": "Apple M4 Max",
@@ -200,8 +226,9 @@ def parse_cell(lines):
     return cell
 
 
-def paired_stats(runs, deltas, min_runs, b, a):
+def paired_stats(runs, deltas, min_runs, b, a, ns_deltas=None):
     n = len(deltas)
+    ns_deltas = list(ns_deltas) if ns_deltas is not None else []
     neg = sum(1 for d in deltas if d < 0)
     pos = sum(1 for d in deltas if d > 0)
     med = statistics.median(deltas) if deltas else None
@@ -216,7 +243,8 @@ def paired_stats(runs, deltas, min_runs, b, a):
         else:
             verdict = "TIE"
     return {"runs": runs, "deltas": deltas, "median": med, "faster": neg, "slower": pos,
-            "n": n, "verdict": verdict}
+            "n": n, "verdict": verdict,
+            "ns_deltas": ns_deltas, "median_ns": statistics.median(ns_deltas) if ns_deltas else None}
 
 
 def winner_of(verdict):
@@ -408,7 +436,8 @@ def main(argv=None):
             for b, a in pairs:
                 rs = [r for r in present if b in vals[r] and a in vals[r]]
                 ds = [(vals[r][b] / vals[r][a] - 1.0) * 100.0 for r in rs]
-                pr[(b, a)] = paired_stats(rs, ds, args.min_runs, b, a)
+                nds = [vals[r][b] - vals[r][a] for r in rs]
+                pr[(b, a)] = paired_stats(rs, ds, args.min_runs, b, a, nds)
             results[(N, mode)] = {"runs": present, "levels": levels, "nruns": nruns, "pairs": pr}
 
     bands = {mode: {p: [band_summary(bd, p) for bd in bands_for(p, mode, sizes, results)]
@@ -484,7 +513,9 @@ def main(argv=None):
     w(f"sizes: {len(sizes)} (n={min(sizes)}..{max(sizes)})" + (f"  (--list {args.list}, in list order)" if args.list else ""))
     w(f"variants: {', '.join(variants)}" + (" -- " + "; ".join(f"{k} = {v}" for k, v in variant_desc.items())
                                            if variant_desc else ""))
-    w(f"pairs: " + ", ".join(f"{pair_key(p)} (= {p[0]}/{p[1]} - 1)" for p in pairs))
+    w(f"pairs: " + ", ".join(f"{pair_key(p)} (= {p[0]}/{p[1]} - 1"
+                             + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")"
+                             for p in pairs))
     if harness_fields:
         w("harness header: " + "; ".join(f"{k}={'/'.join(sorted(v))}" if len(v) <= 6 else f"{k}: {len(v)} values"
                                            for k, v in sorted(harness_fields.items())))
@@ -551,7 +582,8 @@ def main(argv=None):
     for p in pairs:
         b, a = p
         w("=" * 100)
-        w(f"paired: {pair_key(p)}  (delta = {b}/{a} - 1 per run; negative = {b} faster)")
+        w(f"paired: {pair_key(p)}  (delta = {b}/{a} - 1 per run; negative = {b} faster"
+          + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")")
         w(f"cell = median delta, sign count ('-k/n' = {b} faster in k of n paired runs, '+k/n' = {b} slower), verdict")
         w("=" * 100)
         w(f"{'n':>5}  " + "  ".join(f"{MODE_NAMES[m]:^26}" for m in MODES))
@@ -594,6 +626,33 @@ def main(argv=None):
                     f"{s['winner']} n={s['lo']} ({s['median_min']:+.1f}%, {s['sign_min']}/{s['n_min']})" for s in single))
             if not bands[mode][p]:
                 w("    no WIN cells")
+        w("")
+
+    # absolute deltas by size band
+    w("=" * 100)
+    w("paired absolute deltas by size band: median over the band's sizes of each size's median over runs of "
+      "B - A in ns [min .. max over those sizes]; negative = B faster")
+    w("(a cost that lives in the outer search is a constant number of ns across sizes; one that lives in the "
+      "inner grows with n)")
+    w("=" * 100)
+    for p in pairs:
+        b, a = p
+        w(f"{pair_key(p)}  ({b} - {a} in ns" + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")")
+        w(f"  {'band':>11}  " + "  ".join(f"{MODE_NAMES[m]:^30}" for m in MODES))
+        for lo, hi in NS_BANDS:
+            band_sizes = [N for N in sizes if lo <= N <= hi]
+            if not band_sizes:
+                continue
+            row = []
+            for mode in MODES:
+                xs = [results[(N, mode)]["pairs"][p]["median_ns"] for N in band_sizes
+                      if results[(N, mode)]["pairs"][p]["median_ns"] is not None]
+                if not xs:
+                    row.append(f"{'-':^30}")
+                else:
+                    row.append(f"{statistics.median(xs):>+7.1f} [{min(xs):>+7.1f} .. {max(xs):>+7.1f}]".ljust(30))
+            label = f"{lo}-{hi}" if hi < (1 << 30) else f">= {lo}"
+            w(f"  {label:>11}  " + "  ".join(row) + f"   ({len(band_sizes)} sizes)")
         w("")
 
     # level-ratio vs paired sign check
@@ -675,10 +734,14 @@ Schema (every N in SIZES has an entry; a value that could not be computed is Non
                              DESIGN_MAX = 4096 (the Roaring container maximum)
   MODES                      ("hb", "hs", "cb", "cs"); MODE_NAMES maps them to
                              hot_bat, hot_ser, cold_bat, cold_ser
-  VARIANTS                   variant names present, canonical order (F, Lem, Lem2)
+  VARIANTS                   variant names present, canonical order (F, Lem, Lem2, Fb, LemS)
   VARIANT_DESC               {{var: description}} from the harness header, if present
   PAIRS                      pair keys "B vs A"; the pair's delta is (B/A - 1) * 100
-                             per run, NEGATIVE = B (the first-named variant) faster
+                             per run, NEGATIVE = B (the first-named variant) faster.
+                             "Fb vs F" and "Lem vs LemS" contrast the outer search
+                             (bsearch vs Shar) with the spine / the Lemire inner;
+                             "Fb vs Lem" and "F vs LemS" contrast the inner kernel
+                             (spine vs Lemire) with the bsearch / the Shar outer
   RUNS                       run indices used;  SIZES  inner_n values in report order
   MIN_RUNS                   fewest paired runs a cell needs for a verdict
   LEVELS[N][mode][var]       median ns/query over the runs in which var was measured
@@ -687,7 +750,8 @@ Schema (every N in SIZES has an entry; a value that could not be computed is Non
   PAIRED[N][mode][pair]      {{"runs": [r, ...], "deltas": [pct, ...] (per run, same order),
                               "median": pct, "faster": k (runs with delta < 0, B faster),
                               "slower": j (runs with delta > 0, B slower), "n": len(runs),
-                              "verdict": "WIN(B)" | "WIN(A)" | "TIE" | "n/a"}}
+                              "verdict": "WIN(B)" | "WIN(A)" | "TIE" | "n/a",
+                              "ns_deltas": [B - A in ns per run], "median_ns": ns}}
                              WIN = >= 80% of the n runs agree in sign and |median| >= 3%
   BANDS[mode][pair]          [{{"winner", "loser", "sizes", "lo", "hi", "median_min",
                               "median_max", "sign_min", "sign_max", "n_min", "n_max"}}, ...]:
@@ -746,7 +810,9 @@ def write_data(path, host, prefix, gap, variants, pairs, runs, sizes, min_runs, 
                     f'"{pair_key(p)}": {{"runs": {st["runs"]!r}, '
                     f'"deltas": [{", ".join(pylit_float(d, 3) for d in st["deltas"])}], '
                     f'"median": {pylit_float(st["median"], 3)}, "faster": {st["faster"]}, '
-                    f'"slower": {st["slower"]}, "n": {st["n"]}, "verdict": {st["verdict"]!r}}}')
+                    f'"slower": {st["slower"]}, "n": {st["n"]}, "verdict": {st["verdict"]!r}, '
+                    f'"ns_deltas": [{", ".join(pylit_float(d, 3) for d in st["ns_deltas"])}], '
+                    f'"median_ns": {pylit_float(st["median_ns"], 3)}}}')
             w(f'        "{mode}": {{' + ", ".join(parts) + "},")
         w("    },")
     w("}")

@@ -14,6 +14,19 @@
 //           Lem from 16 elements up, so Lem2 vs Lem at n >= 16 is a noise
 //           gauge). Added 2026-10-11; the archived 2026-05-20 M4 campaign
 //          (m4_runs/sweep_fvl_raw.txt) has only F and Lem.
+//   Fb   = Lem's bsearch outer in front of F's spine inner (two-level
+//          variant A, here across all N). Added 2026-10-12 with LemS to
+//          separate the outer search from the inner kernel: F and Lem differ
+//          in both, and the Pi 5 sweep_fvl2 campaign had Lemire ahead in
+//          cold_ser below n ~ 265 by a roughly size-independent margin,
+//          which looks like an outer effect (the branchy std::lower_bound
+//          lets the core speculate its loads past mispredicted branches,
+//          Shar's cmov chain cannot be speculated past; Khuong & Morin).
+//   LemS = F's Shar outer in front of Lemire's April kernel, the fourth cell
+//          of the 2 x 2 {Shar, bsearch} outer x {spine, simd_quad} inner.
+//          Fb vs F and Lem vs LemS are the outer's effect (negative = bsearch
+//          faster) with each inner; Fb vs Lem and F vs LemS are the inner's
+//          effect (negative = spine faster) with each outer.
 //
 // Goal: trace F vs Lem across the full range, deliberately exceeding 4096 to
 // 8192 to see what happens beyond the "designed-for" Roaring container size.
@@ -35,13 +48,26 @@
 //     g++ -O3 -march=native -std=c++20 bench_sweep_f_vs_lem.cpp simd_quad_intel.c -o bench_sweep_f_vs_lem
 //
 // Run: ./bench_sweep_f_vs_lem <inner_n> <mode:hb|hs|cb|cs> [num_sets=200] [hot_reps=200] [order_seed=0]
-//   order_seed != 0 shuffles the order in which the three variants are timed
-//   (drivers pass the run index); 0 keeps the canonical F, Lem, Lem2 order,
-//   which is the F-then-Lem order of the archived M4 campaign.
+//   order_seed != 0 shuffles the order in which the five variants are timed
+//   (drivers pass the run index); 0 keeps the canonical F, Lem, Lem2, Fb,
+//   LemS order, which starts with the F-then-Lem order of the archived M4
+//   campaign. The RESULT line prints the five columns in canonical order
+//   whatever the timing order; campaigns of this five-column harness use
+//   the file prefix sweep_fvl3 (sweep_fvl2 = F/Lem/Lem2, sweep_fvl = F/Lem).
 //
 // Single-mode-per-process so cold is genuinely cold. Every variant is checked
 // against a scalar reference before timing (200 probes of each of the first
 // five sets; for inner_n <= 64 also every element and its two neighbours).
+//
+// The containers and targets are a deterministic function of (inner_n,
+// num_sets): the same seed and the same draws since the 2026-05-20 campaign.
+// Since 2026-10-12 make_sorted_u16 uses a 65536-bit membership bitmap instead
+// of a std::set for the rejection sampling -- the same uniform draws in the
+// same order with the same acceptance, so every array and every target is
+// bit for bit what the earlier campaigns measured (verified against the
+// std::set version over the whole size list); only the heap layout of the
+// arrays and the set-up time change (~20x less at n = 4096, where set-up,
+// not measurement, was most of a cell's wall-clock).
 
 #include <algorithm>
 #include <chrono>
@@ -51,7 +77,6 @@
 #include <cstring>
 #include <limits>
 #include <random>
-#include <set>
 #include <vector>
 
 #if defined(__ARM_NEON) || defined(__aarch64__)
@@ -133,11 +158,32 @@ struct ContainerSet {
     std::vector<Container> containers;
 };
 
+// n distinct uniform u16 values, sorted. Rejection sampling with a 65536-bit
+// membership bitmap: draw, keep if new, stop at n kept. Draw for draw the
+// std::set version it replaced (2026-10-12), so the data of every campaign
+// since 2026-05-20 are reproduced exactly; see the header comment.
 static std::vector<uint16_t> make_sorted_u16(std::mt19937 &rng, int n) {
-    std::set<uint16_t> s;
     std::uniform_int_distribution<int> d(0, 65535);
-    while ((int)s.size() < n) s.insert((uint16_t)d(rng));
-    return std::vector<uint16_t>(s.begin(), s.end());
+    std::vector<uint64_t> bits(65536 / 64, 0);
+    int count = 0;
+    while (count < n) {
+        unsigned v = (unsigned)d(rng);
+        uint64_t m = 1ull << (v & 63u);
+        if (!(bits[v >> 6] & m)) {
+            bits[v >> 6] |= m;
+            count++;
+        }
+    }
+    std::vector<uint16_t> out;
+    out.reserve(n);
+    for (unsigned w = 0; w < bits.size(); w++) {
+        uint64_t x = bits[w];
+        while (x) {
+            out.push_back((uint16_t)(w * 64u + (unsigned)__builtin_ctzll(x)));
+            x &= x - 1;
+        }
+    }
+    return out;
 }
 
 static ContainerSet make_set(std::mt19937 &rng, int num_containers, int inner_n) {
@@ -200,6 +246,24 @@ static bool lookup_Lem2(const ContainerSet &s, uint32_t v) {
     if (idx < 0) return false;
     const auto &c = s.containers[idx];
     return simd_quad_2026_10(c.carr.data(), (int32_t)c.carr.size(), (uint16_t)v);
+}
+
+// Lem's outer, F's inner (two-level variant A). Against F it isolates the
+// outer search, against Lem the inner kernel.
+static bool lookup_Fb(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_bsearch(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return INNER_SPINE(c.carr.data(), c.spine.data(),
+                       (int32_t)c.carr.size(), (uint16_t)v);
+}
+
+// F's outer, Lem's inner: the remaining cell of the outer x inner square.
+static bool lookup_LemS(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_shar(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return simd_quad(c.carr.data(), (int32_t)c.carr.size(), (uint16_t)v);
 }
 
 template <typename Fn>
@@ -298,7 +362,9 @@ int main(int argc, char **argv) {
     std::printf("# bench_sweep_f_vs_lem inner_n=%d mode=%s num_sets=%d hot_reps=%d order_seed=%u gap=%d inner=%s\n",
                 inner_n, mode, num_sets, hot_reps, order_seed, kGap, INNER_NAME);
     std::printf("# variants: F = Shar outer + %s inner; Lem = bsearch outer + simd_quad (2026-04-27); "
-                "Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02)\n", INNER_NAME);
+                "Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); "
+                "Fb = bsearch outer + %s inner (two-level A); "
+                "LemS = Shar outer + simd_quad (2026-04-27)\n", INNER_NAME, INNER_NAME);
 
     std::mt19937 rng(0xB17F17);
     std::vector<ContainerSet> sets;
@@ -339,10 +405,11 @@ int main(int argc, char **argv) {
     auto check = [&](const ContainerSet &s, int si, uint32_t t) {
         bool r = ref_lookup(s, t);
         bool rF = lookup_F(s, t), rL = lookup_Lem(s, t), rL2 = lookup_Lem2(s, t);
-        if (rF != r || rL != r || rL2 != r) {
+        bool rFb = lookup_Fb(s, t), rLS = lookup_LemS(s, t);
+        if (rF != r || rL != r || rL2 != r || rFb != r || rLS != r) {
             std::fprintf(stderr,
-                         "MISMATCH inner_n=%d set=%d t=%u ref=%d F=%d Lem=%d Lem2=%d\n",
-                         inner_n, si, t, (int)r, (int)rF, (int)rL, (int)rL2);
+                         "MISMATCH inner_n=%d set=%d t=%u ref=%d F=%d Lem=%d Lem2=%d Fb=%d LemS=%d\n",
+                         inner_n, si, t, (int)r, (int)rF, (int)rL, (int)rL2, (int)rFb, (int)rLS);
             return false;
         }
         return true;
@@ -364,22 +431,24 @@ int main(int argc, char **argv) {
     }
 
     auto NaN = std::numeric_limits<double>::quiet_NaN();
-    // Variants in canonical order; the RESULT line always prints F, Lem, Lem2.
-    const char *names[3] = {"F", "Lem", "Lem2"};
-    bool (*fns[3])(const ContainerSet &, uint32_t) = {lookup_F, lookup_Lem, lookup_Lem2};
-    double vals[3] = {NaN, NaN, NaN};
-    int order[3] = {0, 1, 2};
+    // Variants in canonical order; the RESULT line always prints F, Lem, Lem2, Fb, LemS.
+    constexpr int kVariants = 5;
+    const char *names[kVariants] = {"F", "Lem", "Lem2", "Fb", "LemS"};
+    bool (*fns[kVariants])(const ContainerSet &, uint32_t) =
+        {lookup_F, lookup_Lem, lookup_Lem2, lookup_Fb, lookup_LemS};
+    double vals[kVariants] = {NaN, NaN, NaN, NaN, NaN};
+    int order[kVariants] = {0, 1, 2, 3, 4};
     if (order_seed != 0) {
         std::mt19937 g(order_seed * 1000003u + (unsigned)inner_n * 7919u
                        + (unsigned)(unsigned char)mode[0] * 131u + (unsigned)(unsigned char)mode[1]);
-        std::shuffle(order, order + 3, g);
+        std::shuffle(order, order + kVariants, g);
     }
     std::printf("# timing order:");
     for (int i : order) std::printf(" %s", names[i]);
     std::printf("\n");
 
     // Equal-cache-state warmup so no variant pays first-touch DRAM cost: all
-    // three variants run over every set before each timed variant.
+    // five variants run over every set before each timed variant.
     auto warmup_hot = [&](auto fn) {
         volatile uint64_t acc = 0;
         for (size_t si = 0; si < sets.size(); si++) {
@@ -390,7 +459,7 @@ int main(int argc, char **argv) {
         }
         (void)acc;
     };
-    auto warm_all_hot = [&]() { for (int i = 0; i < 3; i++) warmup_hot(fns[i]); };
+    auto warm_all_hot = [&]() { for (int i = 0; i < kVariants; i++) warmup_hot(fns[i]); };
 
     if (std::strcmp(mode, "hb") == 0) {
         for (int i : order) { warm_all_hot(); vals[i] = bench_hot_batched(sets, targets, hot_reps, fns[i]); }
@@ -409,7 +478,7 @@ int main(int argc, char **argv) {
         return 2;
     }
 
-    std::printf("RESULT inner_n=%d mode=%s F=%.4f Lem=%.4f Lem2=%.4f\n",
-                inner_n, mode, vals[0], vals[1], vals[2]);
+    std::printf("RESULT inner_n=%d mode=%s F=%.4f Lem=%.4f Lem2=%.4f Fb=%.4f LemS=%.4f\n",
+                inner_n, mode, vals[0], vals[1], vals[2], vals[3], vals[4]);
     return 0;
 }
