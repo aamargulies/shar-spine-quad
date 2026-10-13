@@ -18,15 +18,33 @@
  *   - The block load uses vld1q_u16_x2 (two paired 128-bit loads), which
  *     maps well to A76's two load AGUs.
  *   - AArch64/NEON only; the SSE2 fallback from the reference is gone.
- *   - One speculative __builtin_prefetch per quaternary iteration, aimed at
- *     the start of block base + n/2. CORRECTION 2026-10-11: the project's
- *     own archived data show this prefetch is a net loss, not the "10-25%
- *     cold win" earlier versions of this comment claimed. simd_quad_graviton
- *     is this kernel minus the prefetch line, so the pi5 vs graviton columns
- *     of the Pi 5 main bench are an A/B: the prefetch kernel is slower cold
- *     at 13 of 14 sizes from n=128 up and slower warm at 13 of 14. The
- *     prefetch is kept only until a dedicated kernel A/B is run; see
- *     Text/corrections_2026-10.md, section 5.
+ *   - No speculative prefetch inside the quaternary loop. Versions up to
+ *     2026-10-12 issued one __builtin_prefetch per iteration at the start
+ *     of block base + n/2; the archived main bench had it as a net loss
+ *     (CORRECTION 2026-10-11 of an earlier "10-25% cold win" claim) and the
+ *     dedicated A/Bs of 2026-10-12/13 confirmed that in the flushed main
+ *     bench (slower warm at every size from 128 up, slower cold at 12 of 14)
+ *     while finding a 3-13% gain only in the two-level harness's outer-hot
+ *     modes from n ~ 667 (see the note in the loop below and
+ *     Text/corrections_2026-10.md, section 5). Since 2026-10-13 this kernel
+ *     and simd_quad_graviton are the same code (the two plain kernels
+ *     compile to identical instructions; the sources differ only in
+ *     comments and line wrapping), apart from the Graviton file's
+ *     _spine_padded variants; the pi5 and gv4 columns of the Pi 5 main
+ *     bench now measure identical code.
+ *   - Alignment precondition (measured 2026-10-12/13): the "one block = one
+ *     line" property needs a 64-byte-aligned carr, and the four-line n=4096
+ *     spine a 64-byte-aligned spine; std::vector gives 16 bytes. With both
+ *     aligned the spine kernels are 16-37% faster cold at every size from
+ *     128 up in the flushed main bench (ten paired runs on the second Pi 5
+ *     board, pi5_runs/rebench_flushed_eight_paired.txt; an upper bound,
+ *     since the aligned copies' regular layout also streams better in that
+ *     harness's sequential cold sweep -- the linear scan gains 9-18% there
+ *     too) and 3-7% faster cold from n ~ 512 in the two-level kernel A/B
+ *     (random access, the cleaner number), at no warm cost in the main
+ *     bench (and a 4-13 ns hot cost in the two-level harness that is not
+ *     understood). Callers that can align should; tiny arrays padded to a
+ *     line pay footprint instead.
  */
 bool simd_quad_pi5(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
     enum { gap = 32 };
@@ -77,16 +95,21 @@ bool simd_quad_pi5(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
         int32_t c3 = (k3 < pos);
         base += (c1 + c2 + c3) * quarter;
         n -= 3 * quarter;
-        // Speculative prefetch of the START of block base + n/2. Note two
-        // problems (Text/corrections_2026-10.md, section 5): (1) the next
-        // middle probe reads the END of a block, so this address is in the
-        // same cache line only when carr is 64-byte aligned and n % 4 is 0
-        // or 1; (2) the address depends on the just-updated `base`, so it
-        // becomes computable at the same dependency depth as the next
-        // iteration's demand loads and cannot run ahead of them. Measured
-        // (pi5 vs graviton columns, 2026-05-12 archive): net loss at 13 of
-        // 14 sizes cold and warm. Kept pending a dedicated kernel A/B.
-        __builtin_prefetch(carr + (base + (n >> 1)) * gap);
+        // Until 2026-10-13 this loop ended with a speculative
+        //     __builtin_prefetch(carr + (base + (n >> 1)) * gap);
+        // aimed at the START of block base + n/2 while the next middle probe
+        // reads the END of a block (same line only for a 64-byte-aligned carr
+        // and n % 4 in {0, 1}), with an address that depends on the
+        // just-updated `base`, i.e. at the same dependency depth as the next
+        // iteration's demand loads. Removed after the dedicated A/Bs of
+        // 2026-10-12/13 (Text/corrections_2026-10.md, section 5): in the
+        // flushed main bench (ten paired runs, pi5 vs graviton columns) the
+        // prefetch kernel was slower warm at every size from 128 up (+3% to
+        // +8%, 10/10) and slower cold at 12 of those 14 sizes (up to +18%),
+        // faster only at 1024 cold; in the two-level kernel A/B
+        // (pi5_runs/sweep_ab1_findings.md) it was 3-13% faster in the
+        // outer-hot modes from n ~ 667 and 4-8% slower in the cold modes. The
+        // plain kernel is now the same code as simd_quad_graviton.
     }
     while (n > 1) {
         int32_t half = n >> 1;

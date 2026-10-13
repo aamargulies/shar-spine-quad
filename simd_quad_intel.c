@@ -14,8 +14,15 @@
  * Differences from the reference simd_quad.c SSE2 path:
  *   - Block size is 32 u16 = one 64-byte cache line. Same "one block =
  *     one line" structural argument as the Pi 5 variant, with the same
- *     caveat: it holds only for a 64-byte-aligned carr, which the
- *     harnesses do not enforce (Text/corrections_2026-10.md, section 5).
+ *     caveat: it holds only for a 64-byte-aligned carr, which the archived
+ *     harness runs do not enforce (Text/corrections_2026-10.md, section 5).
+ *     Alignment precondition, stated 2026-10-13: callers should align carr
+ *     and the spine to the line. Measured on Coffee Lake (i9-9980HK, AVX2
+ *     path; bench.cpp 'nA' rows, ten paired runs with and without turbo,
+ *     cfl_runs/rebench_flushed{,_noturbo}_paired.txt): the aligned spine
+ *     kernel is 27-40% faster cold from n = 512 up (10/10) and the same
+ *     warm; tiny arrays padded to a line pay footprint instead. Not yet
+ *     measured on Skylake-SP or Emerald Rapids.
  *     Intel's 64-byte line matches the Pi 5's, so gap=32 lands in the
  *     same place; the M4 Max needed gap=64 only because its line is 128 B.
  *   - On Ice Lake-SP and newer the block check is a single 512-bit load

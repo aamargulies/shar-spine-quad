@@ -12,9 +12,15 @@
  *   - Block size is 64 u16 = one 128-byte cache line. "One block = one line"
  *     is the same structural argument we made on Pi 5, re-tuned for M4's
  *     line size, and it holds only when carr is 128-byte aligned, which
- *     neither this file nor the harnesses enforce (std::vector gives
- *     16-byte alignment, so seven of eight blocks straddle two lines in
- *     the archived measurements; Text/corrections_2026-10.md, section 5).
+ *     neither this file nor the archived harness runs enforce (std::vector
+ *     gives 16-byte alignment, so seven of eight blocks straddle two lines
+ *     in the archived measurements; Text/corrections_2026-10.md, section
+ *     5). Alignment precondition, stated 2026-10-13: callers should align
+ *     carr and the spine to the cache line; bench.cpp measures the pair
+ *     since 2026-10-12 (the 'nA' rows, 128-byte copies on Apple hosts) and
+ *     on the 64-byte-line hosts measured so far (Pi 5, Coffee Lake) the
+ *     aligned spine kernels are 16-40% faster cold from n = 128-512 up at
+ *     no warm cost; not yet measured on Apple hardware.
  *     Halves the interpolation depth again vs. the Pi 5 gap=32.
  *   - The block check uses two vld1q_u16_x4 (eight paired 128-bit loads),
  *     which the three load AGUs can overlap freely. All four "a" loads and

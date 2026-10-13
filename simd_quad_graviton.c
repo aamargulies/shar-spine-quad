@@ -37,11 +37,22 @@
  *     slower cold at every n >= 128 except n=2048 (+0.7% to +5.6%; -2.5%
  *     at 2048); within noise below n=128. We drop it. CORRECTION 2026-10-11: earlier versions of this
  *     comment said the A76 kept the prefetch for a "10-25% cold win";
- *     the Pi 5 archive shows it is a net loss there too (this kernel is
- *     the Pi 5 kernel minus that one line, so the Pi 5 bench's pi5 vs
- *     gv4 columns are the A/B; Text/corrections_2026-10.md, section 5).
- *     Every simd_quad_graviton_spine* function below is identical to its
- *     simd_quad_pi5_spine* counterpart.
+ *     the Pi 5 archive shows it is a net loss there too, and the Pi 5
+ *     kernel dropped its prefetch on 2026-10-13 after dedicated A/Bs
+ *     (Text/corrections_2026-10.md, section 5), so simd_quad_graviton and
+ *     simd_quad_pi5 are now the same code (the plain kernels compile to
+ *     identical instructions; the sources differ only in comments and line
+ *     wrapping), apart from the _spine_padded variants that exist only
+ *     here. Every simd_quad_graviton_spine* function below is identical to
+ *     its simd_quad_pi5_spine* counterpart.
+ *   - Alignment precondition: "one block = one line" needs a 64-byte-aligned
+ *     carr and a 64-byte-aligned spine (std::vector gives 16 bytes). On the
+ *     Pi 5 boards that makes the spine kernels up to 16-37% faster cold
+ *     from n = 128 up in the flushed main bench (an upper bound: the
+ *     aligned copies' layout also streams better in its sequential sweep)
+ *     and 3-7% faster cold from n ~ 512 under random container access, at
+ *     no warm cost (2026-10-13); not yet measured on Graviton 4 (the `nA`
+ *     rows of the flushed bench.cpp will do it).
  *   - Small-size fast paths for [8,16) and [16,32), same structure as
  *     the Pi 5 variant. No [32,64) tier because gap=32.
  */
