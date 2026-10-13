@@ -39,3 +39,6 @@ reproduce_twolevel.log
 
 # OpenEvolve run output
 openevolve_output/
+bench_ab_pi5
+bench_smoke
+bench_al_smoke

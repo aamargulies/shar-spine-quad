@@ -1,0 +1,88 @@
+# Kernel variants of the Pi 5 A/B, derived from simd_quad_pi5.c by gen_pi5_ab_variants.py
+# base = the kernel itself (#included directly by bench_ab_pi5.cpp)
+
+--- simd_quad_pi5.c
++++ pi5_ab_cr.c
+@@ -42,5 +42,6 @@
+             for (int32_t j = 16; j < cardinality; j++) {
+                 uint16_t x = carr[j];
+-                if (x >= pos) return x == pos;
++                if (x == pos) return true;
++                if (x > pos) return false;
+             }
+             return false;
+@@ -53,5 +54,6 @@
+             for (int32_t j = 8; j < cardinality; j++) {
+                 uint16_t x = carr[j];
+-                if (x >= pos) return x == pos;
++                if (x == pos) return true;
++                if (x > pos) return false;
+             }
+             return false;
+@@ -59,5 +61,6 @@
+         for (int32_t j = 0; j < cardinality; j++) {
+             uint16_t v = carr[j];
+-            if (v >= pos) return v == pos;
++            if (v == pos) return true;
++            if (v > pos) return false;
+         }
+         return false;
+@@ -111,5 +114,6 @@
+     for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+         uint16_t v = carr[j];
+-        if (v >= pos) return v == pos;
++        if (v == pos) return true;
++        if (v > pos) return false;
+     }
+     return false;
+@@ -146,5 +150,6 @@
+             for (int32_t j = 16; j < cardinality; j++) {
+                 uint16_t x = carr[j];
+-                if (x >= pos) return x == pos;
++                if (x == pos) return true;
++                if (x > pos) return false;
+             }
+             return false;
+@@ -156,5 +161,6 @@
+             for (int32_t j = 8; j < cardinality; j++) {
+                 uint16_t x = carr[j];
+-                if (x >= pos) return x == pos;
++                if (x == pos) return true;
++                if (x > pos) return false;
+             }
+             return false;
+@@ -162,5 +168,6 @@
+         for (int32_t j = 0; j < cardinality; j++) {
+             uint16_t v = carr[j];
+-            if (v >= pos) return v == pos;
++            if (v == pos) return true;
++            if (v > pos) return false;
+         }
+         return false;
+@@ -222,5 +229,6 @@
+     for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+         uint16_t v = carr[j];
+-        if (v >= pos) return v == pos;
++        if (v == pos) return true;
++        if (v > pos) return false;
+     }
+     return false;
+
+--- simd_quad_pi5.c
++++ pi5_ab_np.c
+@@ -87,5 +87,4 @@
+         // (pi5 vs graviton columns, 2026-05-12 archive): net loss at 13 of
+         // 14 sizes cold and warm. Kept pending a dedicated kernel A/B.
+-        __builtin_prefetch(carr + (base + (n >> 1)) * gap);
+     }
+     while (n > 1) {
+
+--- simd_quad_pi5.c
++++ pi5_ab_d1.c
+@@ -174,5 +174,5 @@
+     // probes are in a disjoint region (no reuse) and the prefetch slot is
+     // wasted on a 4-byte region. Delegate to the plain pi5 path.
+-    if (num_blocks <= 3) {
++    if (num_blocks <= 1) {
+         return simd_quad_pi5(carr, cardinality, pos);
+     }
