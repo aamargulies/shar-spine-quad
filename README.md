@@ -94,6 +94,7 @@ specializations for n ∈ {256, 512, 1024, 2048, 4096} where measured.
   6–47%), with narrower wins at a few other sizes below 256: the gap-64
   kernel's small-n paths end in long scalar sweeps and the spine is inert below n = 256 on 128-byte-line hosts.
   The Pi 5 sweep (`pi5_runs/sweep_fvl2_raw.txt`, 179 sizes, 10 runs over two sessions, against both the 2026-04-27 kernel and Lemire's revised 2026-10-02 kernel; `pi5_runs/sweep_fvl2_findings.md`) has no such hot bands: F is faster hot at essentially every size (+8% to +64%) and Lemire wins no hot cell, while in cold_ser Lemire is ahead below n ≈ 265 (a paired WIN at 49 of 96 sizes against 1 for F, mostly by 3–14%) and F above n ≈ 320 (65 of 78, by 3–54%). The revised kernel changes no verdict. Five runs resolve long bands, not single sizes: on identical code (the two Lemire kernels from n = 16 up) the 5-run WIN rule fires at 16–23% of sizes, the 10-run rule at 3–9%.
+  The cold_ser deficit is the outer search, not the kernel: a second Pi 5 campaign on the same arrays and targets (`sweep_fvl3`, 2026-10-12, 10 runs, `pi5_runs/sweep_fvl3_findings.md`) added the two cross variants — bsearch outer + our spine inner, and Shar outer + Lemire's inner — and both pairs that differ only in the outer show the branchy `std::lower_bound` costing a flat 18–33 ns per query hot at every size and saving a flat 45–110 ns per query cold from n ≈ 33 up, with either inner (figure below). Between n = 33 and 265 the inner kernel is neutral or favours the spine, so Lemire's cold_ser lead there is entirely the outer; above n ≈ 300 the spine's cold gain (−118 to −274 ns against Lemire's inner) outgrows that flat penalty. Below n = 8 the deficit is the kernel's scalar path (a lead for an A/B, not yet a fix). The two campaigns' F-vs-Lemire verdicts agree on 592 of 716 cells and never call opposite winners.
 * **The Eytzinger + prefetch outer (Khuong & Morin 2017) does not pay off on
   the Pi 5** once the prefetch is aimed correctly: I is 7–9% slower than F
   hot and never beats D. Its M1 Pro hot_ser edge (−11%, 4/5) and Graviton 4
@@ -129,6 +130,8 @@ corrections document, section 5).
 ![cold column: best strategy per host vs Lemire SIMD reference](bench_best_cold.png)
 
 ![F vs Lemire across container sizes on the Pi 5 (campaign sweep_fvl2): paired per-run deltas, negative = Lemire faster](bench_pi5_sweep_fvl2_delta.png)
+
+![Outer search vs inner kernel on the Pi 5 (campaign sweep_fvl3): paired per-run deltas in percent and ns for the four single-factor contrasts; the outer pairs sit at a flat +18–33 ns hot and −45–110 ns cold](bench_pi5_sweep_fvl3_factorial.png)
 
 Curves show 22 sizes for the Pi 5 and the 10 power-of-two sizes for the
 other hosts; only values with an archived raw run are plotted.

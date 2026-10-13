@@ -203,7 +203,17 @@ The variant-G conclusion stands.
   3–14%, the same in both 5-run halves) and F above n ≈ 320 (65 / 0 / 13);
   the revised kernel changes no verdict; and the identical-code pair (both
   Lemire kernels, n ≥ 16) shows the 5-run WIN rule firing at 16–23% of
-  sizes and the 10-run rule at 3–9%, so single-size 5-run bands are noise. The code
+  sizes and the 10-run rule at 3–9%, so single-size 5-run bands are noise. The
+  outer × inner square on the Pi 5 (campaign `sweep_fvl3`, 2026-10-12, 10 runs on
+  the same arrays and targets, variants Fb = bsearch outer + spine inner and
+  LemS = Shar outer + Lemire inner; `pi5_runs/sweep_fvl3_findings.md`) shows
+  the cold_ser deficit at 33–265 to be the outer search: the branchy
+  `std::lower_bound` costs a flat 18–33 ns per query hot at every size and
+  saves a flat 45–110 ns per query cold from n ≈ 33 up, with either inner,
+  while the inner is neutral or favours the spine in that range; below n = 8
+  the deficit is the kernel's scalar path (`cset` return; untested lead).
+  The two campaigns' Lem-vs-F verdicts agree on 592 of 716 cells with no
+  contradiction. The code
   explains the bands: the gap-64 kernel's [32,64) path is one vector load
   plus a scalar sweep of up to 31 elements, the general tail scans up to 63
   elements, and the spine is inert below n = 256 on 128-byte-line hosts
