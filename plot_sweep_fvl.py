@@ -17,6 +17,10 @@ sweep_fvl2; the archived M4 campaign is sweep_fvl), and writes
                                  Lem2 vs F, Lem2 vs Lem); WIN cells are filled
                                  markers, TIE and n/a cells hollow; negative =
                                  the first-named variant of the pair is faster
+    bench_HOST_PREFIX_delta_ns.png
+                                 for the Pi 5 kernel A/B (prefix sweep_ab1): the
+                                 same paired deltas in ns, where a kernel-side
+                                 cost that does not scale with n is a flat line
     bench_HOST_PREFIX_factorial.png
                                  only when the outer x inner cross variants are
                                  present: the four single-factor pairs (Fb vs F
@@ -50,12 +54,21 @@ from matplotlib.lines import Line2D  # noqa: E402
 # first three slots in the same order. The first three validate as a set for
 # colour-vision deficiency (dataviz skill validator, --pairs all); the
 # factorial figure keeps its four pairs apart by marker as well as hue.
-COLORS = {"F": "#2a78d6", "Lem": "#eb6834", "Lem2": "#199e70", "Fb": "#8e44ad", "LemS": "#8c6d31"}
-MARKERS = {"F": "o", "Lem": "s", "Lem2": "^", "Fb": "D", "LemS": "v"}
+COLORS = {"F": "#2a78d6", "Lem": "#eb6834", "Lem2": "#199e70", "Fb": "#8e44ad", "LemS": "#8c6d31",
+          # Pi 5 kernel A/B (prefix sweep_ab1): F keeps its blue.
+          "Fcr": "#eb6834", "Fd1": "#199e70", "Fa": "#8e44ad", "G": "#8c6d31", "Gnp": "#d35fb7"}
+MARKERS = {"F": "o", "Lem": "s", "Lem2": "^", "Fb": "D", "LemS": "v",
+           "Fcr": "s", "Fd1": "^", "Fa": "D", "G": "v", "Gnp": "P"}
 PAIR_COLORS = {"Lem vs F": "#2a78d6", "Lem2 vs F": "#eb6834", "Lem2 vs Lem": "#199e70",
-               "Fb vs F": "#8e44ad", "Lem vs LemS": "#d35fb7", "Fb vs Lem": "#0e7c7b", "F vs LemS": "#7f8c1d"}
+               "Fb vs F": "#8e44ad", "Lem vs LemS": "#d35fb7", "Fb vs Lem": "#0e7c7b", "F vs LemS": "#7f8c1d",
+               "Fcr vs F": "#eb6834", "Fd1 vs F": "#199e70", "Fa vs F": "#8e44ad",
+               "G vs F": "#8c6d31", "Gnp vs G": "#d35fb7", "Gnp vs F": "#0e7c7b"}
 PAIR_MARKERS = {"Lem vs F": "o", "Lem2 vs F": "s", "Lem2 vs Lem": "^",
-                "Fb vs F": "D", "Lem vs LemS": "d", "Fb vs Lem": "v", "F vs LemS": "P"}
+                "Fb vs F": "D", "Lem vs LemS": "d", "Fb vs Lem": "v", "F vs LemS": "P",
+                "Fcr vs F": "s", "Fd1 vs F": "^", "Fa vs F": "D", "G vs F": "v", "Gnp vs G": "P", "Gnp vs F": "d"}
+# Prefixes whose paired deltas are also drawn in ns (a kernel-side cost that
+# does not scale with n is a flat line there), as bench_HOST_PREFIX_delta_ns.png.
+NS_DELTA_PREFIXES = {"sweep_ab1"}
 # The single-factor contrasts of the {Shar, bsearch} outer x {spine, Lemire}
 # inner square (Fb = bsearch + spine, LemS = Shar + Lemire). Everything else
 # in PAIRS goes to the _delta figure.
@@ -72,6 +85,11 @@ DEFAULT_DESC = {
     "Lem2": "bsearch outer + simd_quad_2026_10 (Lemire, 2026-10-02)",
     "Fb": "bsearch outer + host spine inner (two-level A)",
     "LemS": "Shar outer + simd_quad (Lemire, 2026-04-27)",
+    "Fcr": "F with constant-return scalar sweeps",
+    "Fd1": "F with spine delegation threshold 1",
+    "Fa": "F on line-aligned arrays and spines (64 B on the Pi 5)",
+    "G": "Shar outer + plain simd_quad_pi5 (prefetch as shipped)",
+    "Gnp": "G without the in-loop prefetch",
 }
 XTICKS = [1, 8, 64, 256, 1024, 4096, 8192]
 GRID = dict(color="#b8b7b2", linestyle=":", linewidth=0.6, alpha=0.6)
@@ -106,6 +124,14 @@ def annotate_refs(ax, gap, y, sizes):
         ax.text(gap * 1.06, y, f"gap={gap}", fontsize=7, color="#52514e", va="top")
     if min(sizes) <= 4096 <= max(sizes):
         ax.text(4096 * 1.06, y, "n=4096", fontsize=7, color="#52514e", va="top")
+
+
+def title_of(d):
+    return d.META.get("title") or "F vs Lemire sweep"
+
+
+def pair_roles(d):
+    return getattr(d, "PAIR_ROLES", {}) or {}
 
 
 def campaign_line(d):
@@ -147,7 +173,7 @@ def plot_levels(d, out, dpi):
         annotate_refs(ax, d.GAP, ymax / 1.08, d.SIZES)
         if idx == 0:
             ax.legend(loc="upper left", fontsize=8, frameon=False)
-    fig.suptitle(f"F vs Lemire sweep - {d.HOST_LABEL} - levels (per-cell medians over runs; "
+    fig.suptitle(f"{title_of(d)} - {d.HOST_LABEL} - levels (per-cell medians over runs; "
                  f"compare variants with the paired deltas, not here)\n{campaign_line(d)}", fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.95))
     fig.savefig(out, dpi=dpi)
@@ -183,17 +209,20 @@ def verdict_handles(d):
                    label=f"hollow: TIE, or n/a (fewer than {d.MIN_RUNS} paired runs); grey band = +/-3%")]
 
 
-def plot_deltas(d, out, dpi, pairs):
+def plot_deltas(d, out, dpi, pairs, key="median"):
+    """Paired deltas per mode: key = 'median' (percent, with the +/-3% band) or 'median_ns' (ns)."""
     fig, axes = plt.subplots(2, 2, figsize=(13, 9), sharex=True)
+    roles = pair_roles(d)
     for idx, mode in enumerate(d.MODES):
         ax = axes[idx // 2][idx % 2]
-        ax.axhspan(-3, 3, color="#b8b7b2", alpha=0.18, linewidth=0)
+        if key == "median":
+            ax.axhspan(-3, 3, color="#b8b7b2", alpha=0.18, linewidth=0)
         ax.axhline(0, color="#0b0b0b", linewidth=0.8)
-        if not draw_pairs(ax, d, mode, pairs):
+        if not draw_pairs(ax, d, mode, pairs, key=key):
             ax.text(0.5, 0.72, "no paired cells for this mode yet", transform=ax.transAxes,
                     ha="center", va="center", fontsize=10, color="#52514e")
         ax.set_title(f"{d.HOST_LABEL} - {d.MODE_NAMES[mode]}", fontsize=11, loc="left")
-        ax.set_ylabel("paired median delta, % (B/A - 1)")
+        ax.set_ylabel("paired median delta, % (B/A - 1)" if key == "median" else "paired median delta, ns (B - A)")
         style_axis(ax, d.SIZES, d.GAP, bottom=idx >= 2)
         ymin, ymax = ax.get_ylim()
         annotate_refs(ax, d.GAP, ymax - 0.03 * (ymax - ymin), d.SIZES)
@@ -201,13 +230,20 @@ def plot_deltas(d, out, dpi, pairs):
     handles = []
     for pair in pairs:
         b, _, a = pair.partition(" vs ")
+        what = f"{b}/{a} - 1" if key == "median" else f"{b} - {a}"
+        role = roles.get(pair)
+        label = f"{pair}  ({what}; below 0: {b} faster)" + (f"\n    {role}" if role else "")
         handles.append(Line2D([0], [0], color=PAIR_COLORS.get(pair, "#52514e"), marker=PAIR_MARKERS.get(pair, "o"),
-                              markersize=6, linewidth=1.1, label=f"{pair}  ({b}/{a} - 1; below 0: {b} faster)"))
+                              markersize=6, linewidth=1.1, label=label))
     handles += verdict_handles(d)
-    fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=8, frameon=False, bbox_to_anchor=(0.5, 0.0))
-    fig.suptitle(f"F vs Lemire sweep - {d.HOST_LABEL} - paired per-run deltas, median over runs\n{campaign_line(d)}",
-                 fontsize=11)
-    fig.tight_layout(rect=(0, 0.07, 1, 0.95))
+    with_roles = any(p in roles for p in pairs)
+    fig.legend(handles=handles, loc="lower center", ncol=1 if with_roles else 2, fontsize=7.5 if with_roles else 8,
+               frameon=False, bbox_to_anchor=(0.5, 0.0))
+    unit = "percent" if key == "median" else "ns (a kernel-side cost that does not scale with n is a flat line)"
+    fig.suptitle(f"{title_of(d)} - {d.HOST_LABEL} - paired per-run deltas in {unit}, median over runs\n"
+                 f"{campaign_line(d)}", fontsize=11)
+    bottom = 0.07 + (0.035 * len(pairs) if with_roles else 0)
+    fig.tight_layout(rect=(0, min(bottom, 0.3), 1, 0.95))
     fig.savefig(out, dpi=dpi)
     plt.close(fig)
 
@@ -268,8 +304,12 @@ def main(argv=None):
     plot_levels(d, base + ".png", args.dpi)
     print(f"wrote {base}.png")
     factorial = [p for p in FACTORIAL_PAIRS if p in d.PAIRS]
-    plot_deltas(d, base + "_delta.png", args.dpi, [p for p in d.PAIRS if p not in FACTORIAL_PAIRS])
+    delta_pairs = [p for p in d.PAIRS if p not in FACTORIAL_PAIRS]
+    plot_deltas(d, base + "_delta.png", args.dpi, delta_pairs)
     print(f"wrote {base}_delta.png")
+    if args.prefix in NS_DELTA_PREFIXES and delta_pairs:
+        plot_deltas(d, base + "_delta_ns.png", args.dpi, delta_pairs, key="median_ns")
+        print(f"wrote {base}_delta_ns.png")
     if factorial:
         plot_factorial(d, base + "_factorial.png", args.dpi, factorial)
         print(f"wrote {base}_factorial.png")

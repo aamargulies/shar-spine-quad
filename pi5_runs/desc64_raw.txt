@@ -1,0 +1,3080 @@
+### desc64_n16_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:33-07:00
+# governor: ondemand
+# temp_c: 50.7
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=16 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F LemS Lem Fb
+RESULT inner_n=16 mode=hb F=78.1250 Lem=86.8749 Lem2=87.7212 Fb=124.1680 LemS=72.1195
+### desc64_n16_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:37-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=16 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb Lem LemS F
+RESULT inner_n=16 mode=hb F=115.0107 Lem=141.3030 Lem2=128.0726 Fb=133.4142 LemS=119.4264
+### desc64_n16_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:40-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=16 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=16 mode=hb F=44.8041 Lem=88.3619 Lem2=76.1149 Fb=72.2344 LemS=49.3513
+### desc64_n16_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:43-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=16 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb LemS Lem2 F
+RESULT inner_n=16 mode=hb F=100.1886 Lem=89.1101 Lem2=91.5739 Fb=85.5332 LemS=56.4836
+### desc64_n16_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:49-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=16 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem LemS Lem2
+RESULT inner_n=16 mode=hb F=48.1763 Lem=71.0991 Lem2=72.4964 Fb=72.5149 LemS=46.1050
+### desc64_n16_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:52-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=16 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS F Lem2 Lem
+RESULT inner_n=16 mode=hs F=112.8329 Lem=174.3757 Lem2=155.4241 Fb=135.0456 LemS=117.3829
+### desc64_n16_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:56-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=16 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS F Lem Lem2
+RESULT inner_n=16 mode=hs F=48.1328 Lem=79.2982 Lem2=83.9101 Fb=74.4584 LemS=52.5790
+### desc64_n16_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:59-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=16 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 Fb F LemS
+RESULT inner_n=16 mode=hs F=45.0967 Lem=81.4536 Lem2=86.9008 Fb=71.8491 LemS=47.2624
+### desc64_n16_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:03-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=16 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F LemS Lem2 Fb
+RESULT inner_n=16 mode=hs F=55.0817 Lem=84.3517 Lem2=82.5472 Fb=162.9804 LemS=52.0262
+### desc64_n16_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:08-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=16 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=16 mode=hs F=48.2068 Lem=83.3379 Lem2=172.8544 Fb=72.5047 LemS=58.6187
+### desc64_n16_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:12-07:00
+# governor: ondemand
+# temp_c: 54.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=16 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb Lem F
+RESULT inner_n=16 mode=cb F=539.8100 Lem=547.5800 Lem2=499.8100 Fb=550.7400 LemS=594.2500
+### desc64_n16_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:15-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=16 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 F Lem Fb
+RESULT inner_n=16 mode=cb F=587.0300 Lem=583.5100 Lem2=549.0700 Fb=536.8400 LemS=504.4400
+### desc64_n16_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:19-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=16 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem Lem2 LemS
+RESULT inner_n=16 mode=cb F=494.8000 Lem=525.3600 Lem2=516.8400 Fb=527.0300 LemS=522.7700
+### desc64_n16_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:22-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=16 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 F Fb
+RESULT inner_n=16 mode=cb F=1070.3600 Lem=1059.6100 Lem2=545.7400 Fb=535.0000 LemS=518.7000
+### desc64_n16_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:28-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=16 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb Lem2 LemS F
+RESULT inner_n=16 mode=cb F=506.1100 Lem=525.0000 Lem2=683.7000 Fb=528.3200 LemS=524.2600
+### desc64_n16_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:55-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=16 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 Lem LemS
+RESULT inner_n=16 mode=cs F=507.2200 Lem=543.5100 Lem2=538.5100 Fb=546.6600 LemS=607.0300
+### desc64_n16_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:57-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=16 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Lem2 Fb
+RESULT inner_n=16 mode=cs F=883.7000 Lem=568.5100 Lem2=507.5800 Fb=604.0700 LemS=605.0000
+### desc64_n16_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:02-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=16 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Fb Lem2 LemS
+RESULT inner_n=16 mode=cs F=771.1000 Lem=582.0300 Lem2=610.1700 Fb=663.7000 LemS=784.9900
+### desc64_n16_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:06-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=16 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Lem Fb LemS
+RESULT inner_n=16 mode=cs F=502.0300 Lem=547.9500 Lem2=572.2200 Fb=572.4100 LemS=598.1500
+### desc64_n16_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:10-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 16 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=16 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Fb LemS Lem
+RESULT inner_n=16 mode=cs F=511.2900 Lem=583.1400 Lem2=573.6900 Fb=654.0700 LemS=1046.2800
+### desc64_n32_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:33-07:00
+# governor: ondemand
+# temp_c: 51.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=32 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS Lem F
+RESULT inner_n=32 mode=hb F=70.8102 Lem=123.6198 Lem2=98.2081 Fb=90.4369 LemS=66.9177
+### desc64_n32_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:37-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=32 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Lem LemS Fb
+RESULT inner_n=32 mode=hb F=129.1541 Lem=166.8527 Lem2=167.5443 Fb=163.6527 LemS=137.1966
+### desc64_n32_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:41-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=32 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Fb F Lem2
+RESULT inner_n=32 mode=hb F=66.3909 Lem=89.5804 Lem2=88.3795 Fb=92.2525 LemS=76.1028
+### desc64_n32_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:44-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=32 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 Lem LemS
+RESULT inner_n=32 mode=hb F=90.2925 Lem=110.0283 Lem2=123.4383 Fb=110.5671 LemS=89.3933
+### desc64_n32_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:49-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=32 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 F Lem LemS
+RESULT inner_n=32 mode=hb F=65.2075 Lem=90.7850 Lem2=92.3767 Fb=98.4266 LemS=65.8344
+### desc64_n32_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:52-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=32 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 LemS Fb
+RESULT inner_n=32 mode=hs F=71.8399 Lem=169.0323 Lem2=123.0800 Fb=133.4076 LemS=82.8481
+### desc64_n32_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:56-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=32 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb Lem2 F
+RESULT inner_n=32 mode=hs F=160.2602 Lem=201.1430 Lem2=202.3374 Fb=201.4690 LemS=167.0777
+### desc64_n32_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:00-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=32 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=32 mode=hs F=68.6149 Lem=114.1754 Lem2=113.9607 Fb=103.3941 LemS=88.7230
+### desc64_n32_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:04-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=32 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 F Fb Lem
+RESULT inner_n=32 mode=hs F=73.1454 Lem=147.5676 Lem2=155.5851 Fb=110.4783 LemS=88.4054
+### desc64_n32_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:08-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=32 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb F LemS Lem2
+RESULT inner_n=32 mode=hs F=68.7862 Lem=119.9217 Lem2=146.1779 Fb=102.8525 LemS=80.1676
+### desc64_n32_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:14-07:00
+# governor: ondemand
+# temp_c: 54.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=32 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Lem Fb F
+RESULT inner_n=32 mode=cb F=527.2200 Lem=575.1800 Lem2=661.4800 Fb=746.8400 LemS=585.1800
+### desc64_n32_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:17-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=32 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb Lem2 F LemS
+RESULT inner_n=32 mode=cb F=616.1100 Lem=519.0600 Lem2=550.7300 Fb=652.4000 LemS=597.4000
+### desc64_n32_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:21-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=32 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem F Fb
+RESULT inner_n=32 mode=cb F=529.6200 Lem=823.5000 Lem2=551.2900 Fb=589.2500 LemS=591.6600
+### desc64_n32_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:25-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=32 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem LemS F Fb
+RESULT inner_n=32 mode=cb F=534.0700 Lem=570.5500 Lem2=556.4700 Fb=572.9500 LemS=594.0700
+### desc64_n32_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:30-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=32 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Fb Lem F
+RESULT inner_n=32 mode=cb F=819.6200 Lem=587.5900 Lem2=584.2500 Fb=588.5100 LemS=631.6600
+### desc64_n32_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:57-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=32 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem2 Lem
+RESULT inner_n=32 mode=cs F=619.6200 Lem=611.4700 Lem2=777.2100 Fb=574.8100 LemS=642.2200
+### desc64_n32_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:00-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=32 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb LemS Lem2 F
+RESULT inner_n=32 mode=cs F=919.2400 Lem=720.5500 Lem2=622.5900 Fb=618.8800 LemS=647.4000
+### desc64_n32_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:04-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=32 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem Lem2 LemS F
+RESULT inner_n=32 mode=cs F=613.8800 Lem=758.1400 Lem2=623.1400 Fb=1245.3600 LemS=655.7300
+### desc64_n32_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:08-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=32 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem Lem2
+RESULT inner_n=32 mode=cs F=623.8800 Lem=834.9900 Lem2=707.5800 Fb=565.1800 LemS=653.3300
+### desc64_n32_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:12-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 32 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=32 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb F Lem LemS
+RESULT inner_n=32 mode=cs F=613.3200 Lem=604.0600 Lem2=550.7300 Fb=595.3700 LemS=653.8800
+### desc64_n64_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:34-07:00
+# governor: ondemand
+# temp_c: 51.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=64 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem F Fb Lem2
+RESULT inner_n=64 mode=hb F=95.8110 Lem=129.8253 Lem2=125.0319 Fb=124.7670 LemS=116.5893
+### desc64_n64_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:37-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=64 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem Lem2 F
+RESULT inner_n=64 mode=hb F=148.4168 Lem=160.9203 Lem2=166.2509 Fb=165.5388 LemS=148.8445
+### desc64_n64_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:41-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=64 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 F Fb
+RESULT inner_n=64 mode=hb F=106.9570 Lem=139.2751 Lem2=144.1353 Fb=123.4420 LemS=108.6719
+### desc64_n64_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:44-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=64 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 LemS Lem
+RESULT inner_n=64 mode=hb F=121.8828 Lem=143.5622 Lem2=141.5334 Fb=142.0584 LemS=118.9041
+### desc64_n64_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:50-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=64 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Fb F Lem2
+RESULT inner_n=64 mode=hb F=107.6959 Lem=118.6856 Lem2=122.3615 Fb=117.1338 LemS=117.7884
+### desc64_n64_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:53-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=64 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb F Lem
+RESULT inner_n=64 mode=hs F=135.1438 Lem=175.3933 Lem2=178.3340 Fb=173.1813 LemS=128.6475
+### desc64_n64_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:57-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=64 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem F Lem2
+RESULT inner_n=64 mode=hs F=130.1615 Lem=153.7029 Lem2=159.9601 Fb=145.8159 LemS=163.9240
+### desc64_n64_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:00-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=64 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb Lem2 F
+RESULT inner_n=64 mode=hs F=106.2061 Lem=157.7342 Lem2=146.6639 Fb=128.5744 LemS=101.9913
+### desc64_n64_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:04-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=64 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F LemS Fb Lem2
+RESULT inner_n=64 mode=hs F=104.6876 Lem=182.1867 Lem2=149.6398 Fb=165.3137 LemS=99.5683
+### desc64_n64_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:09-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=64 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Fb Lem LemS
+RESULT inner_n=64 mode=hs F=108.3487 Lem=127.8114 Lem2=139.0104 Fb=132.7724 LemS=98.1423
+### desc64_n64_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:16-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=64 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 LemS Fb Lem
+RESULT inner_n=64 mode=cb F=660.1800 Lem=693.3200 Lem2=856.8500 Fb=706.6600 LemS=744.0600
+### desc64_n64_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:19-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=64 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Fb Lem
+RESULT inner_n=64 mode=cb F=664.8100 Lem=663.7000 Lem2=662.7700 Fb=603.3200 LemS=740.1800
+### desc64_n64_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:24-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=64 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=64 mode=cb F=824.6200 Lem=878.3200 Lem2=1156.8400 Fb=641.2800 LemS=948.5000
+### desc64_n64_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:27-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=64 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem2 Lem F
+RESULT inner_n=64 mode=cb F=791.4700 Lem=669.2500 Lem2=665.9200 Fb=539.6200 LemS=748.5100
+### desc64_n64_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:32-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=64 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Fb Lem LemS
+RESULT inner_n=64 mode=cb F=651.8400 Lem=643.8800 Lem2=896.8400 Fb=577.9500 LemS=746.2800
+### desc64_n64_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:59-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=64 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 Lem LemS F
+RESULT inner_n=64 mode=cs F=773.3200 Lem=684.9900 Lem2=985.7300 Fb=784.6200 LemS=752.4000
+### desc64_n64_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:02-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=64 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 F Lem
+RESULT inner_n=64 mode=cs F=838.8800 Lem=671.2900 Lem2=1416.8400 Fb=718.1400 LemS=804.4400
+### desc64_n64_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:06-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=64 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Lem LemS Fb
+RESULT inner_n=64 mode=cs F=700.3600 Lem=675.3700 Lem2=640.5400 Fb=626.8400 LemS=766.1100
+### desc64_n64_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:10-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=64 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 Lem F
+RESULT inner_n=64 mode=cs F=704.2500 Lem=669.2500 Lem2=669.0700 Fb=610.9100 LemS=743.6900
+### desc64_n64_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:15-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 64 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=64 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Lem2 Fb
+RESULT inner_n=64 mode=cs F=684.9900 Lem=683.8800 Lem2=698.8800 Fb=604.2500 LemS=742.0300
+### desc64_n96_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:34-07:00
+# governor: ondemand
+# temp_c: 52.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=96 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 LemS Lem
+RESULT inner_n=96 mode=hb F=123.7708 Lem=140.3317 Lem2=135.1188 Fb=134.4262 LemS=108.4246
+### desc64_n96_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:38-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=96 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem2 Lem
+RESULT inner_n=96 mode=hb F=162.7555 Lem=173.3674 Lem2=170.9267 Fb=199.1328 LemS=160.2250
+### desc64_n96_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:42-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=96 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS F Lem2 Lem
+RESULT inner_n=96 mode=hb F=122.9865 Lem=136.6613 Lem2=140.8408 Fb=165.3137 LemS=112.8996
+### desc64_n96_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:45-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=96 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 Fb F
+RESULT inner_n=96 mode=hb F=149.2334 Lem=167.6609 Lem2=164.2860 Fb=184.7052 LemS=142.5076
+### desc64_n96_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:50-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=96 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem F Fb
+RESULT inner_n=96 mode=hb F=114.0292 Lem=154.3611 Lem2=139.0511 Fb=147.2927 LemS=120.9680
+### desc64_n96_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:54-07:00
+# governor: ondemand
+# temp_c: 54.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=96 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem F Lem2 LemS
+RESULT inner_n=96 mode=hs F=176.9359 Lem=187.1293 Lem2=183.0923 Fb=203.2902 LemS=152.7325
+### desc64_n96_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:57-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=96 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem Lem2
+RESULT inner_n=96 mode=hs F=118.7292 Lem=155.3936 Lem2=151.1807 Fb=151.2232 LemS=116.7041
+### desc64_n96_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:01-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=96 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Lem2 Fb Lem
+RESULT inner_n=96 mode=hs F=123.1883 Lem=147.4955 Lem2=145.7344 Fb=176.3904 LemS=100.6016
+### desc64_n96_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:05-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=96 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Fb Lem LemS
+RESULT inner_n=96 mode=hs F=122.4605 Lem=138.5530 Lem2=156.7870 Fb=143.4760 LemS=111.5987
+### desc64_n96_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:09-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=96 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb F LemS Lem2
+RESULT inner_n=96 mode=hs F=118.6708 Lem=152.6889 Lem2=150.9732 Fb=148.9371 LemS=115.9560
+### desc64_n96_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:18-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=96 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Fb Lem F
+RESULT inner_n=96 mode=cb F=673.3300 Lem=659.4400 Lem2=700.7300 Fb=580.9200 LemS=764.4300
+### desc64_n96_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:22-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=96 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem LemS F Fb
+RESULT inner_n=96 mode=cb F=650.7300 Lem=869.8100 Lem2=729.8000 Fb=996.6500 LemS=864.8100
+### desc64_n96_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:26-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=96 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS F Fb Lem
+RESULT inner_n=96 mode=cb F=778.3200 Lem=719.2500 Lem2=924.2400 Fb=681.1000 LemS=1147.3900
+### desc64_n96_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:29-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=96 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb Lem2 F
+RESULT inner_n=96 mode=cb F=783.6900 Lem=831.8400 Lem2=684.9900 Fb=835.7300 LemS=1395.7200
+### desc64_n96_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:35-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=96 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem Lem2 Fb
+RESULT inner_n=96 mode=cb F=650.9200 Lem=647.4000 Lem2=648.1400 Fb=583.5100 LemS=754.8100
+### desc64_n96_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:01-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=96 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Lem2 Fb LemS
+RESULT inner_n=96 mode=cs F=1036.6500 Lem=809.0600 Lem2=1265.7200 Fb=894.6200 LemS=1021.4700
+### desc64_n96_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:05-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=96 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem2 Lem
+RESULT inner_n=96 mode=cs F=1243.3100 Lem=651.2900 Lem2=715.5500 Fb=665.7300 LemS=937.4000
+### desc64_n96_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:09-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=96 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F Fb LemS
+RESULT inner_n=96 mode=cs F=723.6900 Lem=703.7000 Lem2=635.7300 Fb=650.5500 LemS=776.6500
+### desc64_n96_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:13-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=96 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb F Lem
+RESULT inner_n=96 mode=cs F=783.6900 Lem=664.2500 Lem2=653.7000 Fb=628.5100 LemS=782.0300
+### desc64_n96_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:17-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 96 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=96 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem Fb F
+RESULT inner_n=96 mode=cs F=721.1000 Lem=659.9900 Lem2=651.8500 Fb=837.7700 LemS=832.7700
+### desc64_n128_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:35-07:00
+# governor: ondemand
+# temp_c: 50.7
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=128 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem LemS F Lem2
+RESULT inner_n=128 mode=hb F=146.3455 Lem=204.6041 Lem2=146.9974 Fb=233.5231 LemS=138.1086
+### desc64_n128_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:39-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=128 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Fb Lem
+RESULT inner_n=128 mode=hb F=192.9634 Lem=187.2321 Lem2=191.2542 Fb=199.7181 LemS=163.2833
+### desc64_n128_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:42-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=128 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb F LemS Lem2 Lem
+RESULT inner_n=128 mode=hb F=133.7456 Lem=155.9212 Lem2=158.2055 Fb=158.0185 LemS=132.9983
+### desc64_n128_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:45-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=128 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS Lem F
+RESULT inner_n=128 mode=hb F=176.5997 Lem=175.1692 Lem2=182.3997 Fb=199.6337 LemS=153.8260
+### desc64_n128_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:51-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=128 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 F Lem LemS
+RESULT inner_n=128 mode=hb F=128.5160 Lem=144.4445 Lem2=144.3603 Fb=180.2784 LemS=124.2568
+### desc64_n128_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:54-07:00
+# governor: ondemand
+# temp_c: 54.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=128 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem2 Lem
+RESULT inner_n=128 mode=hs F=159.2546 Lem=206.5476 Lem2=196.7588 Fb=184.5172 LemS=186.5228
+### desc64_n128_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:58-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=128 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 LemS Fb F
+RESULT inner_n=128 mode=hs F=141.6743 Lem=158.9315 Lem2=157.0953 Fb=163.2926 LemS=122.1088
+### desc64_n128_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:01-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=128 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Lem2 Fb
+RESULT inner_n=128 mode=hs F=138.1289 Lem=157.2073 Lem2=155.7509 Fb=200.6910 LemS=125.4744
+### desc64_n128_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:05-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=128 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 Fb LemS F
+RESULT inner_n=128 mode=hs F=137.2447 Lem=172.1053 Lem2=162.8277 Fb=181.9784 LemS=133.3827
+### desc64_n128_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:10-07:00
+# governor: ondemand
+# temp_c: 54.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=128 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem Fb Lem2
+RESULT inner_n=128 mode=hs F=134.6984 Lem=153.8898 Lem2=161.3777 Fb=172.2655 LemS=139.0298
+### desc64_n128_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:21-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=128 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 Fb LemS
+RESULT inner_n=128 mode=cb F=685.0000 Lem=661.8500 Lem2=708.8800 Fb=819.2500 LemS=899.6200
+### desc64_n128_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:24-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=128 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb Lem F LemS
+RESULT inner_n=128 mode=cb F=672.7700 Lem=669.6300 Lem2=651.4700 Fb=637.9600 LemS=780.5400
+### desc64_n128_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:28-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=128 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb LemS F Lem2
+RESULT inner_n=128 mode=cb F=671.8400 Lem=630.3700 Lem2=666.1000 Fb=653.7000 LemS=921.4700
+### desc64_n128_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:31-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=128 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb F Lem
+RESULT inner_n=128 mode=cb F=770.1700 Lem=822.5800 Lem2=1029.9800 Fb=967.7700 LemS=1011.6500
+### desc64_n128_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:37-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=128 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Lem Fb Lem2
+RESULT inner_n=128 mode=cb F=653.3300 Lem=677.2100 Lem2=675.9100 Fb=620.7300 LemS=1172.0300
+### desc64_n128_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:04-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=128 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem Fb Lem2
+RESULT inner_n=128 mode=cs F=1219.0600 Lem=753.8800 Lem2=1128.5100 Fb=790.3600 LemS=849.4300
+### desc64_n128_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:07-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=128 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F LemS Fb Lem
+RESULT inner_n=128 mode=cs F=768.1400 Lem=680.3600 Lem2=764.2500 Fb=693.3300 LemS=768.3200
+### desc64_n128_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:11-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=128 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb Lem F LemS
+RESULT inner_n=128 mode=cs F=751.8500 Lem=671.1000 Lem2=1014.2500 Fb=712.9500 LemS=792.9600
+### desc64_n128_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:15-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=128 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem F Fb
+RESULT inner_n=128 mode=cs F=764.2500 Lem=749.4400 Lem2=706.6600 Fb=677.4000 LemS=980.1700
+### desc64_n128_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:19-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 128 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=128 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb Lem F
+RESULT inner_n=128 mode=cs F=744.6200 Lem=675.7300 Lem2=823.6900 Fb=709.2500 LemS=1482.5800
+### desc64_n160_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:36-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=160 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F LemS Fb
+RESULT inner_n=160 mode=hb F=138.9798 Lem=152.2185 Lem2=169.0212 Fb=172.6498 LemS=127.1985
+### desc64_n160_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:39-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=160 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS F Lem
+RESULT inner_n=160 mode=hb F=240.5102 Lem=187.8682 Lem2=259.6794 Fb=266.1163 LemS=217.2409
+### desc64_n160_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:43-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=160 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 Lem LemS
+RESULT inner_n=160 mode=hb F=165.3508 Lem=156.0639 Lem2=164.7591 Fb=210.3891 LemS=134.2622
+### desc64_n160_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:46-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=160 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Fb Lem2 F
+RESULT inner_n=160 mode=hb F=179.8599 Lem=172.6804 Lem2=173.2099 Fb=199.5041 LemS=153.6907
+### desc64_n160_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:51-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=160 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Fb LemS Lem
+RESULT inner_n=160 mode=hb F=142.3529 Lem=181.6978 Lem2=151.8454 Fb=182.8534 LemS=135.2623
+### desc64_n160_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:55-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=160 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 LemS Fb
+RESULT inner_n=160 mode=hs F=143.9446 Lem=167.2647 Lem2=162.7703 Fb=188.8033 LemS=127.1920
+### desc64_n160_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:58-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=160 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem F Fb
+RESULT inner_n=160 mode=hs F=146.9733 Lem=168.1036 Lem2=178.1534 Fb=194.3014 LemS=140.9770
+### desc64_n160_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:02-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=160 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Lem2 Fb F
+RESULT inner_n=160 mode=hs F=193.5217 Lem=175.7895 Lem2=201.9688 Fb=193.5911 LemS=128.2892
+### desc64_n160_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:06-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=160 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb Lem F LemS
+RESULT inner_n=160 mode=hs F=155.5583 Lem=166.7989 Lem2=183.9181 Fb=189.8338 LemS=134.4567
+### desc64_n160_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:11-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=160 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem F Fb Lem2
+RESULT inner_n=160 mode=hs F=150.7056 Lem=187.6848 Lem2=180.0368 Fb=237.2434 LemS=148.0584
+### desc64_n160_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:23-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=160 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Fb Lem
+RESULT inner_n=160 mode=cb F=912.4000 Lem=885.1800 Lem2=911.8400 Fb=1484.6100 LemS=1071.6600
+### desc64_n160_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:26-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=160 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS Lem F
+RESULT inner_n=160 mode=cb F=694.6200 Lem=701.4800 Lem2=709.6200 Fb=678.6900 LemS=1270.7300
+### desc64_n160_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:31-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=160 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 F Fb
+RESULT inner_n=160 mode=cb F=703.3200 Lem=949.9900 Lem2=714.4400 Fb=918.8800 LemS=933.1400
+### desc64_n160_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:34-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=160 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb LemS F Lem2
+RESULT inner_n=160 mode=cb F=696.2800 Lem=1093.5000 Lem2=1424.0600 Fb=674.8000 LemS=1044.4300
+### desc64_n160_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:39-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=160 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F LemS Fb
+RESULT inner_n=160 mode=cb F=673.5200 Lem=674.6200 Lem2=839.9900 Fb=655.9100 LemS=1180.3600
+### desc64_n160_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:06-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=160 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS F Lem2 Fb
+RESULT inner_n=160 mode=cs F=769.0600 Lem=708.8800 Lem2=775.5400 Fb=827.9500 LemS=1201.4700
+### desc64_n160_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:09-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=160 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Fb Lem LemS
+RESULT inner_n=160 mode=cs F=784.2500 Lem=753.5100 Lem2=757.7600 Fb=1043.6900 LemS=820.3600
+### desc64_n160_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:13-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=160 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb Lem2 F LemS
+RESULT inner_n=160 mode=cs F=771.1000 Lem=824.0600 Lem2=776.8400 Fb=934.0600 LemS=801.8400
+### desc64_n160_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:17-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=160 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F Fb LemS
+RESULT inner_n=160 mode=cs F=1452.3900 Lem=1458.5000 Lem2=1351.4700 Fb=1229.2500 LemS=1095.7300
+### desc64_n160_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:21-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 160 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=160 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F LemS Fb
+RESULT inner_n=160 mode=cs F=789.2500 Lem=715.9200 Lem2=754.9900 Fb=751.4800 LemS=815.5400
+### desc64_n200_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:36-07:00
+# governor: ondemand
+# temp_c: 52.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=200 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 LemS Lem
+RESULT inner_n=200 mode=hb F=164.8999 Lem=162.9990 Lem2=164.1129 Fb=176.3562 LemS=178.9331
+### desc64_n200_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:40-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=200 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 Fb LemS
+RESULT inner_n=200 mode=hb F=174.5915 Lem=172.5813 Lem2=159.2129 Fb=169.2351 LemS=135.4984
+### desc64_n200_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:44-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=200 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 Fb LemS
+RESULT inner_n=200 mode=hb F=152.4324 Lem=162.3730 Lem2=157.0842 Fb=196.0634 LemS=139.8567
+### desc64_n200_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:46-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=200 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Fb LemS Lem
+RESULT inner_n=200 mode=hb F=189.6255 Lem=178.9848 Lem2=180.3839 Fb=207.3679 LemS=159.8888
+### desc64_n200_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:52-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=200 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F Fb LemS
+RESULT inner_n=200 mode=hb F=181.7691 Lem=170.0360 Lem2=175.7099 Fb=203.0697 LemS=158.7518
+### desc64_n200_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:55-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=200 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Fb Lem Lem2
+RESULT inner_n=200 mode=hs F=217.1946 Lem=184.0257 Lem2=189.9394 Fb=259.7552 LemS=190.9700
+### desc64_n200_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:59-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=200 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 LemS Lem Fb
+RESULT inner_n=200 mode=hs F=177.4729 Lem=164.9434 Lem2=166.6258 Fb=198.6866 LemS=134.7354
+### desc64_n200_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:03-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=200 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Fb Lem2 LemS
+RESULT inner_n=200 mode=hs F=177.6793 Lem=189.2838 Lem2=170.9887 Fb=210.3484 LemS=134.4641
+### desc64_n200_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:06-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=200 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=200 mode=hs F=154.4481 Lem=166.2684 Lem2=166.0035 Fb=190.7134 LemS=153.3611
+### desc64_n200_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:11-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=200 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS Lem F
+RESULT inner_n=200 mode=hs F=168.5137 Lem=168.1156 Lem2=174.9322 Fb=202.6634 LemS=143.4316
+### desc64_n200_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:26-07:00
+# governor: ondemand
+# temp_c: 54.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=200 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 F Fb
+RESULT inner_n=200 mode=cb F=1270.3500 Lem=916.6600 Lem2=1566.4600 Fb=1196.1000 LemS=1268.8700
+### desc64_n200_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:28-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=200 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Lem LemS Fb
+RESULT inner_n=200 mode=cb F=1266.6500 Lem=714.9900 Lem2=845.1800 Fb=709.0700 LemS=1527.5800
+### desc64_n200_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:33-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=200 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb Lem2 F
+RESULT inner_n=200 mode=cb F=818.6900 Lem=765.9200 Lem2=1072.5800 Fb=1093.6900 LemS=1874.2400
+### desc64_n200_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:36-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=200 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 Fb LemS F
+RESULT inner_n=200 mode=cb F=919.0700 Lem=701.2900 Lem2=753.3200 Fb=769.9900 LemS=919.6200
+### desc64_n200_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:41-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=200 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb F Lem2 LemS
+RESULT inner_n=200 mode=cb F=1218.1300 Lem=698.5100 Lem2=763.1400 Fb=734.4300 LemS=1808.6800
+### desc64_n200_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:09-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=200 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F LemS Fb
+RESULT inner_n=200 mode=cs F=854.9900 Lem=1237.5800 Lem2=1146.6600 Fb=792.7700 LemS=1067.5800
+### desc64_n200_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:11-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=200 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb F Lem
+RESULT inner_n=200 mode=cs F=844.6200 Lem=745.1700 Lem2=747.9500 Fb=983.3200 LemS=1032.9500
+### desc64_n200_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:15-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=200 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb Lem2 F
+RESULT inner_n=200 mode=cs F=1175.3600 Lem=728.3300 Lem2=846.1000 Fb=745.7400 LemS=860.1800
+### desc64_n200_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:20-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=200 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 LemS Fb Lem
+RESULT inner_n=200 mode=cs F=1425.5400 Lem=867.9600 Lem2=884.0600 Fb=1185.3600 LemS=1963.4900
+### desc64_n200_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:24-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 200 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=200 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Lem Fb
+RESULT inner_n=200 mode=cs F=1040.1800 Lem=772.9500 Lem2=814.0600 Fb=968.6900 LemS=1022.2100
+### desc64_n255_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:37-07:00
+# governor: ondemand
+# temp_c: 51.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=255 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F LemS Lem Fb
+RESULT inner_n=255 mode=hb F=183.0683 Lem=188.7497 Lem2=193.1125 Fb=205.2161 LemS=165.4684
+### desc64_n255_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:41-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=255 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb F Lem Lem2
+RESULT inner_n=255 mode=hb F=230.2816 Lem=181.7117 Lem2=189.9348 Fb=255.0008 LemS=153.5741
+### desc64_n255_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:44-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=255 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 LemS Lem F
+RESULT inner_n=255 mode=hb F=161.9082 Lem=173.9896 Lem2=189.8708 Fb=203.3124 LemS=163.6665
+### desc64_n255_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:47-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=255 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 F Fb
+RESULT inner_n=255 mode=hb F=199.3874 Lem=194.5078 Lem2=195.8532 Fb=210.3863 LemS=171.8405
+### desc64_n255_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:53-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=255 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb F LemS Lem
+RESULT inner_n=255 mode=hb F=180.1413 Lem=189.4986 Lem2=200.2244 Fb=205.5299 LemS=158.0129
+### desc64_n255_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:56-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=255 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Fb F Lem
+RESULT inner_n=255 mode=hs F=170.4184 Lem=178.7655 Lem2=178.9016 Fb=195.8486 LemS=165.7944
+### desc64_n255_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:00-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=255 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem2 F Lem
+RESULT inner_n=255 mode=hs F=157.7537 Lem=177.4488 Lem2=178.8562 Fb=215.1401 LemS=152.7825
+### desc64_n255_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:03-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=255 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Fb F Lem
+RESULT inner_n=255 mode=hs F=157.7620 Lem=181.7793 Lem2=184.0190 Fb=193.7726 LemS=165.0082
+### desc64_n255_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:07-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=255 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Lem Fb LemS
+RESULT inner_n=255 mode=hs F=166.3683 Lem=179.3478 Lem2=199.8994 Fb=191.5782 LemS=149.1121
+### desc64_n255_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:12-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=255 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem Fb F
+RESULT inner_n=255 mode=hs F=163.3823 Lem=188.4301 Lem2=184.3561 Fb=197.6448 LemS=150.2306
+### desc64_n255_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:28-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=255 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 LemS Fb F
+RESULT inner_n=255 mode=cb F=1104.4300 Lem=945.9200 Lem2=999.6200 Fb=1109.6200 LemS=1277.3900
+### desc64_n255_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:31-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=255 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem Fb LemS F
+RESULT inner_n=255 mode=cb F=855.5400 Lem=1672.9500 Lem2=1349.9800 Fb=1055.1700 LemS=1290.5400
+### desc64_n255_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:35-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=255 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 F Lem
+RESULT inner_n=255 mode=cb F=925.5400 Lem=1153.3200 Lem2=873.7000 Fb=716.2900 LemS=967.9500
+### desc64_n255_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:39-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=255 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb Lem F LemS
+RESULT inner_n=255 mode=cb F=860.7300 Lem=839.4300 Lem2=813.6900 Fb=751.2800 LemS=937.0200
+### desc64_n255_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:44-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=255 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Lem2 Fb
+RESULT inner_n=255 mode=cb F=844.2500 Lem=864.4300 Lem2=907.7700 Fb=780.5500 LemS=992.3900
+### desc64_n255_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:11-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=255 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F Fb LemS
+RESULT inner_n=255 mode=cs F=877.9500 Lem=998.6900 Lem2=1086.6600 Fb=962.7600 LemS=977.7600
+### desc64_n255_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:14-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=255 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb F Lem2 LemS Lem
+RESULT inner_n=255 mode=cs F=862.7700 Lem=849.4400 Lem2=1087.7700 Fb=1229.4300 LemS=974.0600
+### desc64_n255_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:18-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=255 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb Lem2 LemS F
+RESULT inner_n=255 mode=cs F=851.8400 Lem=823.1400 Lem2=891.2900 Fb=742.9600 LemS=981.8400
+### desc64_n255_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:22-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=255 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Fb LemS Lem
+RESULT inner_n=255 mode=cs F=881.6600 Lem=1084.0600 Lem2=875.5400 Fb=787.5900 LemS=1131.8400
+### desc64_n255_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:26-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 255 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=255 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F Fb LemS
+RESULT inner_n=255 mode=cs F=1111.4600 Lem=810.5400 Lem2=848.1400 Fb=743.1400 LemS=1985.3500
+### desc64_n256_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:38-07:00
+# governor: ondemand
+# temp_c: 50.7
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=256 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb Lem F
+RESULT inner_n=256 mode=hb F=167.3055 Lem=179.4590 Lem2=175.7146 Fb=192.2533 LemS=154.5148
+### desc64_n256_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:41-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=256 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 F Lem
+RESULT inner_n=256 mode=hb F=179.8053 Lem=196.6449 Lem2=198.3365 Fb=180.3339 LemS=164.1203
+### desc64_n256_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:45-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=256 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=256 mode=hb F=176.4386 Lem=179.0515 Lem2=185.1496 Fb=196.9985 LemS=154.7999
+### desc64_n256_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:48-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=256 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 F Lem LemS
+RESULT inner_n=256 mode=hb F=171.0554 Lem=190.9792 Lem2=192.6458 Fb=191.0699 LemS=168.0377
+### desc64_n256_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:54-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=256 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 F Lem LemS
+RESULT inner_n=256 mode=hb F=184.4024 Lem=187.9218 Lem2=202.6374 Fb=199.5753 LemS=160.2332
+### desc64_n256_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:57-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=256 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 Lem F
+RESULT inner_n=256 mode=hs F=156.7019 Lem=193.5968 Lem2=213.6549 Fb=236.1658 LemS=159.5620
+### desc64_n256_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:01-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=256 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 Lem LemS F
+RESULT inner_n=256 mode=hs F=158.5861 Lem=187.2691 Lem2=195.7847 Fb=241.7657 LemS=154.7426
+### desc64_n256_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:04-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=256 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 Lem F LemS
+RESULT inner_n=256 mode=hs F=182.2570 Lem=195.8180 Lem2=189.4347 Fb=214.2631 LemS=161.5453
+### desc64_n256_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:08-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=256 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem Fb LemS F
+RESULT inner_n=256 mode=hs F=172.4924 Lem=219.1418 Lem2=222.2677 Fb=223.1019 LemS=175.9525
+### desc64_n256_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:13-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=256 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem Lem2
+RESULT inner_n=256 mode=hs F=152.3565 Lem=186.5959 Lem2=194.7857 Fb=194.3764 LemS=158.1546
+### desc64_n256_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:31-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=256 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb LemS F Lem2
+RESULT inner_n=256 mode=cb F=729.0600 Lem=701.8400 Lem2=931.2900 Fb=754.4300 LemS=1053.8700
+### desc64_n256_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:33-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=256 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Fb LemS Lem2
+RESULT inner_n=256 mode=cb F=758.8800 Lem=733.5100 Lem2=737.9600 Fb=667.4000 LemS=1065.5400
+### desc64_n256_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:38-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=256 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS F Lem Fb
+RESULT inner_n=256 mode=cb F=720.3600 Lem=741.8500 Lem2=714.6200 Fb=660.3600 LemS=1074.8000
+### desc64_n256_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:41-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=256 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb F Lem
+RESULT inner_n=256 mode=cb F=835.3600 Lem=890.5500 Lem2=1103.1300 Fb=952.5800 LemS=1258.8800
+### desc64_n256_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:46-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=256 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 LemS F Lem
+RESULT inner_n=256 mode=cb F=1506.8400 Lem=1319.8000 Lem2=1136.8400 Fb=1300.5400 LemS=1223.6900
+### desc64_n256_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:14-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=256 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F LemS Lem2 Fb
+RESULT inner_n=256 mode=cs F=1475.7300 Lem=745.5500 Lem2=785.9100 Fb=768.3300 LemS=1431.4600
+### desc64_n256_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:16-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=256 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 F LemS Lem
+RESULT inner_n=256 mode=cs F=1201.2900 Lem=994.8000 Lem2=1503.3100 Fb=891.8500 LemS=979.0600
+### desc64_n256_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:20-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=256 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem F Fb Lem2
+RESULT inner_n=256 mode=cs F=999.9900 Lem=955.3500 Lem2=812.9500 Fb=774.4300 LemS=1106.2900
+### desc64_n256_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:25-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=256 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb Lem F LemS
+RESULT inner_n=256 mode=cs F=1073.3200 Lem=808.8800 Lem2=759.4300 Fb=751.6600 LemS=862.9600
+### desc64_n256_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:29-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 256 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=256 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb F Lem LemS Lem2
+RESULT inner_n=256 mode=cs F=845.9200 Lem=789.4300 Lem2=1491.6500 Fb=713.5100 LemS=865.3600
+### desc64_n333_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:39-07:00
+# governor: ondemand
+# temp_c: 51.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=333 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Lem F Fb
+RESULT inner_n=333 mode=hb F=172.0110 Lem=189.2709 Lem2=194.0199 Fb=191.4894 LemS=187.8126
+### desc64_n333_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:42-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=333 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb F Lem Lem2 LemS
+RESULT inner_n=333 mode=hb F=178.6757 Lem=186.9385 Lem2=191.7477 Fb=204.3411 LemS=169.7499
+### desc64_n333_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:46-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=333 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS F Lem2 Lem
+RESULT inner_n=333 mode=hb F=168.8748 Lem=182.5228 Lem2=183.7959 Fb=207.7484 LemS=171.4035
+### desc64_n333_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:49-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=333 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Fb Lem2
+RESULT inner_n=333 mode=hb F=192.8384 Lem=199.8985 Lem2=197.4189 Fb=217.7881 LemS=178.7757
+### desc64_n333_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:55-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=333 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS F Fb Lem2
+RESULT inner_n=333 mode=hb F=168.8998 Lem=194.6902 Lem2=185.7811 Fb=189.7375 LemS=169.6211
+### desc64_n333_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:58-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=333 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem F Lem2 Fb
+RESULT inner_n=333 mode=hs F=178.5035 Lem=196.4301 Lem2=199.0958 Fb=200.5616 LemS=168.5767
+### desc64_n333_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:01-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=333 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS F Fb Lem2
+RESULT inner_n=333 mode=hs F=170.4397 Lem=216.4863 Lem2=197.1653 Fb=199.0375 LemS=170.4295
+### desc64_n333_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:05-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=333 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem F Fb Lem2
+RESULT inner_n=333 mode=hs F=165.3860 Lem=200.3049 Lem2=206.9984 Fb=192.6643 LemS=185.6255
+### desc64_n333_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:09-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=333 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Lem2 LemS Fb
+RESULT inner_n=333 mode=hs F=176.9646 Lem=195.4513 Lem2=228.6649 Fb=221.0473 LemS=173.4368
+### desc64_n333_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:14-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=333 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem2 Lem F
+RESULT inner_n=333 mode=hs F=169.9155 Lem=203.4596 Lem2=220.0797 Fb=222.5733 LemS=174.4303
+### desc64_n333_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:33-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=333 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem F Fb Lem2
+RESULT inner_n=333 mode=cb F=841.1100 Lem=877.2100 Lem2=1152.9500 Fb=726.4700 LemS=976.8400
+### desc64_n333_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:36-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=333 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem LemS Lem2
+RESULT inner_n=333 mode=cb F=1173.5000 Lem=878.7000 Lem2=875.5400 Fb=723.8800 LemS=1034.6200
+### desc64_n333_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:40-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=333 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem Lem2
+RESULT inner_n=333 mode=cb F=857.7700 Lem=1062.5800 Lem2=897.2200 Fb=738.8800 LemS=976.1000
+### desc64_n333_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:44-07:00
+# governor: ondemand
+# temp_c: 59.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=333 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem F Lem2 LemS
+RESULT inner_n=333 mode=cb F=955.5500 Lem=1008.8800 Lem2=1077.3900 Fb=1230.1700 LemS=1282.2100
+### desc64_n333_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:49-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=333 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=333 mode=cb F=1114.9800 Lem=896.8400 Lem2=898.1400 Fb=692.5800 LemS=977.9500
+### desc64_n333_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:16-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=333 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 LemS F Fb
+RESULT inner_n=333 mode=cs F=857.5900 Lem=877.9600 Lem2=922.4000 Fb=783.8800 LemS=994.4300
+### desc64_n333_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:19-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=333 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb F LemS Lem2 Lem
+RESULT inner_n=333 mode=cs F=1170.3600 Lem=1283.8800 Lem2=1037.4000 Fb=1018.3200 LemS=1300.1700
+### desc64_n333_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:23-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=333 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=333 mode=cs F=867.0300 Lem=886.6500 Lem2=899.4300 Fb=786.8500 LemS=996.1000
+### desc64_n333_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:27-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=333 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb F LemS Lem2
+RESULT inner_n=333 mode=cs F=853.6900 Lem=879.6200 Lem2=934.8000 Fb=772.7600 LemS=998.3200
+### desc64_n333_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:31-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 333 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=333 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb LemS Lem2 Lem
+RESULT inner_n=333 mode=cs F=1110.9100 Lem=924.9900 Lem2=1022.5800 Fb=1231.4700 LemS=1215.3600
+### desc64_n512_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:40-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=512 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 F Lem Fb
+RESULT inner_n=512 mode=hb F=187.6719 Lem=198.0171 Lem2=211.6661 Fb=188.3636 LemS=197.8967
+### desc64_n512_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:43-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=512 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem2 Lem F
+RESULT inner_n=512 mode=hb F=175.5313 Lem=208.1031 Lem2=199.9671 Fb=205.3115 LemS=180.7183
+### desc64_n512_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:47-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=512 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Fb LemS Lem2
+RESULT inner_n=512 mode=hb F=174.3544 Lem=209.4650 Lem2=201.6448 Fb=188.9588 LemS=183.8163
+### desc64_n512_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:50-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=512 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Lem LemS Fb
+RESULT inner_n=512 mode=hb F=189.7181 Lem=206.7234 Lem2=211.3827 Fb=199.2439 LemS=190.1181
+### desc64_n512_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:56-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=512 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem Fb Lem2
+RESULT inner_n=512 mode=hb F=171.6535 Lem=203.7105 Lem2=206.4855 Fb=192.2227 LemS=183.3858
+### desc64_n512_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:59-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=512 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=512 mode=hs F=177.3460 Lem=208.8642 Lem2=210.7642 Fb=223.0483 LemS=187.6644
+### desc64_n512_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:02-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=512 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem LemS F Lem2
+RESULT inner_n=512 mode=hs F=182.9608 Lem=208.7559 Lem2=237.1130 Fb=212.4160 LemS=183.1876
+### desc64_n512_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:06-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=512 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Fb LemS Lem2
+RESULT inner_n=512 mode=hs F=179.5885 Lem=215.2919 Lem2=213.7993 Fb=210.7456 LemS=179.8006
+### desc64_n512_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:10-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=512 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem LemS F Lem2
+RESULT inner_n=512 mode=hs F=183.1182 Lem=238.0009 Lem2=212.5687 Fb=238.3370 LemS=221.1732
+### desc64_n512_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:15-07:00
+# governor: ondemand
+# temp_c: 55.1
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=512 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 LemS Lem Fb
+RESULT inner_n=512 mode=hs F=192.1070 Lem=212.2308 Lem2=226.6815 Fb=271.7801 LemS=198.4125
+### desc64_n512_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:36-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=512 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=512 mode=cb F=1224.2400 Lem=928.5000 Lem2=1414.0500 Fb=939.6200 LemS=1035.7300
+### desc64_n512_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:38-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=512 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Lem2 F Fb
+RESULT inner_n=512 mode=cb F=840.1800 Lem=1611.0900 Lem2=920.7300 Fb=709.8000 LemS=1030.1700
+### desc64_n512_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:43-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=512 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb F Lem2
+RESULT inner_n=512 mode=cb F=1711.0900 Lem=921.2800 Lem2=1779.0600 Fb=748.1400 LemS=1433.1300
+### desc64_n512_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:47-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=512 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Fb Lem2 Lem
+RESULT inner_n=512 mode=cb F=1009.9900 Lem=2056.0800 Lem2=1227.3900 Fb=806.4700 LemS=1035.5400
+### desc64_n512_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:52-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=512 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Fb Lem2 Lem
+RESULT inner_n=512 mode=cb F=1059.8000 Lem=1002.5800 Lem2=1397.3900 Fb=1291.4700 LemS=1130.5400
+### desc64_n512_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:19-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=512 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Lem2 Fb F
+RESULT inner_n=512 mode=cs F=971.2800 Lem=942.0200 Lem2=1985.1600 Fb=810.3600 LemS=1944.6000
+### desc64_n512_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:22-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=512 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 Fb LemS
+RESULT inner_n=512 mode=cs F=869.2500 Lem=921.6500 Lem2=982.7600 Fb=783.6900 LemS=1467.2100
+### desc64_n512_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:25-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=512 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Lem Fb
+RESULT inner_n=512 mode=cs F=887.9500 Lem=972.4000 Lem2=981.1000 Fb=791.2900 LemS=1061.0900
+### desc64_n512_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:30-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=512 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Lem2 Fb
+RESULT inner_n=512 mode=cs F=856.6500 Lem=937.9500 Lem2=977.0300 Fb=782.4000 LemS=1311.4600
+### desc64_n512_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:34-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 512 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=512 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem Fb Lem2 F
+RESULT inner_n=512 mode=cs F=1058.8800 Lem=1041.1000 Lem2=1820.7200 Fb=1410.9100 LemS=1853.6900
+### desc64_n1024_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:42-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=1024 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F LemS Fb
+RESULT inner_n=1024 mode=hb F=185.6191 Lem=252.9238 Lem2=267.2265 Fb=207.1568 LemS=237.3852
+### desc64_n1024_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:45-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=1024 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb F LemS Lem2
+RESULT inner_n=1024 mode=hb F=183.6071 Lem=266.7645 Lem2=253.0081 Fb=202.5541 LemS=248.6739
+### desc64_n1024_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:49-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=1024 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb F Lem Lem2
+RESULT inner_n=1024 mode=hb F=180.9033 Lem=249.9618 Lem2=268.8467 Fb=204.7920 LemS=232.4795
+### desc64_n1024_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:52-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=1024 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS F Fb Lem
+RESULT inner_n=1024 mode=hb F=202.2920 Lem=268.6365 Lem2=272.2726 Fb=220.6344 LemS=260.0663
+### desc64_n1024_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:58-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=1024 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem LemS Lem2 F
+RESULT inner_n=1024 mode=hb F=189.4542 Lem=252.4794 Lem2=253.6108 Fb=199.8531 LemS=230.5166
+### desc64_n1024_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:01-07:00
+# governor: ondemand
+# temp_c: 54.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=1024 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem2 Lem F
+RESULT inner_n=1024 mode=hs F=181.9877 Lem=267.0469 Lem2=269.5663 Fb=237.1917 LemS=257.4998
+### desc64_n1024_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:04-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=1024 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS F Lem2 Lem
+RESULT inner_n=1024 mode=hs F=183.2885 Lem=265.5960 Lem2=277.1828 Fb=226.1992 LemS=232.5871
+### desc64_n1024_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:08-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=1024 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=1024 mode=hs F=205.0827 Lem=279.9346 Lem2=279.3161 Fb=234.4398 LemS=248.9266
+### desc64_n1024_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:11-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=1024 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb F Lem LemS Lem2
+RESULT inner_n=1024 mode=hs F=193.9801 Lem=261.9987 Lem2=264.0310 Fb=237.5203 LemS=224.9927
+### desc64_n1024_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:17-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=1024 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb F Lem2
+RESULT inner_n=1024 mode=hs F=185.6960 Lem=279.1753 Lem2=279.4355 Fb=221.5446 LemS=244.1757
+### desc64_n1024_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:39-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=1024 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS F Fb Lem
+RESULT inner_n=1024 mode=cb F=897.0200 Lem=984.9800 Lem2=1414.8000 Fb=783.7000 LemS=1841.4600
+### desc64_n1024_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:41-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=1024 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F LemS Fb
+RESULT inner_n=1024 mode=cb F=973.1400 Lem=1584.6100 Lem2=1451.2800 Fb=991.4700 LemS=1176.4700
+### desc64_n1024_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:46-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=1024 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem LemS Lem2 F
+RESULT inner_n=1024 mode=cb F=1313.8800 Lem=1005.7200 Lem2=986.6500 Fb=733.7000 LemS=1105.3500
+### desc64_n1024_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:50-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=1024 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS Fb Lem2 F
+RESULT inner_n=1024 mode=cb F=1252.5700 Lem=966.6500 Lem2=1428.3200 Fb=1485.1600 LemS=1521.0900
+### desc64_n1024_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:55-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=1024 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Lem2 Fb LemS
+RESULT inner_n=1024 mode=cb F=897.9600 Lem=1115.5400 Lem2=972.5800 Fb=957.0300 LemS=1118.5100
+### desc64_n1024_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:22-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=1024 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Fb LemS Lem
+RESULT inner_n=1024 mode=cs F=947.9600 Lem=1014.8000 Lem2=980.9100 Fb=835.7300 LemS=1119.2400
+### desc64_n1024_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:25-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=1024 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Fb LemS Lem
+RESULT inner_n=1024 mode=cs F=935.9100 Lem=1250.5400 Lem2=1454.6100 Fb=922.7700 LemS=1250.1700
+### desc64_n1024_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:29-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=1024 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Lem2 Lem Fb
+RESULT inner_n=1024 mode=cs F=1216.8400 Lem=1095.9100 Lem2=1399.0500 Fb=865.3600 LemS=1107.3900
+### desc64_n1024_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:33-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=1024 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Lem2 Fb
+RESULT inner_n=1024 mode=cs F=1445.9100 Lem=1203.6900 Lem2=985.3600 Fb=843.3300 LemS=1136.0900
+### desc64_n1024_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:37-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 1024 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=1024 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem Lem2 F LemS
+RESULT inner_n=1024 mode=cs F=966.6600 Lem=1024.9800 Lem2=993.1300 Fb=803.6900 LemS=1112.2100
+### desc64_n2048_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:44-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=2048 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Fb Lem
+RESULT inner_n=2048 mode=hb F=199.6106 Lem=261.8053 Lem2=266.2311 Fb=213.1234 LemS=255.4275
+### desc64_n2048_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:47-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=2048 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb F LemS Lem
+RESULT inner_n=2048 mode=hb F=207.0606 Lem=273.9552 Lem2=274.9828 Fb=225.1594 LemS=254.7803
+### desc64_n2048_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:52-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=2048 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb F Lem Lem2
+RESULT inner_n=2048 mode=hb F=203.6336 Lem=266.8865 Lem2=263.4208 Fb=215.1326 LemS=256.3719
+### desc64_n2048_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:54-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=2048 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS F Lem Lem2
+RESULT inner_n=2048 mode=hb F=699.7036 Lem=893.4207 Lem2=947.5441 Fb=714.0117 LemS=887.9920
+### desc64_n2048_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:00-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=2048 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb LemS Lem F Lem2
+RESULT inner_n=2048 mode=hb F=200.9883 Lem=291.5817 Lem2=265.4191 Fb=225.0307 LemS=247.9581
+### desc64_n2048_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:04-07:00
+# governor: ondemand
+# temp_c: 52.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=2048 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Lem Fb LemS
+RESULT inner_n=2048 mode=hs F=200.8170 Lem=275.9199 Lem2=287.0309 Fb=230.6260 LemS=249.9831
+### desc64_n2048_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:06-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=2048 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem LemS Fb Lem2
+RESULT inner_n=2048 mode=hs F=209.6309 Lem=284.4642 Lem2=276.5912 Fb=232.7981 LemS=251.7322
+### desc64_n2048_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:11-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=2048 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Lem Fb LemS
+RESULT inner_n=2048 mode=hs F=210.2150 Lem=274.3827 Lem2=282.4688 Fb=229.4750 LemS=244.3720
+### desc64_n2048_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:13-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=2048 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Lem2 F LemS Fb
+RESULT inner_n=2048 mode=hs F=196.3384 Lem=287.1419 Lem2=277.9707 Fb=231.8176 LemS=244.8952
+### desc64_n2048_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:19-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=2048 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 Lem F
+RESULT inner_n=2048 mode=hs F=216.7622 Lem=294.1039 Lem2=297.8150 Fb=250.2914 LemS=310.7750
+### desc64_n2048_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:44-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=2048 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS F Lem
+RESULT inner_n=2048 mode=cb F=1001.4700 Lem=1166.4700 Lem2=1850.3500 Fb=1156.8400 LemS=1451.4600
+### desc64_n2048_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:45-07:00
+# governor: ondemand
+# temp_c: 60.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=2048 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F Fb LemS
+RESULT inner_n=2048 mode=cb F=1008.5100 Lem=1186.6500 Lem2=1142.9500 Fb=880.1800 LemS=1392.5700
+### desc64_n2048_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:51-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=2048 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 F Lem
+RESULT inner_n=2048 mode=cb F=1024.0600 Lem=1204.6200 Lem2=1203.3200 Fb=896.6500 LemS=1301.4700
+### desc64_n2048_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:54-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=2048 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 Lem F LemS
+RESULT inner_n=2048 mode=cb F=1114.9900 Lem=1695.1600 Lem2=1178.8700 Fb=1024.2500 LemS=1276.0900
+### desc64_n2048_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:00-07:00
+# governor: ondemand
+# temp_c: 57.9
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=2048 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem F LemS Fb
+RESULT inner_n=2048 mode=cb F=1443.5000 Lem=1655.3500 Lem2=1154.6100 Fb=877.2200 LemS=1320.5400
+### desc64_n2048_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:27-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=2048 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem Lem2 F LemS
+RESULT inner_n=2048 mode=cs F=1747.9400 Lem=1154.0600 Lem2=1496.0900 Fb=1037.9500 LemS=1302.0200
+### desc64_n2048_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:28-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=2048 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=2048 mode=cs F=1047.0300 Lem=1169.4300 Lem2=1159.4400 Fb=957.9500 LemS=1606.4600
+### desc64_n2048_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:33-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=2048 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem F Lem2 Fb LemS
+RESULT inner_n=2048 mode=cs F=1931.2700 Lem=1838.8600 Lem2=1497.0100 Fb=967.2100 LemS=1605.5400
+### desc64_n2048_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:36-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=2048 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb LemS F Lem2
+RESULT inner_n=2048 mode=cs F=1326.4600 Lem=1165.5400 Lem2=1649.8000 Fb=950.9200 LemS=1622.3900
+### desc64_n2048_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:42-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 2048 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=2048 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem LemS F Fb Lem2
+RESULT inner_n=2048 mode=cs F=1027.2100 Lem=1109.2400 Lem2=1168.3200 Fb=948.8800 LemS=1419.0500
+### desc64_n4096_hb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:38:49-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hb 100 200 1
+# bench_sweep_f_vs_lem inner_n=4096 mode=hb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Lem Fb F
+RESULT inner_n=4096 mode=hb F=221.2492 Lem=346.2534 Lem2=344.8691 Fb=240.8555 LemS=322.8360
+### desc64_n4096_hb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:50-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hb 100 200 2
+# bench_sweep_f_vs_lem inner_n=4096 mode=hb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb Lem2 LemS F
+RESULT inner_n=4096 mode=hb F=209.9540 Lem=332.5526 Lem2=327.6841 Fb=228.6908 LemS=312.4528
+### desc64_n4096_hb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:56-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hb 100 200 3
+# bench_sweep_f_vs_lem inner_n=4096 mode=hb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 F Fb LemS Lem
+RESULT inner_n=4096 mode=hb F=212.8085 Lem=330.8127 Lem2=343.1606 Fb=231.6184 LemS=305.9537
+### desc64_n4096_hb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:57-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hb 100 200 4
+# bench_sweep_f_vs_lem inner_n=4096 mode=hb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb F Lem LemS
+RESULT inner_n=4096 mode=hb F=229.8825 Lem=358.8401 Lem2=334.9709 Fb=264.8847 LemS=322.7044
+### desc64_n4096_hb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:05-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hb 100 200 5
+# bench_sweep_f_vs_lem inner_n=4096 mode=hb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Lem LemS F Fb
+RESULT inner_n=4096 mode=hb F=212.2030 Lem=336.5404 Lem2=360.6966 Fb=233.2157 LemS=322.9823
+### desc64_n4096_hs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:08-07:00
+# governor: ondemand
+# temp_c: 53.5
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hs 100 200 1
+# bench_sweep_f_vs_lem inner_n=4096 mode=hs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 Fb LemS F Lem
+RESULT inner_n=4096 mode=hs F=215.1975 Lem=351.3866 Lem2=398.7722 Fb=255.7933 LemS=309.4074
+### desc64_n4096_hs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:09-07:00
+# governor: ondemand
+# temp_c: 56.8
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hs 100 200 2
+# bench_sweep_f_vs_lem inner_n=4096 mode=hs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Fb Lem2 F Lem
+RESULT inner_n=4096 mode=hs F=218.5845 Lem=340.7951 Lem2=356.8069 Fb=256.6081 LemS=423.6654
+### desc64_n4096_hs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:15-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hs 100 200 3
+# bench_sweep_f_vs_lem inner_n=4096 mode=hs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Fb Lem2 Lem
+RESULT inner_n=4096 mode=hs F=219.9159 Lem=343.6671 Lem2=343.0051 Fb=242.8924 LemS=311.9185
+### desc64_n4096_hs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:17-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hs 100 200 4
+# bench_sweep_f_vs_lem inner_n=4096 mode=hs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F LemS Fb Lem2 Lem
+RESULT inner_n=4096 mode=hs F=217.0214 Lem=350.9411 Lem2=354.1281 Fb=248.7183 LemS=310.6499
+### desc64_n4096_hs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:47:24-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 hs 100 200 5
+# bench_sweep_f_vs_lem inner_n=4096 mode=hs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 Lem Fb LemS
+RESULT inner_n=4096 mode=hs F=233.7379 Lem=373.5205 Lem2=370.0900 Fb=267.9774 LemS=342.3829
+### desc64_n4096_cb_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:39:50-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cb 100 200 1
+# bench_sweep_f_vs_lem inner_n=4096 mode=cb num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem Fb F Lem2 LemS
+RESULT inner_n=4096 mode=cb F=2329.4200 Lem=1157.0200 Lem2=4403.4600 Fb=1623.5000 LemS=1372.5800
+### desc64_n4096_cb_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:41:50-07:00
+# governor: ondemand
+# temp_c: 58.4
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cb 100 200 2
+# bench_sweep_f_vs_lem inner_n=4096 mode=cb num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Fb Lem2 Lem
+RESULT inner_n=4096 mode=cb F=1419.2400 Lem=1184.6200 Lem2=1757.9400 Fb=958.5100 LemS=1344.8000
+### desc64_n4096_cb_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:43:57-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cb 100 200 3
+# bench_sweep_f_vs_lem inner_n=4096 mode=cb num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem Fb Lem2 LemS
+RESULT inner_n=4096 mode=cb F=1243.8700 Lem=2018.3100 Lem2=2372.9400 Fb=1395.7200 LemS=2126.4600
+### desc64_n4096_cb_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:45:59-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cb 100 200 4
+# bench_sweep_f_vs_lem inner_n=4096 mode=cb num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem Lem2 Fb
+RESULT inner_n=4096 mode=cb F=1102.2100 Lem=1399.0600 Lem2=1191.6500 Fb=1020.1700 LemS=1801.2800
+### desc64_n4096_cb_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:06-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cb 100 200 5
+# bench_sweep_f_vs_lem inner_n=4096 mode=cb num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Lem2 LemS Fb Lem
+RESULT inner_n=4096 mode=cb F=1865.3400 Lem=1176.4700 Lem2=1334.9800 Fb=979.2500 LemS=1322.2100
+### desc64_n4096_cs_run1.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:40:33-07:00
+# governor: ondemand
+# temp_c: 57.3
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cs 100 200 1
+# bench_sweep_f_vs_lem inner_n=4096 mode=cs num_sets=100 hot_reps=200 order_seed=1 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: F Fb Lem2 Lem LemS
+RESULT inner_n=4096 mode=cs F=2084.4200 Lem=1382.2100 Lem2=1755.3500 Fb=1394.4300 LemS=1540.9100
+### desc64_n4096_cs_run2.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:42:33-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cs 100 200 2
+# bench_sweep_f_vs_lem inner_n=4096 mode=cs num_sets=100 hot_reps=200 order_seed=2 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Fb Lem2 Lem LemS F
+RESULT inner_n=4096 mode=cs F=1185.1700 Lem=1164.9800 Lem2=1213.8800 Fb=982.2100 LemS=1349.4300
+### desc64_n4096_cs_run3.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:44:39-07:00
+# governor: ondemand
+# temp_c: 59.0
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cs 100 200 3
+# bench_sweep_f_vs_lem inner_n=4096 mode=cs num_sets=100 hot_reps=200 order_seed=3 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS Lem2 Fb F Lem
+RESULT inner_n=4096 mode=cs F=2043.4900 Lem=1452.5800 Lem2=1365.7200 Fb=1434.0600 LemS=1418.6800
+### desc64_n4096_cs_run4.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:46:41-07:00
+# governor: ondemand
+# temp_c: 55.6
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cs 100 200 4
+# bench_sweep_f_vs_lem inner_n=4096 mode=cs num_sets=100 hot_reps=200 order_seed=4 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: LemS F Lem2 Lem Fb
+RESULT inner_n=4096 mode=cs F=1849.4300 Lem=1173.5000 Lem2=1515.3500 Fb=1024.6200 LemS=1870.7200
+### desc64_n4096_cs_run5.txt
+# host: pi5
+# machine: trixie
+# date: 2026-10-12T20:48:48-07:00
+# governor: ondemand
+# temp_c: 56.2
+# command: taskset -c 3 /home/pi/build_ab/layout/fvl_d64 4096 cs 100 200 5
+# bench_sweep_f_vs_lem inner_n=4096 mode=cs num_sets=100 hot_reps=200 order_seed=5 gap=32 inner=pi5_spine desc_align=64 desc_size=64
+# variants: F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+# timing order: Lem2 LemS Fb Lem F
+RESULT inner_n=4096 mode=cs F=1129.8000 Lem=2761.6300 Lem2=1712.3900 Fb=1321.4700 LemS=1352.0200

@@ -4,7 +4,7 @@
 Usage:
     python3 compute_twolevel_paired.py HOST [--glob PATTERN] [--out FILE]
 
-    HOST     one of pi5 m4 m1 skx emr gv4 (selects HOST_runs/)
+    HOST     one of pi5 m4 m1 skx emr gv4 cfl (selects HOST_runs/)
     --glob   run files to aggregate (default HOST_runs/twolevel_run*.txt)
     --out    where to write the report (default HOST_runs/twolevel_paired.txt;
              "-" for stdout only)

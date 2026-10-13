@@ -39,6 +39,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <memory>
 #include <random>
 #include <set>
 #include <vector>
@@ -328,9 +330,10 @@ static double bench_warm(Fn q, size_t num_arrays,
 // output of this version, which prints a "# cold column:" provenance line.
 // The size can be overridden at build time, e.g.
 // -DQUADSEARCH_THRASH_BYTES='(1ull<<20)' for a quick functional check; the
-// default build writes ~114 GB per ./bench run (one 512 MB pass per cold
-// measurement, 228 of them on ARM, 133 on x86) and holds a 512 MB scratch
-// buffer.
+// default build does one 512 MB pass per cold measurement -- 228 on ARM and
+// 133 on x86 for the plain and '*' rows, plus 198 (ARM) / 110 (x86) for the
+// 'nA' aligned rows since 2026-10-12, so 426 / 243 passes and ~213 GB /
+// ~122 GB written per ./bench run -- and holds a 512 MB scratch buffer.
 #ifndef QUADSEARCH_THRASH_BYTES
 #define QUADSEARCH_THRASH_BYTES (512ull * 1024ull * 1024ull)
 #endif
@@ -344,6 +347,56 @@ static void thrash_llc() {
     // compiler from eliding the stores.
     volatile uint8_t *p = scratch.data();
     for (size_t i = 0; i < kThrashBytes; i += 64) p[i] = (uint8_t)i;
+}
+
+// Cache-line-aligned copies for the 'nA' rows (added 2026-10-12). The
+// kernels' "one block = one cache line" argument holds only for a
+// line-aligned carr (and a line-aligned spine), which std::vector's 16-byte
+// alignment does not give: about three of four 64-byte blocks straddle two
+// lines in the plain rows. Each 'nA' row repeats the warm and cold columns
+// of the plain row above it on copies of the same arrays and spines aligned
+// to the host's cache line (64 B on the A76, Intel and Neoverse V2 hosts,
+// 128 B on the Apple P-cores) with their sizes rounded up to it, as a
+// line-aligned container allocator would do, so the pair is a within-run
+// A/B of the alignment (and, below one block, of that footprint rounding
+// alone). The n = 8 pair is the control: a 16-byte array at 16-byte
+// alignment never straddles a line, so '8A' vs '8' can only show the
+// layout difference (the aligned copies occupy a full line each), not
+// alignment; from n = 11 up the plain arrays straddle (11% of them at
+// n = 11, 25% at 16, 34% at 23, 75% at 32 and above, by a layout probe of
+// this allocation sequence) and the pair isolates alignment. The aligned rows reach the arrays through 24-byte entries
+// (AlignedRef) like the plain rows' std::vector headers, so the pointer
+// traffic is the same, sequential and cold after the flush in both. Parsers keyed on
+// '<digits> |' rows ({host}_runs/compute_medians.py, reproduce.sh) skip the
+// 'nA' rows.
+#if defined(__APPLE__)
+static constexpr size_t kAlign = 128;
+#else
+static constexpr size_t kAlign = 64;
+#endif
+struct FreeDeleter {
+    void operator()(void *p) const { std::free(p); }
+};
+using AlignedBuf = std::unique_ptr<uint16_t, FreeDeleter>;
+// The aligned rows reach their arrays through a vector of these, 24 bytes per
+// entry like the std::vector headers the plain rows read, so the per-array
+// pointer traffic of the two rows is the same (8-byte pointers would pack
+// three times as many arrays per line and favour the aligned rows).
+struct AlignedRef {
+    AlignedBuf buf;
+    uint64_t pad[2];
+};
+static_assert(sizeof(AlignedRef) == sizeof(std::vector<uint16_t>), "AlignedRef must match the vector header size");
+static AlignedBuf aligned_copy(const std::vector<uint16_t> &v) {
+    size_t bytes = std::max<size_t>(v.size(), 1) * sizeof(uint16_t);
+    size_t rounded = (bytes + kAlign - 1) / kAlign * kAlign;  // aligned_alloc wants a multiple of the alignment
+    void *p = std::aligned_alloc(kAlign, rounded);
+    if (!p || ((uintptr_t)p & (kAlign - 1)) != 0) {
+        std::fprintf(stderr, "aligned_alloc(%zu, %zu) failed\n", kAlign, rounded);
+        std::exit(1);
+    }
+    if (!v.empty()) std::memcpy(p, v.data(), v.size() * sizeof(uint16_t));
+    return AlignedBuf((uint16_t *)p);
 }
 
 // One query per array, arrays visited in allocation order, after
@@ -383,6 +436,9 @@ int main(int argc, char **argv) {
     // cold-column flush (parsers key on numeric rows, so '#' lines are inert).
     std::printf("\n# cold column: thrash_llc() %.1f MB before every cold pass "
                 "(flush added 2026-10-11)\n", (double)kThrashBytes / 1048576.0);
+    std::printf("# aligned rows: each 'nA' row repeats the warm and cold columns of the plain row "
+                "above it on %zu-byte-aligned copies of the same arrays and spines (added 2026-10-12); "
+                "plain rows use std::vector storage, 16-byte aligned\n", kAlign);
 #if QUADSEARCH_ARCH_ARM
     std::printf("\n%-6s | %-76s | %-76s\n", "size",
         "warm ns/q:  linear  binary  simd   pi5   pi5s    m4   m4s   gv4   gv4s",
@@ -460,6 +516,28 @@ int main(int argc, char **argv) {
 #endif
         }
 
+        // Line-aligned copies of every array and spine for the 'nA' rows:
+        // same values, line-aligned addresses (see aligned_copy).
+        std::vector<AlignedRef> arrs_al;
+        arrs_al.reserve(num_arrays);
+        for (int i = 0; i < num_arrays; i++) arrs_al.push_back(AlignedRef{aligned_copy(arrs[i]), {0, 0}});
+#if QUADSEARCH_ARCH_ARM
+        std::vector<AlignedRef> spines_pi5_al, spines_m4_al, spines_gv4_al;
+        spines_pi5_al.reserve(num_arrays);
+        spines_m4_al.reserve(num_arrays);
+        spines_gv4_al.reserve(num_arrays);
+        for (int i = 0; i < num_arrays; i++) {
+            spines_pi5_al.push_back(AlignedRef{aligned_copy(spines_pi5[i]), {0, 0}});
+            spines_m4_al.push_back(AlignedRef{aligned_copy(spines_m4[i]), {0, 0}});
+            spines_gv4_al.push_back(AlignedRef{aligned_copy(spines_gv4[i]), {0, 0}});
+        }
+#endif
+#if QUADSEARCH_ARCH_X86
+        std::vector<AlignedRef> spines_intel_al;
+        spines_intel_al.reserve(num_arrays);
+        for (int i = 0; i < num_arrays; i++) spines_intel_al.push_back(AlignedRef{aligned_copy(spines_intel[i]), {0, 0}});
+#endif
+
         std::vector<uint16_t> targets;
         targets.reserve(num_arrays);
         std::uniform_int_distribution<int> pick(0, 65535);
@@ -521,6 +599,66 @@ int main(int argc, char **argv) {
                     "%7.1f %7.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f\n",
                     size, w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8],
                     c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
+
+        // Aligned row ('nA'): the same nine kernels on the line-aligned
+        // copies, warm then cold, right after the plain row so the pair sits
+        // close in time (see aligned_copy). Same targets, same order. The
+        // '*' A/B rows below still compare against this plain row's w[]/c[],
+        // now measured one 'nA' block earlier (~20 s at n = 4096), so their
+        // warm halves are a little more exposed to a clock step under
+        // ondemand than before; their cold halves each follow a flush.
+        {
+            auto qa_linear = [&](size_t i, uint16_t t) {
+                return linear_find(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_binary = [&](size_t i, uint16_t t) {
+                return std_bsearch(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_simd = [&](size_t i, uint16_t t) {
+                return simd_quad(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_pi5 = [&](size_t i, uint16_t t) {
+                return simd_quad_pi5(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_pi5_spine = [&](size_t i, uint16_t t) {
+                return simd_quad_pi5_spine(arrs_al[i].buf.get(), spines_pi5_al[i].buf.get(), size, t);
+            };
+            auto qa_m4 = [&](size_t i, uint16_t t) {
+                return simd_quad_m4(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_m4_spine = [&](size_t i, uint16_t t) {
+                return simd_quad_m4_spine(arrs_al[i].buf.get(), spines_m4_al[i].buf.get(), size, t);
+            };
+            auto qa_gv4 = [&](size_t i, uint16_t t) {
+                return simd_quad_graviton(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_gv4_spine = [&](size_t i, uint16_t t) {
+                return simd_quad_graviton_spine(arrs_al[i].buf.get(), spines_gv4_al[i].buf.get(), size, t);
+            };
+            double wa[9], ca[9];
+            wa[0] = bench_warm(qa_linear,    num_arrays, targets, warm_reps);
+            wa[1] = bench_warm(qa_binary,    num_arrays, targets, warm_reps);
+            wa[2] = bench_warm(qa_simd,      num_arrays, targets, warm_reps);
+            wa[3] = bench_warm(qa_pi5,       num_arrays, targets, warm_reps);
+            wa[4] = bench_warm(qa_pi5_spine, num_arrays, targets, warm_reps);
+            wa[5] = bench_warm(qa_m4,        num_arrays, targets, warm_reps);
+            wa[6] = bench_warm(qa_m4_spine,  num_arrays, targets, warm_reps);
+            wa[7] = bench_warm(qa_gv4,       num_arrays, targets, warm_reps);
+            wa[8] = bench_warm(qa_gv4_spine, num_arrays, targets, warm_reps);
+            ca[0] = bench_cold(qa_linear,    num_arrays, targets);
+            ca[1] = bench_cold(qa_binary,    num_arrays, targets);
+            ca[2] = bench_cold(qa_simd,      num_arrays, targets);
+            ca[3] = bench_cold(qa_pi5,       num_arrays, targets);
+            ca[4] = bench_cold(qa_pi5_spine, num_arrays, targets);
+            ca[5] = bench_cold(qa_m4,        num_arrays, targets);
+            ca[6] = bench_cold(qa_m4_spine,  num_arrays, targets);
+            ca[7] = bench_cold(qa_gv4,       num_arrays, targets);
+            ca[8] = bench_cold(qa_gv4_spine, num_arrays, targets);
+            std::printf("%4dA  | %7.1f %7.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f | "
+                        "%7.1f %7.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f\n",
+                        size, wa[0], wa[1], wa[2], wa[3], wa[4], wa[5], wa[6], wa[7], wa[8],
+                        ca[0], ca[1], ca[2], ca[3], ca[4], ca[5], ca[6], ca[7], ca[8]);
+        }
 
         // GV4 padded-descent A/B at every size. Kept as direct comparator
         // to the compile-time spine_N specializations (same problem, two
@@ -676,6 +814,41 @@ int main(int argc, char **argv) {
                     "%7.1f %7.1f %6.1f %6.1f %6.1f\n",
                     size, w[0], w[1], w[2], w[3], w[4],
                     c[0], c[1], c[2], c[3], c[4]);
+
+        // Aligned row ('nA'): the same five kernels on the line-aligned
+        // copies, warm then cold, right after the plain row (see aligned_copy).
+        {
+            auto qa_linear = [&](size_t i, uint16_t t) {
+                return linear_find(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_binary = [&](size_t i, uint16_t t) {
+                return std_bsearch(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_simd = [&](size_t i, uint16_t t) {
+                return simd_quad(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_intel = [&](size_t i, uint16_t t) {
+                return simd_quad_intel(arrs_al[i].buf.get(), size, t);
+            };
+            auto qa_intel_spine = [&](size_t i, uint16_t t) {
+                return simd_quad_intel_spine(arrs_al[i].buf.get(), spines_intel_al[i].buf.get(), size, t);
+            };
+            double wa[5], ca[5];
+            wa[0] = bench_warm(qa_linear,      num_arrays, targets, warm_reps);
+            wa[1] = bench_warm(qa_binary,      num_arrays, targets, warm_reps);
+            wa[2] = bench_warm(qa_simd,        num_arrays, targets, warm_reps);
+            wa[3] = bench_warm(qa_intel,       num_arrays, targets, warm_reps);
+            wa[4] = bench_warm(qa_intel_spine, num_arrays, targets, warm_reps);
+            ca[0] = bench_cold(qa_linear,      num_arrays, targets);
+            ca[1] = bench_cold(qa_binary,      num_arrays, targets);
+            ca[2] = bench_cold(qa_simd,        num_arrays, targets);
+            ca[3] = bench_cold(qa_intel,       num_arrays, targets);
+            ca[4] = bench_cold(qa_intel_spine, num_arrays, targets);
+            std::printf("%4dA  | %7.1f %7.1f %6.1f %6.1f %6.1f              | "
+                        "%7.1f %7.1f %6.1f %6.1f %6.1f\n",
+                        size, wa[0], wa[1], wa[2], wa[3], wa[4],
+                        ca[0], ca[1], ca[2], ca[3], ca[4]);
+        }
 
         // Intel padded-descent A/B at every size. "*pad" compares the
         // general-n spine against the padded-spine variant (3-probe

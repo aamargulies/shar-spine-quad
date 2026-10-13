@@ -9,8 +9,10 @@
 #
 # Output layout:
 #   pi5_runs/${FVL_PREFIX}_n${N}_${mode}_run${R}.txt
-#     '# host / date / governor / temp_c / command' lines written here, then
-#     the harness stdout (its own '# ...' lines and the RESULT line).
+#     '# host / machine / date / governor / temp_c / command' lines written
+#     here ('# machine:' = hostname, since 2026-10-12: the project has two
+#     Pi 5 boards, "trixie" and "eight"), then the harness stdout (its own
+#     '# ...' lines and the RESULT line).
 # After a campaign fold the per-cell files into pi5_runs/${FVL_PREFIX}_raw.txt:
 #   python3 consolidate_sweep.py pi5_runs sweep_fvl3 --delete
 # The prefix names the harness's column set and must match the binary:
@@ -18,7 +20,12 @@
 #   sweep_fvl2  F Lem Lem2          (2026-10-11 harness; Pi 5 campaign of
 #                                    2026-10-11/12, archived, complete)
 #   sweep_fvl   F Lem               (2026-05-20 harness; M4 archive)
+#   sweep_ab1   F Fcr Fd1 Fa G Gnp  (bench_ab_pi5.cpp, the Pi 5 kernel A/B
+#                                    of 2026-10-12: FVL_BIN=/home/pi/bench_ab_pi5
+#                                    FVL_PREFIX=sweep_ab1)
 # A campaign directory must never mix column sets under one prefix.
+# FVL_NOTE, if set, is written to every cell as a '# note: ...' header line
+# (e.g. the kernel's git blob hash for a kernel A/B).
 #
 # Resume-friendly: skips cells whose file already holds a RESULT line. A cell
 # whose process fails gets a '# FAILED exit N' line and is retried next time.
@@ -90,10 +97,12 @@ for R in $RUNS; do
       fi
       {
         echo "# host: pi5"
+        echo "# machine: $(hostname)"
         echo "# date: $(date -Is)"
         echo "# governor: $(governor)"
         echo "# temp_c: $(temp_c)"
         echo "# command: taskset -c $CPU $BIN $N $MODE $NUM_SETS $HOT_REPS $R"
+        if [[ -n "${FVL_NOTE:-}" ]]; then echo "# note: $FVL_NOTE"; fi
       } >"$OUT"
       if ! taskset -c "$CPU" "$BIN" "$N" "$MODE" "$NUM_SETS" "$HOT_REPS" "$R" >>"$OUT" 2>&1; then
         echo "# FAILED exit $?" >>"$OUT"

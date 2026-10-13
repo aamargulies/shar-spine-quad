@@ -252,7 +252,26 @@ static void thrash_llc() {
     for (size_t i = 0; i < kThrashBytes; i += 64) p[i] = (uint8_t)i;
 }
 
-struct Container {
+// Container descriptor. 48 bytes in a 16-byte-aligned std::vector, so one in
+// four descriptors straddles two cache lines with the spine's data pointer
+// (offset 24) on the second line while carr (offsets 0..15) is on the first:
+// the spine-inner variants (A-F, H, I) read that extra descriptor line in
+// one of four lookups, G and Lem (carr only) never do. Every archived
+// campaign (2026-05-18 and the repaired-harness twolevel_v2 runs of
+// 2026-10-11) was measured that way. The descriptor-layout A/B of 2026-10-12
+// on the sweep harness (same descriptor, 48 B vs line-aligned, 14 sizes x
+// 5 runs; pi5_runs/desc_layout_ab_compare.txt) found no resolvable bias --
+// the two descriptor loads are independent and overlap; the spine-vs-Lemire
+// contrasts moved by +1 to +6 ns hot, inside noise -- so the archived
+// contrasts stand. Building with -DQUADSEARCH_DESCRIPTOR_ALIGN=64 pads and
+// aligns the descriptor to one line so every variant reads exactly one
+// descriptor line (hygiene, used for new hosts from 2026-10-12 on); the
+// harness header records desc_align so runs of the two layouts are never
+// pooled.
+#ifndef QUADSEARCH_DESCRIPTOR_ALIGN
+#define QUADSEARCH_DESCRIPTOR_ALIGN 16
+#endif
+struct alignas(QUADSEARCH_DESCRIPTOR_ALIGN) Container {
     std::vector<uint16_t> carr;
     std::vector<uint16_t> spine;
 };
@@ -696,8 +715,9 @@ int main(int argc, char **argv) {
     constexpr int inner_n        = 4096;
 
     std::printf("two-level spine micro-bench\n");
-    std::printf("num_sets=%d hot_reps=%d num_containers=%d inner_n=%d mode=%s order_seed=%u gap=%d\n",
-                num_sets, hot_reps, num_containers, inner_n, mode, order_seed, kGap);
+    std::printf("num_sets=%d hot_reps=%d num_containers=%d inner_n=%d mode=%s order_seed=%u gap=%d desc_align=%d desc_size=%zu\n",
+                num_sets, hot_reps, num_containers, inner_n, mode, order_seed, kGap,
+                (int)QUADSEARCH_DESCRIPTOR_ALIGN, sizeof(Container));
     std::printf("per set: %d B of keys + %d B of container data + %d B of spines\n",
                 num_containers * 2,
                 num_containers * inner_n * 2,

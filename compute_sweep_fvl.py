@@ -10,7 +10,10 @@ Usage (from the repo root):
     HOST        pi5, m4, m1, skx, emr, gv4 ...: selects HOST_runs/ (or --dir)
     --prefix    per-cell file prefix (default sweep_fvl2, the three-variant
                 campaigns; the archived 2026-05-20 M4 campaign is sweep_fvl;
-                the five-variant campaigns since 2026-10-12 are sweep_fvl3)
+                the five-variant campaigns since 2026-10-12 are sweep_fvl3;
+                sweep_ab1 is the six-variant Pi 5 kernel A/B of
+                bench_ab_pi5.cpp, whose pairs are preset below)
+    --pairs     override the pairs, 'B:A,B:A,...' (for a prefix without a preset)
     --dir       directory holding the cells (default HOST_runs)
     --runs      comma-separated run indices to use (default: every run found)
     --list      size list file (one N per line); restricts the sizes and
@@ -28,6 +31,8 @@ Examples:
         -> pi5_runs/sweep_fvl2_paired.txt and pi5_sweep_fvl2_data.py
     python3 compute_sweep_fvl.py pi5 --prefix sweep_fvl3
         -> pi5_runs/sweep_fvl3_paired.txt and pi5_sweep_fvl3_data.py
+    python3 compute_sweep_fvl.py pi5 --prefix sweep_ab1
+        -> pi5_runs/sweep_ab1_paired.txt and pi5_sweep_ab1_data.py
 
 Input
 -----
@@ -45,7 +50,10 @@ num_sets=... hot_reps=... [order_seed=... gap=... inner=...]',
 
 (ns per query; Lem2 is absent in the archived M4 campaign, Fb and LemS --
 the bsearch-outer + spine-inner and Shar-outer + Lemire-inner cross
-variants -- exist from the 2026-10-12 harness on). A cell without
+variants -- exist from the 2026-10-12 harness on). Cells of the Pi 5 kernel
+A/B harness bench_ab_pi5.cpp (prefix sweep_ab1) have the same shape with a
+'# bench_ab_pi5 ...' header and the columns F, Fcr, Fd1, Fa, G, Gnp; the
+preset table PRESETS below gives that prefix its pairs. A cell without
 a RESULT line (for example one ending in '# FAILED exit 1'), or whose RESULT
 disagrees with its file name about inner_n or mode, is reported and skipped.
 Modes: hb = hot_bat, hs = hot_ser, cb = cold_bat, cs = cold_ser.
@@ -110,7 +118,33 @@ PAIR_ROLE = {
     "Lem vs LemS": "outer: bsearch vs Shar, Lemire inner",
     "Fb vs Lem": "inner: spine vs Lemire, bsearch outer",
     "F vs LemS": "inner: spine vs Lemire, Shar outer",
+    # Pi 5 kernel A/B (bench_ab_pi5.cpp, prefix sweep_ab1, 2026-10-12). Every
+    # pair is a single kernel-side change against F; F itself is the F of
+    # the sweep_fvl2 / sweep_fvl3 campaigns (same arrays, same targets).
+    "Fcr vs F": "kernel: the constant-return scalar-sweep source form as compiled by GCC 17 vs the shipped cset-return form (differs where a sweep runs: n < 32, tails)",
+    "Fd1 vs F": "kernel: spine descent from two blocks vs delegation to the plain kernel (differs at n = 64..127)",
+    "Fa vs F": "data: line-aligned arrays and spines (64 B on the Pi 5; the align= header field) vs std::vector (16-byte) storage, same code",
+    "G vs F": "kernel: plain simd_quad_pi5 vs the spine kernel (same source and traffic below 128 but a separate compilation of the delegated copy = codegen-plus-noise gauge; the delegation-threshold-7 contrast at 128..255; the spine's own value from 256)",
+    "Gnp vs G": "kernel: no in-loop prefetch vs the shipped prefetch (identical code below 128; differs where the quaternary loop iterates)",
+    "Gnp vs F": "kernel: prefetch-free plain kernel vs the spine kernel (threshold-7 contrast with the prefetch removed)",
 }
+# Campaign presets keyed by file prefix: the variant order, the pairs and a
+# title. Prefixes not listed here are F-vs-Lemire campaigns (sweep_fvl,
+# sweep_fvl2, sweep_fvl3) and use the canonical sets above.
+PRESETS = {
+    "sweep_ab1": {
+        "variants": ("F", "Fcr", "Fd1", "Fa", "G", "Gnp"),
+        "pairs": (("Fcr", "F"), ("Fd1", "F"), ("Fa", "F"), ("G", "F"), ("Gnp", "G"), ("Gnp", "F")),
+        "title": "Pi 5 kernel A/B sweep",
+        # Size bands for the ns summary that follow this campaign's contrast
+        # ranges: sweeps run at n < 32 and in tails; Fd1 differs at 64..127;
+        # G/Gnp vs F is the threshold-7 contrast at 128..255 and the spine's
+        # value from 256; the quaternary loop (and the prefetch) runs from 128.
+        "bands": ((1, 7), (8, 15), (16, 31), (32, 63), (64, 127), (128, 255), (256, 511),
+                  (512, 1023), (1024, 2047), (2048, 4096), (4097, 1 << 30)),
+    },
+}
+DEFAULT_TITLE = "F-vs-Lemire sweep"
 # Size bands for the absolute-delta summary (inclusive bounds).
 NS_BANDS = ((1, 32), (33, 128), (129, 265), (266, 512), (513, 1024), (1025, 2048), (2049, 4096), (4097, 1 << 30))
 HOST_LABEL = {
@@ -120,8 +154,9 @@ HOST_LABEL = {
     "skx": "Intel Skylake-SP",
     "emr": "Intel Emerald Rapids",
     "gv4": "AWS Graviton 4 (Neoverse V2)",
+    "cfl": "Intel Coffee Lake (i9-9980HK, 2019 MacBook Pro)",
 }
-HOST_GAP = {"pi5": 32, "m4": 64, "m1": 64, "skx": 32, "emr": 32, "gv4": 32}
+HOST_GAP = {"pi5": 32, "m4": 64, "m1": 64, "skx": 32, "emr": 32, "gv4": 32, "cfl": 32}
 DESIGN_MAX = 4096
 WIN_MIN_PCT = 3.0
 
@@ -214,7 +249,7 @@ def parse_cell(lines):
             continue
         if line.startswith("#"):
             body = line.lstrip("#").strip()
-            if body.startswith("bench_sweep"):
+            if body.startswith(("bench_sweep", "bench_ab")):
                 cell["harness"] = dict(KV_RE.findall(body))
             elif body.startswith("FAILED"):
                 cell["failed"] = body
@@ -367,6 +402,7 @@ def main(argv=None):
     ap.add_argument("--min-runs", type=int, default=3)
     ap.add_argument("--out")
     ap.add_argument("--data")
+    ap.add_argument("--pairs", help="override the pairs: 'B:A,B:A,...' (B/A - 1, negative = B faster)")
     args = ap.parse_args(argv)
 
     host, prefix = args.host, args.prefix
@@ -375,6 +411,18 @@ def main(argv=None):
     data_path = args.data or f"{host}_{prefix}_data.py"
     if args.min_runs < 1:
         sys.exit("error: --min-runs must be >= 1")
+    preset = PRESETS.get(prefix, {})
+    canonical_variants = tuple(preset.get("variants", CANONICAL_VARIANTS))
+    canonical_pairs = tuple(preset.get("pairs", CANONICAL_PAIRS))
+    title = preset.get("title", DEFAULT_TITLE)
+    ns_bands = tuple(preset.get("bands", NS_BANDS))
+    if args.pairs:
+        try:
+            canonical_pairs = tuple(tuple(p.split(":")) for p in args.pairs.split(",") if p.strip())
+            if any(len(p) != 2 or not p[0] or not p[1] for p in canonical_pairs):
+                raise ValueError
+        except ValueError:
+            sys.exit("error: --pairs wants 'B:A,B:A,...'")
 
     cells, sources = discover(directory, prefix)
     if not cells:
@@ -415,8 +463,11 @@ def main(argv=None):
         for v in parsed[key]["values"]:
             if v not in seen:
                 seen.append(v)
-    variants = [v for v in CANONICAL_VARIANTS if v in seen] + [v for v in seen if v not in CANONICAL_VARIANTS]
-    pairs = [p for p in CANONICAL_PAIRS if p[0] in variants and p[1] in variants]
+    variants = [v for v in canonical_variants if v in seen] + [v for v in seen if v not in canonical_variants]
+    pairs = [p for p in canonical_pairs if p[0] in variants and p[1] in variants]
+    if not pairs:
+        sys.exit(f"error: none of the pairs {[pair_key(p) for p in canonical_pairs]} can be formed from the "
+                 f"variants found ({', '.join(variants)}); use --pairs")
 
     # ---- per-cell levels and paired deltas -------------------------------------
     results, missing = {}, []
@@ -470,6 +521,8 @@ def main(argv=None):
     dates = sorted(d for d in meta_fields.get("date", []) if d)
     governors = sorted(set(meta_fields.get("governor", [])))
     hosts_seen = sorted(set(meta_fields.get("host", [])))
+    machines = sorted(set(meta_fields.get("machine", [])))
+    notes = sorted(set(meta_fields.get("note", [])))
     orders = sorted(set(meta_fields.get("timing order", [])))
     variant_desc = {}
     for c in used:
@@ -489,7 +542,7 @@ def main(argv=None):
         "cells_used": len(used), "cells_expected": expected, "cells_missing": len(missing),
         "cells_unusable": len(problems), "cells_outside_selection": len(ignored),
         "harness": {k: sorted(v) for k, v in sorted(harness_fields.items())},
-        "driver_hosts": hosts_seen, "governors": governors,
+        "driver_hosts": hosts_seen, "machines": machines, "driver_notes": notes, "governors": governors,
         "temp_c_range": (min(temps), max(temps)) if temps else None,
         "date_range": (dates[0], dates[-1]) if dates else None,
         "timing_orders": len(orders),
@@ -501,7 +554,7 @@ def main(argv=None):
     # ---- report --------------------------------------------------------------------
     L = []
     w = L.append
-    w(f"Paired per-run aggregation of the F-vs-Lemire sweep '{prefix}' on host '{host}' "
+    w(f"Paired per-run aggregation of the {title} '{prefix}' on host '{host}' "
       f"({HOST_LABEL.get(host, host)})")
     w(f"source: {directory}/ -- {sources['files']} per-cell file(s), {sources['raw_entries']} entr(y/ies) in "
       f"{prefix}_raw.txt" + (f", {sources['overridden']} raw entr(y/ies) superseded by a per-cell file"
@@ -525,6 +578,8 @@ def main(argv=None):
         bits = []
         if hosts_seen:
             bits.append(f"host {'/'.join(hosts_seen)}")
+        if machines:
+            bits.append(f"machine {'/'.join(machines)}")
         if governors:
             bits.append(f"governor {'/'.join(governors)}")
         if temps:
@@ -537,6 +592,8 @@ def main(argv=None):
         if cmd:
             bits.append(f"command e.g. '{cmd[0]}'")
         w("driver header: " + "; ".join(bits))
+        for n in notes:
+            w(f"driver note: {n}")
     else:
         w("driver header: none (no '# key: value' lines in the cells)")
     w(f"gap assumed for this host: {gap}  (design maximum n={DESIGN_MAX})")
@@ -639,7 +696,7 @@ def main(argv=None):
         b, a = p
         w(f"{pair_key(p)}  ({b} - {a} in ns" + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")")
         w(f"  {'band':>11}  " + "  ".join(f"{MODE_NAMES[m]:^30}" for m in MODES))
-        for lo, hi in NS_BANDS:
+        for lo, hi in ns_bands:
             band_sizes = [N for N in sizes if lo <= N <= hi]
             if not band_sizes:
                 continue
@@ -715,6 +772,7 @@ def main(argv=None):
 
     # ---- data module -------------------------------------------------------------
     if data_path != "-":
+        meta["title"] = title
         write_data(data_path, host, prefix, gap, variants, pairs, runs, sizes, args.min_runs,
                    results, bands, missing, meta)
         print(f"wrote {data_path}")
@@ -742,6 +800,9 @@ Schema (every N in SIZES has an entry; a value that could not be computed is Non
                              (bsearch vs Shar) with the spine / the Lemire inner;
                              "Fb vs Lem" and "F vs LemS" contrast the inner kernel
                              (spine vs Lemire) with the bsearch / the Shar outer
+  PAIR_ROLES                 {{pair key: one-line description of what the pair isolates}}
+                             for the pairs that have one (the outer x inner square
+                             and the Pi 5 kernel A/B pairs of prefix sweep_ab1)
   RUNS                       run indices used;  SIZES  inner_n values in report order
   MIN_RUNS                   fewest paired runs a cell needs for a verdict
   LEVELS[N][mode][var]       median ns/query over the runs in which var was measured
@@ -777,6 +838,7 @@ def write_data(path, host, prefix, gap, variants, pairs, runs, sizes, min_runs, 
     w(f"VARIANTS = {variants!r}")
     w(f"VARIANT_DESC = {meta['variant_descriptions']!r}")
     w(f"PAIRS = {[pair_key(p) for p in pairs]!r}")
+    w(f"PAIR_ROLES = {{{', '.join(f'{pair_key(p)!r}: {PAIR_ROLE[pair_key(p)]!r}' for p in pairs if pair_key(p) in PAIR_ROLE)}}}")
     w(f"RUNS = {runs!r}")
     w(f"SIZES = {sizes!r}")
     w(f"MIN_RUNS = {min_runs}")

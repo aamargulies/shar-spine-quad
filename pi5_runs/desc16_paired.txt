@@ -1,0 +1,430 @@
+Paired per-run aggregation of the F-vs-Lemire sweep 'desc16' on host 'pi5' (Raspberry Pi 5 (Cortex-A76))
+source: pi5_runs/ -- 0 per-cell file(s), 280 entr(y/ies) in desc16_raw.txt
+cells used: 280 of 280 expected (14 sizes x 4 modes x 5 runs); missing 0; unusable 0; outside the size/run selection 0
+runs: 1, 2, 3, 4, 5
+sizes: 14 (n=16..4096)
+variants: F, Lem, Lem2, Fb, LemS -- F = Shar outer + pi5_spine inner; Lem = bsearch outer + simd_quad (2026-04-27); Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); Fb = bsearch outer + pi5_spine inner (two-level A); LemS = Shar outer + simd_quad (2026-04-27)
+pairs: Lem vs F (= Lem/F - 1), Lem2 vs F (= Lem2/F - 1), Lem2 vs Lem (= Lem2/Lem - 1), Fb vs F (= Fb/F - 1; outer: bsearch vs Shar, spine inner), Lem vs LemS (= Lem/LemS - 1; outer: bsearch vs Shar, Lemire inner), Fb vs Lem (= Fb/Lem - 1; inner: spine vs Lemire, bsearch outer), F vs LemS (= F/LemS - 1; inner: spine vs Lemire, Shar outer)
+harness header: desc_align=16; desc_size=48; gap=32; hot_reps=200; inner=pi5_spine; num_sets=100; order_seed=1/2/3/4/5
+driver header: host pi5; machine trixie; governor ondemand; temp_c 50.7..60.0; dates 2026-10-12T20:38:33-07:00 .. 2026-10-12T20:48:44-07:00; 110 distinct timing order(s); command e.g. 'taskset -c 3 /home/pi/build_ab/layout/fvl_d16 16 cb 100 200 1'
+gap assumed for this host: 32  (design maximum n=4096)
+
+Deltas are B/A - 1 in percent for a pair 'B vs A'; negative means B is faster. Levels are ns/query.
+WIN(X) = X faster in >= 80% of the paired runs (ceil(0.8 n)) AND |median paired delta| >= 3%; otherwise TIE; n/a = fewer than 3 paired runs.
+Levels are medians over the runs in which that variant was measured: never difference them across variants, use the paired tables.
+
+====================================================================================================
+run-level drift (geometric mean of every (N, variant) cell the runs share, per run)
+====================================================================================================
+  hot_bat   run1: 156.62, run2: 178.36, run3: 160.29, run4: 188.82, run5: 162.81  (max/min = 1.21x over 70 shared cells)
+  hot_ser   run1: 176.69, run2: 168.45, run3: 164.64, run4: 176.18, run5: 166.07  (max/min = 1.07x over 70 shared cells)
+  cold_bat  run1: 838.20, run2: 865.18, run3: 834.29, run4: 877.74, run5: 844.51  (max/min = 1.05x over 70 shared cells)
+  cold_ser  run1: 895.48, run2: 922.80, run3: 876.12, run4: 878.43, run5: 896.68  (max/min = 1.05x over 70 shared cells)
+
+====================================================================================================
+levels: per-cell medians (ns/query); 'runs' = runs with a usable cell per mode (hb/hs/cb/cs)
+====================================================================================================
+    n                    hot_bat                                       hot_ser                                       cold_bat                                      cold_ser                     runs
+              F      Lem     Lem2       Fb     LemS         F      Lem     Lem2       Fb     LemS         F      Lem     Lem2       Fb     LemS         F      Lem     Lem2       Fb     LemS
+   16    58.892   89.778   85.758  108.490   58.860    53.172   81.595   81.406   78.375   50.768   503.330  576.290  555.540  552.780  508.510   734.250  605.740  684.260  623.700  597.030   5/5/5/5
+   32    78.000   96.224  104.014  112.606   77.177   103.525  155.964  156.044  145.500  113.095   539.990  581.660  585.550  590.920  597.950   617.210  583.510  608.700  598.880  695.730   5/5/5/5
+   64   104.088  149.855  143.332  128.871  123.925   105.290  144.296  146.695  144.967  112.335   703.700  767.210  675.550  587.030  725.550   864.430  779.250  706.290  648.880  753.880   5/5/5/5
+   96   162.969  170.164  165.477  152.219  133.744   130.720  165.315  152.411  154.776  152.737   690.180  668.140  670.920  696.470  761.280   724.250  944.990  683.700  684.990  761.480   5/5/5/5
+  128   133.535  156.099  153.115  175.041  137.715   153.708  171.741  166.198  175.873  142.243   665.360  838.690  672.960  644.440  807.400   754.810  673.510  822.950  709.990  780.730   5/5/5/5
+  160   149.346  154.036  168.583  179.694  130.543   151.370  178.976  166.204  182.544  135.074   698.880  665.360  689.990  641.660  844.240   890.360  825.180  876.470  905.550  850.920   5/5/5/5
+  200   161.502  171.579  155.408  180.345  144.058   171.592  172.898  168.969  187.091  140.842   863.140  730.920  726.840  740.910  842.580   843.140  856.100  727.770  827.770 1182.770   5/5/5/5
+  255   179.297  190.638  194.628  207.594  166.483   168.079  182.283  179.833  196.449  155.325   836.290  930.360  853.880  924.800  990.360   859.800  895.550  872.950  764.060  950.730   5/5/5/5
+  256   172.815  191.071  187.395  190.552  172.484   157.777  195.251  197.344  211.444  166.244   726.660  756.100  766.100  685.920  946.280   845.540  907.210  797.950  776.840  881.470   5/5/5/5
+  333   169.956  195.125  190.572  192.122  166.731   170.556  198.183  194.531  201.338  181.787   842.590  891.660  893.320  725.180  976.840   879.810  896.650  906.660  777.770  984.240   5/5/5/5
+  512   179.850  204.355  210.089  193.395  179.477   174.804  212.661  212.748  214.864  181.333   863.140  983.690  962.770  778.880 1027.210   897.030 1028.320  967.400  807.400 1305.170   5/5/5/5
+ 1024   188.472  258.874  254.449  208.828  234.228   185.203  260.328  261.998  217.429  232.420  1096.290 1009.810  966.280  759.250 1097.400   942.580 1008.320 1009.250  828.700 1125.170   5/5/5/5
+ 2048   196.075  278.978  268.964  215.041  263.291   200.653  285.277  291.137  241.897  281.895  1004.620 1155.730 1149.620  957.590 1429.050  1069.250 1132.210 1164.620  968.690 1261.650   5/5/5/5
+ 4096   214.061  335.613  340.996  226.333  311.455   208.185  345.369  343.136  244.730  314.231  1105.170 1187.580 1189.060  981.840 1328.510  1170.720 1234.990 1208.130 1066.100 1448.870   5/5/5/5
+
+====================================================================================================
+paired: Lem vs F  (delta = Lem/F - 1 per run; negative = Lem faster)
+cell = median delta, sign count ('-k/n' = Lem faster in k of n paired runs, '+k/n' = Lem slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16    +42.76%   +5/5 WIN(F)       +56.85%   +5/5 WIN(F)        +6.01%   +4/5 WIN(F)       -18.18%   -3/5 TIE      
+   32    +26.92%   +5/5 WIN(F)       +44.07%   +5/5 WIN(F)       +10.60%   +4/5 WIN(F)        -5.46%   -4/5 WIN(Lem) 
+   64    +22.87%   +5/5 WIN(F)       +32.81%   +5/5 WIN(F)        -6.14%   -3/5 TIE           -3.92%   -4/5 WIN(Lem) 
+   96     +7.53%   +4/5 WIN(F)       +19.46%   +4/5 WIN(F)        +1.86%   +3/5 TIE           +3.87%   +3/5 TIE      
+  128    +12.26%   +4/5 WIN(F)       +13.49%   +5/5 WIN(F)       +11.31%   +5/5 WIN(F)       -10.79%   -5/5 WIN(Lem) 
+  160     +0.73%   +4/5 TIE          +11.78%   +5/5 WIN(F)        -4.96%   -4/5 WIN(Lem)      -8.94%   -4/5 WIN(Lem) 
+  200     +3.80%   +3/5 TIE           +4.51%   +3/5 TIE          -14.00%   -5/5 WIN(Lem)      -3.95%   -4/5 WIN(Lem) 
+  255     +7.89%   +5/5 WIN(F)        +8.15%   +5/5 WIN(F)        +3.07%   +3/5 TIE           +3.05%   +3/5 TIE      
+  256    +12.27%   +4/5 WIN(F)       +23.48%   +5/5 WIN(F)        +1.63%   +3/5 TIE           -2.09%   -3/5 TIE      
+  333    +12.94%   +4/5 WIN(F)       +13.20%   +5/5 WIN(F)        +2.26%   +4/5 TIE           -3.70%   -3/5 TIE      
+  512    +16.00%   +5/5 WIN(F)       +21.66%   +5/5 WIN(F)       +13.97%   +4/5 WIN(F)        -0.29%   -3/5 TIE      
+ 1024    +37.94%   +5/5 WIN(F)       +43.97%   +5/5 WIN(F)        +7.04%   +3/5 TIE           +6.42%   +5/5 WIN(F)   
+ 2048    +38.20%   +5/5 WIN(F)       +41.47%   +5/5 WIN(F)       +15.16%   +5/5 WIN(F)        +6.15%   +4/5 WIN(F)   
+ 4096    +56.78%   +5/5 WIN(F)       +64.88%   +5/5 WIN(F)        +5.73%   +3/5 TIE           +9.78%   +5/5 WIN(F)   
+
+====================================================================================================
+paired: Lem2 vs F  (delta = Lem2/F - 1 per run; negative = Lem2 faster)
+cell = median delta, sign count ('-k/n' = Lem2 faster in k of n paired runs, '+k/n' = Lem2 slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16    +40.61%   +5/5 WIN(F)       +52.44%   +5/5 WIN(F)        +9.27%   +3/5 TIE          +15.92%   +3/5 TIE      
+   32    +31.62%   +5/5 WIN(F)       +40.52%   +5/5 WIN(F)        +5.35%   +4/5 WIN(F)       -13.08%   -4/5 WIN(Lem2)
+   64    +39.18%   +5/5 WIN(F)       +31.76%   +5/5 WIN(F)        -0.90%   -3/5 TIE           -3.08%   -4/5 WIN(Lem2)
+   96     +3.19%   +5/5 WIN(F)       +24.37%   +5/5 WIN(F)        -2.79%   -3/5 TIE          -10.05%   -5/5 WIN(Lem2)
+  128     +8.55%   +4/5 WIN(F)        +8.13%   +5/5 WIN(F)        +3.74%   +4/5 WIN(F)        +9.03%   +3/5 TIE      
+  160     +9.67%   +4/5 WIN(F)       +10.61%   +5/5 WIN(F)        -0.69%   -3/5 TIE          -10.42%   -4/5 WIN(Lem2)
+  200     +0.12%   +3/5 TIE           +5.64%   +3/5 TIE          -11.63%   -4/5 WIN(Lem2)    -14.85%   -5/5 WIN(Lem2)
+  255    +10.34%   +5/5 WIN(F)        +9.08%   +5/5 WIN(F)        +1.51%   +3/5 TIE           +0.98%   +3/5 TIE      
+  256    +10.80%   +4/5 WIN(F)       +22.07%   +5/5 WIN(F)        -1.07%   -3/5 TIE           -5.14%   -4/5 WIN(Lem2)
+  333     +9.06%   +4/5 WIN(F)       +12.88%   +5/5 WIN(F)        +1.45%   +3/5 TIE           +4.44%   +3/5 TIE      
+  512    +16.19%   +5/5 WIN(F)       +21.81%   +5/5 WIN(F)       +13.32%   +4/5 WIN(F)        +7.84%   +4/5 WIN(F)   
+ 1024    +37.71%   +5/5 WIN(F)       +45.36%   +5/5 WIN(F)        +1.08%   +3/5 TIE           +7.96%   +5/5 WIN(F)   
+ 2048    +40.84%   +5/5 WIN(F)       +43.28%   +5/5 WIN(F)       +12.01%   +5/5 WIN(F)        +7.40%   +5/5 WIN(F)   
+ 4096    +58.21%   +5/5 WIN(F)       +64.78%   +5/5 WIN(F)        +7.76%   +4/5 WIN(F)        +6.46%   +4/5 WIN(F)   
+
+====================================================================================================
+paired: Lem2 vs Lem  (delta = Lem2/Lem - 1 per run; negative = Lem2 faster)
+cell = median delta, sign count ('-k/n' = Lem2 faster in k of n paired runs, '+k/n' = Lem2 slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16     -3.25%   -4/5 WIN(Lem2)     -0.23%   -3/5 TIE           -6.18%   -3/5 TIE           -3.61%   -3/5 TIE      
+   32     +7.13%   +3/5 TIE           -0.94%   -3/5 TIE           -1.13%   -3/5 TIE           -0.25%   -3/5 TIE      
+   64     -3.33%   -3/5 TIE           -0.79%   -3/5 TIE           +3.53%   +3/5 TIE           +1.18%   +4/5 TIE      
+   96     +4.77%   +3/5 TIE           -6.49%   -3/5 TIE           -4.68%   -3/5 TIE          -27.61%   -5/5 WIN(Lem2)
+  128     -1.91%   -3/5 TIE           -0.48%   -4/5 TIE           +0.55%   +3/5 TIE          +22.22%   +3/5 TIE      
+  160     +8.87%   +4/5 WIN(Lem)      -1.22%   -3/5 TIE           +2.87%   +4/5 TIE           -1.62%   -3/5 TIE      
+  200     -3.55%   -4/5 WIN(Lem2)     -0.20%   -3/5 TIE           +4.08%   +4/5 WIN(Lem)     -11.35%   -4/5 WIN(Lem2)
+  255     -1.04%   -3/5 TIE           -1.34%   -3/5 TIE           -0.66%   -3/5 TIE           -2.52%   -3/5 TIE      
+  256     +0.88%   +3/5 TIE           -0.11%   -3/5 TIE           +1.49%   +3/5 TIE           -6.26%   -4/5 WIN(Lem2)
+  333     -0.72%   -4/5 TIE           -1.45%   -4/5 TIE           -0.79%   -3/5 TIE           +3.14%   +4/5 WIN(Lem) 
+  512     -0.62%   -3/5 TIE           -0.84%   -4/5 TIE           -5.12%   -4/5 WIN(Lem2)    -10.61%   -3/5 TIE      
+ 1024     -1.71%   -4/5 TIE           -0.56%   -3/5 TIE           -5.51%   -4/5 WIN(Lem2)     -0.13%   -3/5 TIE      
+ 2048     +0.58%   +3/5 TIE           +1.28%   +3/5 TIE           -2.74%   -3/5 TIE           +1.94%   +4/5 TIE      
+ 4096     -0.09%   -3/5 TIE           -0.65%   -3/5 TIE           +0.28%   +3/5 TIE           -0.28%   -3/5 TIE      
+
+====================================================================================================
+paired: Fb vs F  (delta = Fb/F - 1 per run; negative = Fb faster; outer: bsearch vs Shar, spine inner)
+cell = median delta, sign count ('-k/n' = Fb faster in k of n paired runs, '+k/n' = Fb slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16    +73.08%   +5/5 WIN(F)       +46.97%   +5/5 WIN(F)        +8.08%   +3/5 TIE           -3.79%   -3/5 TIE      
+   32    +21.34%   +5/5 WIN(F)       +32.01%   +4/5 WIN(F)        +7.85%   +3/5 TIE           -9.54%   -5/5 WIN(Fb)  
+   64    +20.91%   +5/5 WIN(F)       +37.68%   +5/5 WIN(F)        -9.74%   -4/5 WIN(Fb)      -30.06%   -4/5 WIN(Fb)  
+   96     +9.24%   +4/5 WIN(F)       +15.53%   +5/5 WIN(F)        -7.78%   -4/5 WIN(Fb)       -8.82%   -5/5 WIN(Fb)  
+  128    +22.79%   +5/5 WIN(F)       +14.42%   +5/5 WIN(F)        -2.63%   -4/5 TIE           -5.39%   -4/5 WIN(Fb)  
+  160    +11.62%   +5/5 WIN(F)       +22.01%   +5/5 WIN(F)        -7.65%   -3/5 TIE          -13.00%   -3/5 TIE      
+  200     +7.93%   +5/5 WIN(F)       +20.71%   +5/5 WIN(F)        -8.55%   -4/5 WIN(Fb)       -5.32%   -4/5 WIN(Fb)  
+  255    +20.65%   +5/5 WIN(F)       +16.78%   +5/5 WIN(F)        -0.96%   -3/5 TIE           -9.48%   -4/5 WIN(Fb)  
+  256    +12.14%   +4/5 WIN(F)       +28.05%   +5/5 WIN(F)        -5.99%   -4/5 WIN(Fb)      -10.01%   -5/5 WIN(Fb)  
+  333     +5.58%   +4/5 WIN(F)       +18.05%   +5/5 WIN(F)       -16.84%   -5/5 WIN(Fb)      -14.40%   -5/5 WIN(Fb)  
+  512     +8.51%   +4/5 WIN(F)       +19.65%   +5/5 WIN(F)        -9.12%   -4/5 WIN(Fb)       -8.24%   -4/5 WIN(Fb)  
+ 1024    +10.50%   +5/5 WIN(F)       +19.80%   +5/5 WIN(F)       -21.16%   -4/5 WIN(Fb)      -11.35%   -5/5 WIN(Fb)  
+ 2048    +12.79%   +5/5 WIN(F)       +17.85%   +5/5 WIN(F)        -4.68%   -3/5 TIE           -8.44%   -4/5 WIN(Fb)  
+ 4096     +6.73%   +5/5 WIN(F)       +15.87%   +5/5 WIN(F)       -10.15%   -5/5 WIN(Fb)      -12.56%   -4/5 WIN(Fb)  
+
+====================================================================================================
+paired: Lem vs LemS  (delta = Lem/LemS - 1 per run; negative = Lem faster; outer: bsearch vs Shar, Lemire inner)
+cell = median delta, sign count ('-k/n' = Lem faster in k of n paired runs, '+k/n' = Lem slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16    +38.97%   +5/5 WIN(LemS)    +68.02%   +5/5 WIN(LemS)    +12.59%   +5/5 WIN(LemS)     -4.65%   -3/5 TIE      
+   32    +32.39%   +5/5 WIN(LemS)    +28.60%   +5/5 WIN(LemS)     -6.87%   -4/5 WIN(Lem)     -11.37%   -5/5 WIN(Lem) 
+   64    +16.02%   +5/5 WIN(LemS)    +23.50%   +5/5 WIN(LemS)     -6.48%   -3/5 TIE           -7.27%   -3/5 TIE      
+   96    +14.14%   +5/5 WIN(LemS)     +3.93%   +4/5 WIN(LemS)    -13.25%   -5/5 WIN(Lem)     +19.97%   +3/5 TIE      
+  128    +14.00%   +5/5 WIN(LemS)    +28.94%   +5/5 WIN(LemS)     +2.38%   +3/5 TIE          -12.67%   -5/5 WIN(Lem) 
+  160    +17.71%   +5/5 WIN(LemS)    +24.29%   +4/5 WIN(LemS)    -19.90%   -4/5 WIN(Lem)     -16.54%   -4/5 WIN(Lem) 
+  200    +16.12%   +5/5 WIN(LemS)    +27.32%   +5/5 WIN(LemS)    -17.17%   -4/5 WIN(Lem)     -20.65%   -3/5 TIE      
+  255    +21.21%   +5/5 WIN(LemS)    +17.56%   +5/5 WIN(LemS)     -6.06%   -3/5 TIE           -7.75%   -4/5 WIN(Lem) 
+  256    +12.14%   +5/5 WIN(LemS)    +24.63%   +5/5 WIN(LemS)    -13.00%   -3/5 TIE           -7.15%   -4/5 WIN(Lem) 
+  333    +14.40%   +5/5 WIN(LemS)    +15.46%   +5/5 WIN(LemS)    -11.14%   -4/5 WIN(Lem)      -9.74%   -5/5 WIN(Lem) 
+  512    +12.85%   +5/5 WIN(LemS)    +15.86%   +5/5 WIN(LemS)     -8.94%   -4/5 WIN(Lem)     -30.56%   -4/5 WIN(Lem) 
+ 1024    +11.84%   +5/5 WIN(LemS)    +11.33%   +5/5 WIN(LemS)     -8.12%   -5/5 WIN(Lem)     -10.39%   -5/5 WIN(Lem) 
+ 2048     +6.67%   +5/5 WIN(LemS)    +14.27%   +4/5 WIN(LemS)    -19.13%   -5/5 WIN(Lem)     -10.26%   -4/5 WIN(Lem) 
+ 4096     +6.78%   +5/5 WIN(LemS)    +10.90%   +5/5 WIN(LemS)    -11.01%   -4/5 WIN(Lem)      -8.68%   -4/5 WIN(Lem) 
+
+====================================================================================================
+paired: Fb vs Lem  (delta = Fb/Lem - 1 per run; negative = Fb faster; inner: spine vs Lemire, bsearch outer)
+cell = median delta, sign count ('-k/n' = Fb faster in k of n paired runs, '+k/n' = Fb slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16     +4.85%   +3/5 TIE           -7.21%   -4/5 WIN(Fb)       +2.39%   +3/5 TIE           -2.36%   -3/5 TIE      
+   32     +5.35%   +3/5 TIE           -8.37%   -5/5 WIN(Fb)       -2.48%   -3/5 TIE           +4.46%   +4/5 WIN(Lem) 
+   64     -1.60%   -3/5 TIE           +6.20%   +3/5 TIE          -13.25%   -4/5 WIN(Fb)      -22.41%   -4/5 WIN(Fb)  
+   96     +0.32%   +3/5 TIE           -0.95%   -3/5 TIE           -4.29%   -3/5 TIE          -28.98%   -5/5 WIN(Fb)  
+  128    +12.77%   +5/5 WIN(Lem)      +3.69%   +4/5 WIN(Lem)     -23.16%   -4/5 WIN(Fb)       +4.50%   +4/5 WIN(Lem) 
+  160    +10.78%   +5/5 WIN(Lem)      +2.21%   +5/5 TIE           -4.33%   -4/5 WIN(Fb)       -1.45%   -3/5 TIE      
+  200     +8.97%   +4/5 WIN(Lem)      +8.21%   +5/5 WIN(Lem)      +1.37%   +3/5 TIE          +11.59%   +3/5 TIE      
+  255     +7.77%   +5/5 WIN(Lem)      +7.77%   +5/5 WIN(Lem)      +1.00%   +3/5 TIE          -15.08%   -3/5 TIE      
+  256     -0.27%   -3/5 TIE           +4.78%   +3/5 TIE           -7.50%   -4/5 WIN(Fb)       -8.59%   -4/5 WIN(Fb)  
+  333     -3.34%   -4/5 WIN(Fb)       +4.28%   +4/5 WIN(Lem)     -17.37%   -5/5 WIN(Fb)      -11.56%   -5/5 WIN(Fb)  
+  512     -6.89%   -5/5 WIN(Fb)       +0.66%   +4/5 TIE          -22.63%   -5/5 WIN(Fb)      -13.56%   -5/5 WIN(Fb)  
+ 1024    -19.86%   -5/5 WIN(Fb)      -16.81%   -5/5 WIN(Fb)      -24.81%   -4/5 WIN(Fb)      -17.85%   -5/5 WIN(Fb)  
+ 2048    -19.59%   -5/5 WIN(Fb)      -19.78%   -5/5 WIN(Fb)      -17.72%   -4/5 WIN(Fb)      -14.44%   -4/5 WIN(Fb)  
+ 4096    -32.26%   -5/5 WIN(Fb)      -29.72%   -5/5 WIN(Fb)      -16.33%   -5/5 WIN(Fb)      -18.42%   -5/5 WIN(Fb)  
+
+====================================================================================================
+paired: F vs LemS  (delta = F/LemS - 1 per run; negative = F faster; inner: spine vs Lemire, Shar outer)
+cell = median delta, sign count ('-k/n' = F faster in k of n paired runs, '+k/n' = F slower), verdict
+====================================================================================================
+    n           hot_bat                     hot_ser                     cold_bat                    cold_ser         
+   16     +3.54%   +3/5 TIE           +4.49%   +4/5 WIN(LemS)     -1.66%   -3/5 TIE           +6.25%   +3/5 TIE      
+   32     +1.07%   +3/5 TIE           -3.30%   -3/5 TIE          -11.08%   -5/5 WIN(F)        -3.65%   -4/5 WIN(F)   
+   64    -13.49%   -3/5 TIE           -0.09%   -3/5 TIE          -10.57%   -4/5 WIN(F)        +2.86%   +3/5 TIE      
+   96     +9.49%   +3/5 TIE           -4.12%   -3/5 TIE          -10.77%   -4/5 WIN(F)        -5.23%   -3/5 TIE      
+  128     +4.60%   +3/5 TIE          +21.38%   +5/5 WIN(LemS)    -14.53%   -5/5 WIN(F)        -2.77%   -3/5 TIE      
+  160    +13.32%   +5/5 WIN(LemS)     +9.39%   +4/5 WIN(LemS)    -17.68%   -5/5 WIN(F)        -0.96%   -4/5 TIE      
+  200    +15.69%   +5/5 WIN(LemS)    +15.17%   +5/5 WIN(LemS)     -3.35%   -3/5 TIE           -1.41%   -3/5 TIE      
+  255     +9.87%   +5/5 WIN(LemS)     +8.41%   +5/5 WIN(LemS)    -13.58%   -4/5 WIN(F)       -10.48%   -4/5 WIN(F)   
+  256     -1.33%   -4/5 TIE           +0.01%   +3/5 TIE          -14.40%   -4/5 WIN(F)        -5.59%   -5/5 WIN(F)   
+  333     +4.28%   +4/5 WIN(LemS)     -2.91%   -3/5 TIE          -13.26%   -4/5 WIN(F)       -10.74%   -4/5 WIN(F)   
+  512     -4.63%   -3/5 TIE           -4.24%   -4/5 WIN(F)       -17.26%   -5/5 WIN(F)       -32.62%   -4/5 WIN(F)   
+ 1024    -20.61%   -5/5 WIN(F)       -20.23%   -5/5 WIN(F)       -17.67%   -3/5 TIE          -16.05%   -5/5 WIN(F)   
+ 2048    -21.43%   -5/5 WIN(F)       -24.21%   -5/5 WIN(F)       -23.30%   -5/5 WIN(F)       -13.88%   -5/5 WIN(F)   
+ 4096    -32.10%   -5/5 WIN(F)       -33.75%   -5/5 WIN(F)       -17.64%   -4/5 WIN(F)       -17.38%   -5/5 WIN(F)   
+
+====================================================================================================
+bands: maximal runs of consecutive sizes with the same winner (a TIE, n/a or missing size breaks a band)
+====================================================================================================
+Lem vs F  (delta = Lem/F - 1; negative = Lem faster)
+  hot_bat: WIN(Lem) 0, WIN(F) 12, TIE 2, n/a 0  (of 14 sizes)
+    F faster than Lem: n=16-128 (hot_bat; 5 sizes; paired medians +7.5% to +42.8%; F faster in 4-5 of 5 runs per cell)
+    F faster than Lem: n=255-4096 (hot_bat; 7 sizes; paired medians +7.9% to +56.8%; F faster in 4-5 of 5 runs per cell)
+  hot_ser: WIN(Lem) 0, WIN(F) 13, TIE 1, n/a 0  (of 14 sizes)
+    F faster than Lem: n=16-160 (hot_ser; 6 sizes; paired medians +11.8% to +56.9%; F faster in 4-5 of 5 runs per cell)
+    F faster than Lem: n=255-4096 (hot_ser; 7 sizes; paired medians +8.1% to +64.9%; F faster 5/5 in every cell)
+  cold_bat: WIN(Lem) 2, WIN(F) 5, TIE 7, n/a 0  (of 14 sizes)
+    F faster than Lem: n=16-32 (cold_bat; 2 sizes; paired medians +6.0% to +10.6%; F faster 4/5 in every cell)
+    Lem faster than F: n=160-200 (cold_bat; 2 sizes; paired medians -14.0% to -5.0%; Lem faster in 4-5 of 5 runs per cell)
+    single-size wins: F n=128 (+11.3%, 5/5); F n=512 (+14.0%, 4/5); F n=2048 (+15.2%, 5/5)
+  cold_ser: WIN(Lem) 5, WIN(F) 3, TIE 6, n/a 0  (of 14 sizes)
+    Lem faster than F: n=32-64 (cold_ser; 2 sizes; paired medians -5.5% to -3.9%; Lem faster 4/5 in every cell)
+    Lem faster than F: n=128-200 (cold_ser; 3 sizes; paired medians -10.8% to -3.9%; Lem faster in 4-5 of 5 runs per cell)
+    F faster than Lem: n=1024-4096 (cold_ser; 3 sizes; paired medians +6.1% to +9.8%; F faster in 4-5 of 5 runs per cell)
+
+Lem2 vs F  (delta = Lem2/F - 1; negative = Lem2 faster)
+  hot_bat: WIN(Lem2) 0, WIN(F) 13, TIE 1, n/a 0  (of 14 sizes)
+    F faster than Lem2: n=16-160 (hot_bat; 6 sizes; paired medians +3.2% to +40.6%; F faster in 4-5 of 5 runs per cell)
+    F faster than Lem2: n=255-4096 (hot_bat; 7 sizes; paired medians +9.1% to +58.2%; F faster in 4-5 of 5 runs per cell)
+  hot_ser: WIN(Lem2) 0, WIN(F) 13, TIE 1, n/a 0  (of 14 sizes)
+    F faster than Lem2: n=16-160 (hot_ser; 6 sizes; paired medians +8.1% to +52.4%; F faster 5/5 in every cell)
+    F faster than Lem2: n=255-4096 (hot_ser; 7 sizes; paired medians +9.1% to +64.8%; F faster 5/5 in every cell)
+  cold_bat: WIN(Lem2) 1, WIN(F) 5, TIE 8, n/a 0  (of 14 sizes)
+    F faster than Lem2: n=2048-4096 (cold_bat; 2 sizes; paired medians +7.8% to +12.0%; F faster in 4-5 of 5 runs per cell)
+    single-size wins: F n=32 (+5.4%, 4/5); F n=128 (+3.7%, 4/5); Lem2 n=200 (-11.6%, 4/5); F n=512 (+13.3%, 4/5)
+  cold_ser: WIN(Lem2) 6, WIN(F) 4, TIE 4, n/a 0  (of 14 sizes)
+    Lem2 faster than F: n=32-96 (cold_ser; 3 sizes; paired medians -13.1% to -3.1%; Lem2 faster in 4-5 of 5 runs per cell)
+    Lem2 faster than F: n=160-200 (cold_ser; 2 sizes; paired medians -14.9% to -10.4%; Lem2 faster in 4-5 of 5 runs per cell)
+    F faster than Lem2: n=512-4096 (cold_ser; 4 sizes; paired medians +6.5% to +8.0%; F faster in 4-5 of 5 runs per cell)
+    single-size wins: Lem2 n=256 (-5.1%, 4/5)
+
+Lem2 vs Lem  (delta = Lem2/Lem - 1; negative = Lem2 faster)
+  hot_bat: WIN(Lem2) 2, WIN(Lem) 1, TIE 11, n/a 0  (of 14 sizes)
+    single-size wins: Lem2 n=16 (-3.2%, 4/5); Lem n=160 (+8.9%, 4/5); Lem2 n=200 (-3.5%, 4/5)
+  hot_ser: WIN(Lem2) 0, WIN(Lem) 0, TIE 14, n/a 0  (of 14 sizes)
+    no WIN cells
+  cold_bat: WIN(Lem2) 2, WIN(Lem) 1, TIE 11, n/a 0  (of 14 sizes)
+    Lem2 faster than Lem: n=512-1024 (cold_bat; 2 sizes; paired medians -5.5% to -5.1%; Lem2 faster 4/5 in every cell)
+    single-size wins: Lem n=200 (+4.1%, 4/5)
+  cold_ser: WIN(Lem2) 3, WIN(Lem) 1, TIE 10, n/a 0  (of 14 sizes)
+    single-size wins: Lem2 n=96 (-27.6%, 5/5); Lem2 n=200 (-11.4%, 4/5); Lem2 n=256 (-6.3%, 4/5); Lem n=333 (+3.1%, 4/5)
+
+Fb vs F  (delta = Fb/F - 1; negative = Fb faster)
+  hot_bat: WIN(Fb) 0, WIN(F) 14, TIE 0, n/a 0  (of 14 sizes)
+    F faster than Fb: n=16-4096 (hot_bat; 14 sizes; paired medians +5.6% to +73.1%; F faster in 4-5 of 5 runs per cell)
+  hot_ser: WIN(Fb) 0, WIN(F) 14, TIE 0, n/a 0  (of 14 sizes)
+    F faster than Fb: n=16-4096 (hot_ser; 14 sizes; paired medians +14.4% to +47.0%; F faster in 4-5 of 5 runs per cell)
+  cold_bat: WIN(Fb) 8, WIN(F) 0, TIE 6, n/a 0  (of 14 sizes)
+    Fb faster than F: n=64-96 (cold_bat; 2 sizes; paired medians -9.7% to -7.8%; Fb faster 4/5 in every cell)
+    Fb faster than F: n=256-1024 (cold_bat; 4 sizes; paired medians -21.2% to -6.0%; Fb faster in 4-5 of 5 runs per cell)
+    single-size wins: Fb n=200 (-8.5%, 4/5); Fb n=4096 (-10.2%, 5/5)
+  cold_ser: WIN(Fb) 12, WIN(F) 0, TIE 2, n/a 0  (of 14 sizes)
+    Fb faster than F: n=32-128 (cold_ser; 4 sizes; paired medians -30.1% to -5.4%; Fb faster in 4-5 of 5 runs per cell)
+    Fb faster than F: n=200-4096 (cold_ser; 8 sizes; paired medians -14.4% to -5.3%; Fb faster in 4-5 of 5 runs per cell)
+
+Lem vs LemS  (delta = Lem/LemS - 1; negative = Lem faster)
+  hot_bat: WIN(Lem) 0, WIN(LemS) 14, TIE 0, n/a 0  (of 14 sizes)
+    LemS faster than Lem: n=16-4096 (hot_bat; 14 sizes; paired medians +6.7% to +39.0%; LemS faster 5/5 in every cell)
+  hot_ser: WIN(Lem) 0, WIN(LemS) 14, TIE 0, n/a 0  (of 14 sizes)
+    LemS faster than Lem: n=16-4096 (hot_ser; 14 sizes; paired medians +3.9% to +68.0%; LemS faster in 4-5 of 5 runs per cell)
+  cold_bat: WIN(Lem) 9, WIN(LemS) 1, TIE 4, n/a 0  (of 14 sizes)
+    Lem faster than LemS: n=160-200 (cold_bat; 2 sizes; paired medians -19.9% to -17.2%; Lem faster 4/5 in every cell)
+    Lem faster than LemS: n=333-4096 (cold_bat; 5 sizes; paired medians -19.1% to -8.1%; Lem faster in 4-5 of 5 runs per cell)
+    single-size wins: LemS n=16 (+12.6%, 5/5); Lem n=32 (-6.9%, 4/5); Lem n=96 (-13.2%, 5/5)
+  cold_ser: WIN(Lem) 10, WIN(LemS) 0, TIE 4, n/a 0  (of 14 sizes)
+    Lem faster than LemS: n=128-160 (cold_ser; 2 sizes; paired medians -16.5% to -12.7%; Lem faster in 4-5 of 5 runs per cell)
+    Lem faster than LemS: n=255-4096 (cold_ser; 7 sizes; paired medians -30.6% to -7.2%; Lem faster in 4-5 of 5 runs per cell)
+    single-size wins: Lem n=32 (-11.4%, 5/5)
+
+Fb vs Lem  (delta = Fb/Lem - 1; negative = Fb faster)
+  hot_bat: WIN(Fb) 5, WIN(Lem) 4, TIE 5, n/a 0  (of 14 sizes)
+    Lem faster than Fb: n=128-255 (hot_bat; 4 sizes; paired medians +7.8% to +12.8%; Lem faster in 4-5 of 5 runs per cell)
+    Fb faster than Lem: n=333-4096 (hot_bat; 5 sizes; paired medians -32.3% to -3.3%; Fb faster in 4-5 of 5 runs per cell)
+  hot_ser: WIN(Fb) 5, WIN(Lem) 4, TIE 5, n/a 0  (of 14 sizes)
+    Fb faster than Lem: n=16-32 (hot_ser; 2 sizes; paired medians -8.4% to -7.2%; Fb faster in 4-5 of 5 runs per cell)
+    Lem faster than Fb: n=200-255 (hot_ser; 2 sizes; paired medians +7.8% to +8.2%; Lem faster 5/5 in every cell)
+    Fb faster than Lem: n=1024-4096 (hot_ser; 3 sizes; paired medians -29.7% to -16.8%; Fb faster 5/5 in every cell)
+    single-size wins: Lem n=128 (+3.7%, 4/5); Lem n=333 (+4.3%, 4/5)
+  cold_bat: WIN(Fb) 9, WIN(Lem) 0, TIE 5, n/a 0  (of 14 sizes)
+    Fb faster than Lem: n=128-160 (cold_bat; 2 sizes; paired medians -23.2% to -4.3%; Fb faster 4/5 in every cell)
+    Fb faster than Lem: n=256-4096 (cold_bat; 6 sizes; paired medians -24.8% to -7.5%; Fb faster in 4-5 of 5 runs per cell)
+    single-size wins: Fb n=64 (-13.2%, 4/5)
+  cold_ser: WIN(Fb) 8, WIN(Lem) 2, TIE 4, n/a 0  (of 14 sizes)
+    Fb faster than Lem: n=64-96 (cold_ser; 2 sizes; paired medians -29.0% to -22.4%; Fb faster in 4-5 of 5 runs per cell)
+    Fb faster than Lem: n=256-4096 (cold_ser; 6 sizes; paired medians -18.4% to -8.6%; Fb faster in 4-5 of 5 runs per cell)
+    single-size wins: Lem n=32 (+4.5%, 4/5); Lem n=128 (+4.5%, 4/5)
+
+F vs LemS  (delta = F/LemS - 1; negative = F faster)
+  hot_bat: WIN(F) 3, WIN(LemS) 4, TIE 7, n/a 0  (of 14 sizes)
+    LemS faster than F: n=160-255 (hot_bat; 3 sizes; paired medians +9.9% to +15.7%; LemS faster 5/5 in every cell)
+    F faster than LemS: n=1024-4096 (hot_bat; 3 sizes; paired medians -32.1% to -20.6%; F faster 5/5 in every cell)
+    single-size wins: LemS n=333 (+4.3%, 4/5)
+  hot_ser: WIN(F) 4, WIN(LemS) 5, TIE 5, n/a 0  (of 14 sizes)
+    LemS faster than F: n=128-255 (hot_ser; 4 sizes; paired medians +8.4% to +21.4%; LemS faster in 4-5 of 5 runs per cell)
+    F faster than LemS: n=512-4096 (hot_ser; 4 sizes; paired medians -33.7% to -4.2%; F faster in 4-5 of 5 runs per cell)
+    single-size wins: LemS n=16 (+4.5%, 4/5)
+  cold_bat: WIN(F) 11, WIN(LemS) 0, TIE 3, n/a 0  (of 14 sizes)
+    F faster than LemS: n=32-160 (cold_bat; 5 sizes; paired medians -17.7% to -10.6%; F faster in 4-5 of 5 runs per cell)
+    F faster than LemS: n=255-512 (cold_bat; 4 sizes; paired medians -17.3% to -13.3%; F faster in 4-5 of 5 runs per cell)
+    F faster than LemS: n=2048-4096 (cold_bat; 2 sizes; paired medians -23.3% to -17.6%; F faster in 4-5 of 5 runs per cell)
+  cold_ser: WIN(F) 8, WIN(LemS) 0, TIE 6, n/a 0  (of 14 sizes)
+    F faster than LemS: n=255-4096 (cold_ser; 7 sizes; paired medians -32.6% to -5.6%; F faster in 4-5 of 5 runs per cell)
+    single-size wins: F n=32 (-3.7%, 4/5)
+
+====================================================================================================
+paired absolute deltas by size band: median over the band's sizes of each size's median over runs of B - A in ns [min .. max over those sizes]; negative = B faster
+(a cost that lives in the outer search is a constant number of ns across sizes; one that lives in the inner grows with n)
+====================================================================================================
+Lem vs F  (Lem - F in ns)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32    +24.7 [  +22.5 ..   +26.9]      +31.3 [  +28.8 ..   +33.8]      +45.4 [  +35.0 ..   +55.7]      -85.3 [ -136.9 ..   -33.7]     (2 sizes)
+       33-128    +15.9 [  +11.6 ..   +24.0]      +25.4 [  +24.2 ..   +36.8]      +12.2 [  -51.9 ..   +88.3]      -27.4 [  -81.5 ..   +39.5]     (3 sizes)
+      129-265    +10.4 [   +1.2 ..   +20.9]      +16.4 [   +7.7 ..   +37.6]      -11.4 [ -116.1 ..   +25.4]      -25.1 [  -71.9 ..   +25.9]     (4 sizes)
+      266-512    +27.0 [  +22.0 ..   +31.9]      +30.2 [  +22.5 ..   +37.9]      +69.8 [  +19.1 ..  +120.6]      -17.6 [  -32.6 ..    -2.6]     (2 sizes)
+     513-1024    +73.6 [  +73.6 ..   +73.6]      +78.5 [  +78.5 ..   +78.5]      +74.8 [  +74.8 ..   +74.8]      +60.6 [  +60.6 ..   +60.6]     (1 sizes)
+    1025-2048    +77.2 [  +77.2 ..   +77.2]      +86.4 [  +86.4 ..   +86.4]     +150.2 [ +150.2 ..  +150.2]      +65.7 [  +65.7 ..   +65.7]     (1 sizes)
+    2049-4096   +122.0 [ +122.0 ..  +122.0]     +139.3 [ +139.3 ..  +139.3]      +61.7 [  +61.7 ..   +61.7]     +119.3 [ +119.3 ..  +119.3]     (1 sizes)
+
+Lem2 vs F  (Lem2 - F in ns)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32    +26.4 [  +25.5 ..   +27.2]      +29.5 [  +27.9 ..   +31.1]      +37.1 [  +28.0 ..   +46.3]      +19.5 [  -80.7 ..  +119.8]     (2 sizes)
+       33-128    +11.1 [   +6.2 ..   +40.8]      +29.8 [  +12.5 ..   +35.6]       -7.6 [  -19.3 ..   +24.1]      -21.5 [  -71.5 ..   +68.1]     (3 sizes)
+      129-265    +16.2 [   +0.2 ..   +19.5]      +15.8 [   +9.7 ..   +34.3]       -6.3 [  -94.4 ..   +12.4]      -63.2 [ -123.3 ..    +8.5]     (4 sizes)
+      266-512    +25.6 [  +15.2 ..   +35.9]      +31.1 [  +25.1 ..   +37.1]      +62.7 [  +12.2 ..  +113.1]      +54.4 [  +38.5 ..   +70.4]     (2 sizes)
+     513-1024    +73.5 [  +73.5 ..   +73.5]      +81.8 [  +81.8 ..   +81.8]      +15.4 [  +15.4 ..   +15.4]      +74.4 [  +74.4 ..   +74.4]     (1 sizes)
+    1025-2048    +79.0 [  +79.0 ..   +79.0]      +85.5 [  +85.5 ..   +85.5]     +118.5 [ +118.5 ..  +118.5]      +78.3 [  +78.3 ..   +78.3]     (1 sizes)
+    2049-4096   +124.6 [ +124.6 ..  +124.6]     +137.1 [ +137.1 ..  +137.1]      +85.8 [  +85.8 ..   +85.8]      +72.6 [  +72.6 ..   +72.6]     (1 sizes)
+
+Lem2 vs Lem  (Lem2 - Lem in ns)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32     +1.3 [   -3.7 ..    +6.3]       -0.6 [   -1.0 ..    -0.2]      -19.3 [  -32.2 ..    -6.3]      -11.1 [  -20.5 ..    -1.7]     (2 sizes)
+       33-128     -3.0 [   -5.0 ..    +6.7]       -1.2 [  -12.3 ..    -0.7]       +3.7 [  -33.5 ..   +23.9]       +8.0 [ -260.9 ..  +149.6]     (3 sizes)
+      129-265     -0.2 [   -5.7 ..   +14.9]       -1.3 [   -2.4 ..    -0.2]      +15.3 [   -5.6 ..   +28.5]      -36.6 [  -90.6 ..   -11.9]     (4 sizes)
+      266-512     -1.3 [   -1.4 ..    -1.3]       -2.3 [   -2.9 ..    -1.8]      -28.6 [  -50.4 ..    -6.9]      -40.7 [ -109.1 ..   +27.6]     (2 sizes)
+     513-1024     -4.4 [   -4.4 ..    -4.4]       -1.5 [   -1.5 ..    -1.5]      -56.3 [  -56.3 ..   -56.3]       -1.3 [   -1.3 ..    -1.3]     (1 sizes)
+    1025-2048     +1.5 [   +1.5 ..    +1.5]       +3.6 [   +3.6 ..    +3.6]      -31.1 [  -31.1 ..   -31.1]      +22.0 [  +22.0 ..   +22.0]     (1 sizes)
+    2049-4096     -0.3 [   -0.3 ..    -0.3]       -2.2 [   -2.2 ..    -2.2]       +3.3 [   +3.3 ..    +3.3]       -3.3 [   -3.3 ..    -3.3]     (1 sizes)
+
+Fb vs F  (Fb - F in ns; outer: bsearch vs Shar, spine inner)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32    +32.9 [  +19.8 ..   +46.0]      +28.1 [  +24.6 ..   +31.7]      +40.8 [  +40.4 ..   +41.3]      -43.4 [  -58.3 ..   -28.5]     (2 sizes)
+       33-128    +20.3 [  +13.4 ..   +30.0]      +22.9 [  +22.2 ..   +39.7]      -53.7 [  -85.0 ..   -17.4]      -63.9 [ -259.8 ..   -50.4]     (3 sizes)
+      129-265    +20.7 [  +14.5 ..   +33.1]      +33.4 [  +30.4 ..   +43.5]      -48.3 [  -69.3 ..    -9.8]      -82.3 [ -115.7 ..   -44.8]     (4 sizes)
+      266-512    +12.5 [   +9.5 ..   +15.5]      +32.9 [  +30.8 ..   +35.0]     -112.2 [ -141.9 ..   -82.6]      -99.3 [ -126.7 ..   -72.0]     (2 sizes)
+     513-1024    +20.5 [  +20.5 ..   +20.5]      +36.7 [  +36.7 ..   +36.7]     -300.5 [ -300.5 ..  -300.5]     -106.1 [ -106.1 ..  -106.1]     (1 sizes)
+    1025-2048    +25.1 [  +25.1 ..   +25.1]      +35.3 [  +35.3 ..   +35.3]      -47.0 [  -47.0 ..   -47.0]      -89.3 [  -89.3 ..   -89.3]     (1 sizes)
+    2049-4096    +14.2 [  +14.2 ..   +14.2]      +34.2 [  +34.2 ..   +34.2]     -110.0 [ -110.0 ..  -110.0]     -153.1 [ -153.1 ..  -153.1]     (1 sizes)
+
+Lem vs LemS  (Lem - LemS in ns; outer: bsearch vs Shar, Lemire inner)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32    +22.0 [  +20.5 ..   +23.6]      +36.0 [  +32.6 ..   +39.4]      +11.7 [  -41.1 ..   +64.4]      -54.3 [  -80.7 ..   -27.8]     (2 sizes)
+       33-128    +20.2 [  +16.6 ..   +23.2]      +25.8 [   +6.3 ..   +36.3]      -46.9 [ -102.0 ..   +20.2]      -61.1 [  -97.6 ..  +176.5]     (3 sizes)
+      129-265    +23.7 [  +19.3 ..   +30.7]      +36.6 [  +28.6 ..   +38.6]     -127.3 [ -162.0 ..   -60.0]     -117.6 [ -249.1 ..   -66.7]     (4 sizes)
+      266-512    +25.3 [  +24.6 ..   +26.0]      +28.5 [  +28.5 ..   +28.6]     -100.1 [ -108.3 ..   -91.9]     -261.9 [ -428.9 ..   -94.8]     (2 sizes)
+     513-1024    +26.9 [  +26.9 ..   +26.9]      +26.3 [  +26.3 ..   +26.3]      -89.1 [  -89.1 ..   -89.1]     -116.9 [ -116.9 ..  -116.9]     (1 sizes)
+    1025-2048    +17.5 [  +17.5 ..   +17.5]      +34.9 [  +34.9 ..   +34.9]     -273.3 [ -273.3 ..  -273.3]     -129.4 [ -129.4 ..  -129.4]     (1 sizes)
+    2049-4096    +21.8 [  +21.8 ..   +21.8]      +33.2 [  +33.2 ..   +33.2]     -145.2 [ -145.2 ..  -145.2]     -115.2 [ -115.2 ..  -115.2]     (1 sizes)
+
+Fb vs Lem  (Fb - Lem in ns; inner: spine vs Lemire, bsearch outer)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32     +4.1 [   +3.5 ..    +4.8]       -8.2 [  -10.5 ..    -5.9]       -0.9 [  -14.4 ..   +12.6]       +6.2 [  -13.1 ..   +25.6]     (2 sizes)
+       33-128     +0.5 [   -1.9 ..   +18.6]       +6.7 [   -1.6 ..   +10.2]      -89.6 [ -194.2 ..   -28.5]     -174.6 [ -284.6 ..   +30.5]     (3 sizes)
+      129-265    +15.2 [   -0.5 ..   +18.2]      +11.6 [   +4.0 ..   +14.2]       -9.5 [  -55.4 ..   +14.5]      -46.0 [ -135.0 ..   +92.4]     (4 sizes)
+      266-512    -10.4 [  -13.6 ..    -7.3]       +4.8 [   +1.4 ..    +8.3]     -202.4 [ -248.3 ..  -156.5]     -140.3 [ -173.7 ..  -106.9]     (2 sizes)
+     513-1024    -53.4 [  -53.4 ..   -53.4]      -43.7 [  -43.7 ..   -43.7]     -250.6 [ -250.6 ..  -250.6]     -177.6 [ -177.6 ..  -177.6]     (1 sizes)
+    1025-2048    -52.4 [  -52.4 ..   -52.4]      -59.5 [  -59.5 ..   -59.5]     -206.3 [ -206.3 ..  -206.3]     -163.5 [ -163.5 ..  -163.5]     (1 sizes)
+    2049-4096   -108.9 [ -108.9 ..  -108.9]     -101.5 [ -101.5 ..  -101.5]     -192.4 [ -192.4 ..  -192.4]     -223.1 [ -223.1 ..  -223.1]     (1 sizes)
+
+F vs LemS  (F - LemS in ns; inner: spine vs Lemire, Shar outer)
+         band             hot_bat                         hot_ser                         cold_bat                        cold_ser           
+         1-32     +1.3 [   +0.8 ..    +1.9]       -1.0 [   -4.3 ..    +2.2]      -41.9 [  -75.4 ..    -8.5]      +10.5 [  -23.3 ..   +44.3]     (2 sizes)
+       33-128     +5.7 [  -14.9 ..   +14.7]       -0.1 [   -6.3 ..   +25.8]      -80.2 [ -112.6 ..   -76.5]      -21.1 [  -40.0 ..   +24.1]     (3 sizes)
+      129-265    +17.1 [   -2.3 ..   +24.8]      +12.4 [   +0.0 ..   +22.8]     -126.0 [ -149.2 ..   -28.1]      -30.6 [  -99.6 ..   -11.7]     (4 sizes)
+      266-512     -0.6 [   -8.2 ..    +7.0]       -6.5 [   -7.9 ..    -5.1]     -155.7 [ -177.2 ..  -134.2]     -265.7 [ -425.7 ..  -105.7]     (2 sizes)
+     513-1024    -46.8 [  -46.8 ..   -46.8]      -46.9 [  -46.9 ..   -46.9]     -195.0 [ -195.0 ..  -195.0]     -180.6 [ -180.6 ..  -180.6]     (1 sizes)
+    1025-2048    -56.4 [  -56.4 ..   -56.4]      -68.5 [  -68.5 ..   -68.5]     -333.0 [ -333.0 ..  -333.0]     -172.4 [ -172.4 ..  -172.4]     (1 sizes)
+    2049-4096   -103.8 [ -103.8 ..  -103.8]     -106.0 [ -106.0 ..  -106.0]     -236.7 [ -236.7 ..  -236.7]     -256.5 [ -256.5 ..  -256.5]     (1 sizes)
+
+====================================================================================================
+ratio-of-levels check: cells where (median B)/(median A) - 1 has the opposite sign to the median paired delta
+====================================================================================================
+  Lem vs F n=64 cold_bat: ratio of medians +9.0% but paired median -6.1% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs F n=96 cold_bat: ratio of medians -3.2% but paired median +1.9% (Lem faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem vs F n=200 cold_ser: ratio of medians +1.5% but paired median -3.9% (Lem faster 4/5, slower 1/5; levels over 5/5 runs)
+  Lem vs F n=256 cold_ser: ratio of medians +7.3% but paired median -2.1% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs F n=333 cold_ser: ratio of medians +1.9% but paired median -3.7% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs F n=512 cold_ser: ratio of medians +14.6% but paired median -0.3% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs F n=1024 cold_bat: ratio of medians -7.9% but paired median +7.0% (Lem faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs F n=16 cold_ser: ratio of medians -6.8% but paired median +15.9% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs F n=200 hot_bat: ratio of medians -3.8% but paired median +0.1% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs F n=200 hot_ser: ratio of medians -1.5% but paired median +5.6% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs F n=256 cold_bat: ratio of medians +5.4% but paired median -1.1% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs F n=1024 cold_bat: ratio of medians -11.9% but paired median +1.1% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs Lem n=16 cold_ser: ratio of medians +13.0% but paired median -3.6% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=32 hot_ser: ratio of medians +0.1% but paired median -0.9% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=32 cold_bat: ratio of medians +0.7% but paired median -1.1% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=32 cold_ser: ratio of medians +4.3% but paired median -0.3% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=64 hot_ser: ratio of medians +1.7% but paired median -0.8% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=64 cold_bat: ratio of medians -11.9% but paired median +3.5% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs Lem n=64 cold_ser: ratio of medians -9.4% but paired median +1.2% (Lem2 faster 1/5, slower 4/5; levels over 5/5 runs)
+  Lem2 vs Lem n=96 hot_bat: ratio of medians -2.8% but paired median +4.8% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs Lem n=96 cold_bat: ratio of medians +0.4% but paired median -4.7% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=128 cold_bat: ratio of medians -19.8% but paired median +0.6% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs Lem n=160 cold_ser: ratio of medians +6.2% but paired median -1.6% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=200 cold_bat: ratio of medians -0.6% but paired median +4.1% (Lem2 faster 1/5, slower 4/5; levels over 5/5 runs)
+  Lem2 vs Lem n=255 hot_bat: ratio of medians +2.1% but paired median -1.0% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=256 hot_bat: ratio of medians -1.9% but paired median +0.9% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs Lem n=256 hot_ser: ratio of medians +1.1% but paired median -0.1% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=333 cold_bat: ratio of medians +0.2% but paired median -0.8% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=512 hot_bat: ratio of medians +2.8% but paired median -0.6% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=512 hot_ser: ratio of medians +0.0% but paired median -0.8% (Lem2 faster 4/5, slower 1/5; levels over 5/5 runs)
+  Lem2 vs Lem n=1024 hot_ser: ratio of medians +0.6% but paired median -0.6% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=1024 cold_ser: ratio of medians +0.1% but paired median -0.1% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem2 vs Lem n=2048 hot_bat: ratio of medians -3.6% but paired median +0.6% (Lem2 faster 2/5, slower 3/5; levels over 5/5 runs)
+  Lem2 vs Lem n=4096 hot_bat: ratio of medians +1.6% but paired median -0.1% (Lem2 faster 3/5, slower 2/5; levels over 5/5 runs)
+  Fb vs F n=96 hot_bat: ratio of medians -6.6% but paired median +9.2% (Fb faster 1/5, slower 4/5; levels over 5/5 runs)
+  Fb vs F n=96 cold_bat: ratio of medians +0.9% but paired median -7.8% (Fb faster 4/5, slower 1/5; levels over 5/5 runs)
+  Fb vs F n=160 cold_ser: ratio of medians +1.7% but paired median -13.0% (Fb faster 3/5, slower 2/5; levels over 5/5 runs)
+  Fb vs F n=255 cold_bat: ratio of medians +10.6% but paired median -1.0% (Fb faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs LemS n=16 cold_ser: ratio of medians +1.5% but paired median -4.7% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs LemS n=64 cold_bat: ratio of medians +5.7% but paired median -6.5% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs LemS n=64 cold_ser: ratio of medians +3.4% but paired median -7.3% (Lem faster 3/5, slower 2/5; levels over 5/5 runs)
+  Lem vs LemS n=256 cold_ser: ratio of medians +2.9% but paired median -7.2% (Lem faster 4/5, slower 1/5; levels over 5/5 runs)
+  Fb vs Lem n=16 cold_bat: ratio of medians -4.1% but paired median +2.4% (Fb faster 2/5, slower 3/5; levels over 5/5 runs)
+  Fb vs Lem n=16 cold_ser: ratio of medians +3.0% but paired median -2.4% (Fb faster 3/5, slower 2/5; levels over 5/5 runs)
+  Fb vs Lem n=32 cold_bat: ratio of medians +1.6% but paired median -2.5% (Fb faster 3/5, slower 2/5; levels over 5/5 runs)
+  Fb vs Lem n=96 hot_bat: ratio of medians -10.5% but paired median +0.3% (Fb faster 2/5, slower 3/5; levels over 5/5 runs)
+  Fb vs Lem n=96 cold_bat: ratio of medians +4.2% but paired median -4.3% (Fb faster 3/5, slower 2/5; levels over 5/5 runs)
+  Fb vs Lem n=160 cold_ser: ratio of medians +9.7% but paired median -1.4% (Fb faster 3/5, slower 2/5; levels over 5/5 runs)
+  Fb vs Lem n=200 cold_ser: ratio of medians -3.3% but paired median +11.6% (Fb faster 2/5, slower 3/5; levels over 5/5 runs)
+  Fb vs Lem n=255 cold_bat: ratio of medians -0.6% but paired median +1.0% (Fb faster 2/5, slower 3/5; levels over 5/5 runs)
+  F vs LemS n=128 hot_bat: ratio of medians -3.0% but paired median +4.6% (F faster 2/5, slower 3/5; levels over 5/5 runs)
+  F vs LemS n=160 cold_ser: ratio of medians +4.6% but paired median -1.0% (F faster 4/5, slower 1/5; levels over 5/5 runs)
+  F vs LemS n=200 cold_bat: ratio of medians +2.4% but paired median -3.4% (F faster 3/5, slower 2/5; levels over 5/5 runs)
+  F vs LemS n=256 hot_bat: ratio of medians +0.2% but paired median -1.3% (F faster 4/5, slower 1/5; levels over 5/5 runs)
+  F vs LemS n=256 hot_ser: ratio of medians -5.1% but paired median +0.0% (F faster 2/5, slower 3/5; levels over 5/5 runs)
+  F vs LemS n=512 hot_bat: ratio of medians +0.2% but paired median -4.6% (F faster 3/5, slower 2/5; levels over 5/5 runs)
+
+====================================================================================================
+missing cells: 0 of 280
+====================================================================================================
+  none
+

@@ -148,7 +148,25 @@ static void thrash_llc() {
     for (size_t i = 0; i < kThrashBytes; i += 64) p[i] = (uint8_t)i;
 }
 
-struct Container {
+// Container descriptor. 48 bytes in a 16-byte-aligned std::vector, so one in
+// four descriptors straddles two cache lines with the spine's data pointer
+// (offset 24) on the second line while carr (offsets 0..15) is on the first:
+// the spine variants F and Fb read that extra line in one of four lookups,
+// Lem and LemS never do. Every campaign up to sweep_fvl3 (2026-10-12) was
+// measured that way. The descriptor-layout A/B of 2026-10-12 (this harness
+// built both ways, 14 sizes x 5 runs on the Pi 5 "trixie",
+// pi5_runs/desc_layout_ab_compare.txt) found no resolvable bias: the two
+// descriptor loads are independent and overlap, the inner contrasts moved by
+// +1 to +6 ns hot (inside noise) and the verdict bands are the same in both
+// layouts, so the archived inner contrasts stand. Building with
+// -DQUADSEARCH_DESCRIPTOR_ALIGN=64 pads and aligns the descriptor to one line
+// so every variant reads exactly one descriptor line (hygiene; campaigns from
+// 2026-10-12 evening on, and bench_ab_pi5.cpp, use it). The header line
+// records desc_align so campaigns of the two layouts are never pooled.
+#ifndef QUADSEARCH_DESCRIPTOR_ALIGN
+#define QUADSEARCH_DESCRIPTOR_ALIGN 16
+#endif
+struct alignas(QUADSEARCH_DESCRIPTOR_ALIGN) Container {
     std::vector<uint16_t> carr;
     std::vector<uint16_t> spine;  // empty when inner_n < kGap
 };
@@ -359,8 +377,9 @@ int main(int argc, char **argv) {
 
     constexpr int num_containers = 512;
 
-    std::printf("# bench_sweep_f_vs_lem inner_n=%d mode=%s num_sets=%d hot_reps=%d order_seed=%u gap=%d inner=%s\n",
-                inner_n, mode, num_sets, hot_reps, order_seed, kGap, INNER_NAME);
+    std::printf("# bench_sweep_f_vs_lem inner_n=%d mode=%s num_sets=%d hot_reps=%d order_seed=%u gap=%d inner=%s desc_align=%d desc_size=%zu\n",
+                inner_n, mode, num_sets, hot_reps, order_seed, kGap, INNER_NAME,
+                (int)QUADSEARCH_DESCRIPTOR_ALIGN, sizeof(Container));
     std::printf("# variants: F = Shar outer + %s inner; Lem = bsearch outer + simd_quad (2026-04-27); "
                 "Lem2 = bsearch outer + simd_quad_2026_10 (2026-10-02); "
                 "Fb = bsearch outer + %s inner (two-level A); "
