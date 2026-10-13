@@ -290,29 +290,64 @@ as unmeasured until those sizes are re-run and archived.
 
 * **Pi 5 speculative prefetch is a net loss, not a "~10–25% cold win".**
   `simd_quad_graviton.c` is `simd_quad_pi5.c` minus the one in-loop
-  prefetch (plus padded variants), so the archived Pi 5 main-bench table
-  is a built-in A/B: the prefetch kernel is slower cold at 13 of 14 sizes
-  from n = 128 up (+2% to +31%) and slower warm at 13 of 14 (`plot.py`
-  pi5 dicts, pi5 vs graviton columns; per-run pairs in
+  prefetch (plus padded variants), so the archived Pi 5 main-bench table is
+  a built-in A/B: the prefetch kernel is slower cold at 13 of 14 sizes from
+  n = 128 up (+2% to +31%) and slower warm at 13 of 14 (`plot.py` pi5
+  dicts, pi5 vs graviton columns; per-run pairs in
   `pi5_runs/rebench_run*.txt` agree, e.g. n = 2048 cold 5/5). Fresh
   interleaved A/Bs in the review agreed (1–6% slower at n = 4096, 17–20%
   slower at n = 2048; only n = 1024 favoured the prefetch). No prefetch A/B
-  exists anywhere in `pi5_runs/`. Structurally the prefetch address
-  depends on the just-updated `base`, so it issues at the same dependency
-  depth as the demand loads it is supposed to hide. The M4 and Graviton
-  kernel headers restate the Pi 5 claim as the rationale for their own
-  prefetch decisions; the shipped Pi 5 kernel still contains the prefetch
-  (removing it is a kernel change that needs its own A/B on all sizes).
+  exists anywhere in `pi5_runs/`. Structurally the prefetch address depends
+  on the just-updated `base`, so it issues at the same dependency depth as
+  the demand loads it is supposed to hide. The M4 and Graviton kernel
+  headers restate the Pi 5 claim as the rationale for their own prefetch
+  decisions; the shipped Pi 5 kernel still contained the prefetch until the
+  dedicated A/Bs of 2026-10-12/13. Update 2026-10-13: two A/Bs on the
+  second Pi 5 board — ten paired flushed main-bench runs
+  (`pi5_runs/rebench_flushed_eight_paired.txt`: the prefetch kernel slower
+  warm at every size from 128 up, +3% to +8%, 10/10; slower cold at 12 of
+  those 14 sizes, up to +23% (the no-prefetch kernel up to 18% faster);
+  faster cold only at 1024 (−7%, 9/10, a WIN) and 1234 (−2%, 8/10, a tie))
+  and the two-level kernel A/B `sweep_ab1`
+  (`pi5_runs/sweep_ab1_findings.md`: 3–14% faster in the outer-hot modes
+  from n ≈ 667, 3–8% slower in both cold modes) — and the line was removed
+  from `simd_quad_pi5.c`, which now compiles to the same instructions as
+  `simd_quad_graviton`. Every archived Pi 5 number measured the kernel with
+  the prefetch; the `gv4` columns of the same runs are the kernel as it is
+  now.
 * **"One block = one cache line" is asserted but never enforced.** Arrays
   and spines are `std::vector` allocations (16-byte aligned), so about 75%
   of 64-byte blocks and 87.5% of 128-byte blocks straddle two lines, and a
-  256-byte spine usually spans five lines. Interleaved aligned-vs-misaligned
-  A/Bs on the Pi 5 measured a +14–30% cold penalty at n = 4096, and the
-  hybrid-vs-general-n cold ordering flips with the alignment regime. A
-  Roaring integration must align container arrays and spines to get the
-  designed behaviour. `Text/aliasing_investigation.md`'s premise that "the
-  allocator returns power-of-two-aligned blocks" is false for glibc at
-  these sizes.
+  256-byte spine usually spans five lines. Interleaved
+  aligned-vs-misaligned A/Bs on the Pi 5 measured a +14–30% cold penalty at
+  n = 4096, and the hybrid-vs-general-n cold ordering flips with the
+  alignment regime. A Roaring integration must align container arrays and
+  spines to get the designed behaviour. `Text/aliasing_investigation.md`'s
+  premise that "the allocator returns power-of-two-aligned blocks" is false
+  for glibc at these sizes. Update 2026-10-13: measured properly.
+  `bench.cpp` prints an aligned `nA` row for every size since 2026-10-12;
+  in ten paired flushed runs on the second Pi 5 board the aligned Pi 5
+  spine kernel (`pi5s`, the general-n `pi5_spine`) is 14–38% faster cold at
+  13 of the 14 sizes from 128 up (10/10 in every WIN cell; n = 1234 a tie
+  at +0.6%; at n = 4096 −18%, −33.8 ns — the compile-time `pi5_spine_4096`
+  has no aligned row) and ties warm; the Graviton twin agrees (13 of 14,
+  21–36%, 1234 a tie, 4096 at 9/10) and the M4 kernel wins at all 14
+  (8–33%, 10/10); the plain kernel gains cold only up to 333, and below one
+  block the aligned copies' layout alone moves the sequential cold sweep by
+  22–39% for every kernel at the n = 8 control (10/10 in all nine columns;
+  15–57% at n = 11–23, and 51–61% at n = 32, one block, where the plain row
+  can straddle), with the same layout effect still 8–19% at n ≥ 1024 for
+  the linear scan, which alignment cannot help — so the Pi 5 main-bench
+  gains are an upper bound that includes a prefetcher-friendlier layout.
+  Coffee Lake (ten runs each with and without turbo): aligned spine kernel
+  26–40% faster cold from n = 617 up with turbo (9–10/10; the 512 cell a
+  −15% tie, 6/10) and 26–35% from n = 512 up without (10/10), warm ties.
+  The two-level kernel A/B (`sweep_ab1`, variant Fa) has the aligned copies
+  3–7% faster cold from n ≈ 512 but slower hot at nearly every size (WIN(F)
+  at 113 / 106 of 179 sizes in hot_bat / hot_ser): 23–33 ns below n = 32,
+  the footprint of one-line copies, and 4–17 ns by band median from 32 up,
+  a cost that is not understood above the footprint range. The kernel
+  headers now state the alignment precondition.
 * **Shar's outer search is a serial cmov chain, not "nine independent
   loads in parallel".** The compiled loop is load → compare → csel → load,
   each address depending on the previous select; it cannot be speculated
@@ -457,6 +492,31 @@ off on this core. The **Pi 5 ship recommendation is D** (outer spine +
 compile-time n=4096 inner): tied-best hot with B and F (E is within 3%,
 but D is faster in 8 of 10 hot_bat runs), and the only variant that wins
 cold_bat. F is a hot tie and loses cold_bat by 45%.
+
+**Intel Coffee Lake (new host, 2026-10-12):** the user's 2019 MacBook Pro
+(i9-9980HK, Ubuntu) was onboarded with the repaired harness only, ten runs
+with turbo on (hot modes throttled, 4× run-level drift) and ten with turbo
+off (`cfl_runs/twolevel_paired_v2_noturbo.txt`, drift 1.05–1.22×): F best
+in hot_ser (10/10), C best in cold_bat (10/10, F +7.1%), D best in cold_ser
+(8/10), hot_bat a tie by rank; F vs Lem −49.6% / −61.6% / −37.9% / −6.0%
+(10/10 in every mode); I vs F +16.7% / +17.2% / +10.3% in hot_ser, cold_bat
+and cold_ser (0/10) and a hot_bat tie, H vs E +11% to +20% — the corrected
+Khuong & Morin outer does not pay off on this core either. The five-variant
+size sweep (179 sizes × 4 modes × 10 runs, the Pi 5 campaigns' arrays and
+targets) was also run twice, with turbo and at the 2.4 GHz base clock
+(`cfl_runs/sweep_fvl3_paired.txt`,
+`cfl_runs/sweep_fvl3_noturbo_paired.txt`): F beats both Lemire kernels hot
+at every size in both sets (WIN(F) 179 of 179 in every hot cell; 10/10 in
+every cell of the base-clock set and of the turbo set's hot_bat, 9/10 in
+the turbo set's hot_ser at n = 16, 224 and 2756 against either kernel),
+Lemire leads cold_ser below n ≈ 512 through the outer search as on the Pi
+5, there is no four-to-seven-block hot deficit on this core, and the
+base-clock repeat calls an opposite winner in one of the 5,012 compared
+cells (Lem2 vs F, cold_bat, n = 161: WIN(Lem2) −3.7%, 8/10 with turbo
+against WIN(F) +3.6%, 8/10 without — both at the rule's thresholds) and
+otherwise differs only by WIN↔TIE flips, at 0–15% of sizes hot and 8–30%
+cold (`cfl_runs/sweep_fvl3_turbo_vs_noturbo.txt`, where that cell is the
+one line marked `flip`). See `cfl_runs/cfl_findings.md`.
 
 **Other hosts:** not yet re-measured. Rebuild `bench_twolevel` with the
 host's build line, then
