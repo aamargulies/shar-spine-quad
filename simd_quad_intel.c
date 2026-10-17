@@ -47,17 +47,21 @@
  *     compare. Small-size fast path for 8 <= n < 16 uses a single
  *     128-bit SSE2 compare. One fewer tier than M4 (which needed
  *     [32,64) as a new tier for gap=64).
- *   - Speculative prefetch inside the interpolation loop is gated on the
- *     same __AVX512VBMI2__ proxy as the zmm block check, with the opposite
- *     polarity: kept on Skylake-SP/X and AVX2-only hosts (narrower OoO,
- *     fewer LFBs, scalar loop running downclocked under the AVX-512 license
- *     on SKX -- the hint overlaps the next probe with in-flight loads and
- *     pays its issue slot back), removed on Ice Lake-SP and newer (wide
- *     ROB + 3 load AGUs + aggressive L1/L2 streamers already overlap the
- *     miss; the hint is pure dispatch waste). Measured on Emerald Rapids
- *     (Xeon Platinum 8559C, 2026-04-30) as a 4-13% warm and up to 18% cold
- *     speedup when removed, with no regressions at any size. Polarity for
- *     A76 / M4 Max is documented in their own files.
+ *   - No speculative prefetch inside the interpolation loop on either path
+ *     (since 2026-10-13; see the comment in the loop). The zmm path never had
+ *     one (Emerald Rapids, 2026-04-30: 4-13% warm and up to 18% cold faster
+ *     without); the AVX2 path kept one for Skylake-SP/X and AVX2-only hosts
+ *     until the Coffee Lake A/Bs of 2026-10-13 found it slower warm at every
+ *     main-bench size from 333 up and slower or tied cold in both the main
+ *     bench and the two-level kernel A/B (cfl_runs/prefetch_ab_findings.md).
+ *     The spine kernels still prefetch the first spine line. The Pi 5 kernel
+ *     lost its in-loop prefetch the same way on 2026-10-13; M4 and Graviton
+ *     never had one.
+ *   - The partial last block of the general-n kernels (plain, spine, padded
+ *     spine) is checked with one vector membership test of the array's last
+ *     32 elements instead of a scalar sweep (since 2026-10-17, after the
+ *     Coffee Lake and Ice Lake-SP kernel A/Bs; numbers and correctness
+ *     argument at the first site, in simd_quad_intel below).
  *   - The branchless base update (base += (c1 + c2 + c3) * quarter) is
  *     already what any modern compiler will lower to CMOV or a masked
  *     add on x86. No Intel-specific work needed here.
@@ -111,24 +115,28 @@ bool simd_quad_intel(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
         int32_t c3 = (k3 < pos);
         base += (c1 + c2 + c3) * quarter;
         n -= 3 * quarter;
-#if !defined(__AVX512VBMI2__)
-        // Skylake-SP/X and AVX2-only hosts: kept because the SKX A/B was
-        // inconclusive and the core is narrower (fewer LFBs, 2 load AGUs).
-        // CORRECTION 2026-10-11: earlier text here said the scalar loop
-        // "is running at AVX-512 license L2 anyway"; in this build no zmm
-        // instruction executes at all, so nothing is downclocked and that
-        // is not a reason to keep the prefetch. Note also that Zen 4/5
-        // define __AVX512VBMI2__, so AMD builds take the no-prefetch zmm
-        // branch untested.
-        // Ice Lake-SP and newer (Sapphire/Emerald/Granite Rapids) have enough
-        // ROB + load AGUs + aggressive HW prefetchers that the hint is pure
-        // issue-slot waste -- measured on EMR (Xeon 8559C, 2026-04-30) as a
-        // consistent 4-13% warm and up to 18% cold speedup when removed, and
-        // Ice Lake/Sapphire/Granite share that uarch family. VBMI2 is our
-        // proxy for "Ice Lake-SP or newer", same split as the zmm gate below.
-        _mm_prefetch((const char *)(carr + (base + (n >> 1)) * gap),
-                     _MM_HINT_T0);
-#endif
+        // No in-loop prefetch on any path since 2026-10-13. Until then the
+        // AVX2 path (!__AVX512VBMI2__: Skylake-SP/X, Coffee Lake, every
+        // AVX2-only host) issued
+        //     _mm_prefetch((const char *)(carr + (base + (n >> 1)) * gap), _MM_HINT_T0);
+        // here, "kept because the SKX A/B was inconclusive"; the zmm path never
+        // had it (Emerald Rapids, 2026-04-30: 4-13% warm and up to 18% cold
+        // faster without). The Coffee Lake A/Bs of 2026-10-13 (the same
+        // Skylake core as SKX, 2.4 GHz base clock) settled the AVX2 path:
+        // ten interleaved flushed main-bench pairs had the kernel without the
+        // prefetch faster warm at every size from 333 up (-3.6% to -7.5%,
+        // 10/10 in every cell, both plain and line-aligned rows) and faster
+        // cold at 9 of 28 cells (n = 4096 -10%), never slower
+        // (cfl_runs/bench_ab_pfab_vs_pfab_np_paired.txt); in the two-level
+        // kernel A/B (sweep_abi1, Gnp vs G, 7,160 cells) it was a tie hot at
+        // 175 of 179 sizes, faster at 3710-4096, and faster cold by 10-31 ns
+        // per query in cold_bat from 128 up and by 6-15 ns in cold_ser from 256
+        // up (cfl_runs/prefetch_ab_findings.md).
+        // Structurally the prefetch fetched the start of block base + n/2
+        // while the next probes read block ends, at an address that depends
+        // on the just-updated base -- the same dependency depth as the demand
+        // loads it was meant to hide. Zen 4/5 define __AVX512VBMI2__ and take
+        // the zmm block check below untested.
     }
     while (n > 1) {
         int32_t half = n >> 1;
@@ -154,11 +162,66 @@ bool simd_quad_intel(const uint16_t *carr, int32_t cardinality, uint16_t pos) {
 #endif
     }
 
-    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
-        uint16_t v = carr[j];
-        if (v >= pos) return v == pos;
+    // Partial last block (the tail, cardinality % gap elements): one vector
+    // membership test of the array's last gap elements instead of a scalar
+    // sweep (since 2026-10-17). The sweep it replaces was
+    //     for (j = num_blocks * gap; j < cardinality; j++) { v = carr[j]; if (v >= pos) return v == pos; }
+    //     return false;
+    // which GCC 17 compiles to an alignment-peeled prologue of up to 15
+    // compare-and-branch steps around a vector step. Measured as variants
+    // Ft / Gt of bench_ab_intel.cpp (campaign sweep_abi1, 7,160 cells per
+    // host, 10 runs): on Coffee Lake (AVX2 form) 3-14% faster hot at
+    // n = 42-62, 3-8.5% at 81-95, 3-6% at 120-124 and 184-190, -35 to -39 ns
+    // cold_bat at 48-62, no loss in any band; on Ice Lake-SP (zmm form) WIN
+    // at 34-39 sizes per hot mode and 31-33 in cold_bat from n ~ 35 up, no
+    // effect loss at all (cfl_runs/prefetch_ab_findings.md,
+    // icx_runs/icx_findings.md). It closes the small hot-loss bands against
+    // Lemire's gap-16 kernel, which were this sweep.
+    // Why it returns exactly what the sweep returned:
+    //   - We get here only when the descent ended at lo == num_blocks (every
+    //     lo < num_blocks returned from the block check above) and with
+    //     cardinality >= gap (smaller arrays took the small-size paths), so
+    //     tl = carr + cardinality - gap >= carr and the window [tl, tl + gap)
+    //     lies inside the array: the loads read the array's own last 64 bytes.
+    //   - The window ends where the array ends, so it holds the whole tail
+    //     [num_blocks * gap, cardinality) -- fewer than gap elements -- and,
+    //     before it, the last gap - (cardinality % gap) elements of the last
+    //     full block.
+    //   - lo == num_blocks means the descent compared the last full block's
+    //     maximum carr[num_blocks * gap - 1] (the last spine entry) with pos
+    //     and found it < pos (the final pick `(key < pos) ? base + 1 : base`
+    //     returns num_blocks only from base == num_blocks - 1 with that key
+    //     < pos; the padded spine's 3-probe finish only when the entries
+    //     base..num_blocks - 1 are all < pos, its 0xFFFF sentinels never
+    //     compare < pos). carr is sorted, so no element of the last full block
+    //     can equal pos: a match in the window is a match in the tail and vice
+    //     versa.
+    //   - With an empty tail (cardinality % gap == 0) the answer is false, as
+    //     the empty sweep's was, and the guard returns it without loading
+    //     anything -- the measured variant had no guard and loaded the last
+    //     full block there; the campaigns could not tell the difference (no
+    //     above-the-maximum misses in their cold modes, a tie in the hot ones),
+    //     and the guard keeps the shipped behaviour for that case.
+    // Exhaustively checked for every n from 1 to 300 and at 511-513, 1023-1025,
+    // 2047-2049, 4095 and 4096, all 65,536 keys, against std::binary_search, on
+    // both the AVX2 and the zmm path (2026-10-17).
+    {
+        if (cardinality == num_blocks * gap) return false;  // empty tail: nothing above the last full block
+        const uint16_t *tl = carr + cardinality - gap;
+#if defined(__AVX512VBMI2__)
+        __m512i needle = _mm512_set1_epi16((short)pos);
+        __m512i v = _mm512_loadu_si512((const void *)tl);
+        __mmask32 m = _mm512_cmpeq_epi16_mask(v, needle);
+        return m != 0;
+#else
+        __m256i needle = _mm256_set1_epi16((short)pos);
+        __m256i v0 = _mm256_loadu_si256((const __m256i *)tl);
+        __m256i v1 = _mm256_loadu_si256((const __m256i *)(tl + 16));
+        __m256i eq = _mm256_or_si256(_mm256_cmpeq_epi16(v0, needle),
+                                     _mm256_cmpeq_epi16(v1, needle));
+        return _mm256_movemask_epi8(eq) != 0;
+#endif
     }
-    return false;
 }
 
 /*
@@ -264,11 +327,26 @@ bool simd_quad_intel_spine(const uint16_t *carr, const uint16_t *spine,
 #endif
     }
 
-    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
-        uint16_t v = carr[j];
-        if (v >= pos) return v == pos;
+    // Partial last block: the vector membership test of the array's last gap
+    // elements, as in simd_quad_intel above (correctness argument there; the
+    // descent's lo == num_blocks again implies spine[num_blocks - 1] < pos).
+    {
+        if (cardinality == num_blocks * gap) return false;  // empty tail: nothing above the last full block
+        const uint16_t *tl = carr + cardinality - gap;
+#if defined(__AVX512VBMI2__)
+        __m512i needle = _mm512_set1_epi16((short)pos);
+        __m512i v = _mm512_loadu_si512((const void *)tl);
+        __mmask32 m = _mm512_cmpeq_epi16_mask(v, needle);
+        return m != 0;
+#else
+        __m256i needle = _mm256_set1_epi16((short)pos);
+        __m256i v0 = _mm256_loadu_si256((const __m256i *)tl);
+        __m256i v1 = _mm256_loadu_si256((const __m256i *)(tl + 16));
+        __m256i eq = _mm256_or_si256(_mm256_cmpeq_epi16(v0, needle),
+                                     _mm256_cmpeq_epi16(v1, needle));
+        return _mm256_movemask_epi8(eq) != 0;
+#endif
     }
-    return false;
 }
 
 // Build the spine for a given carr. Caller allocates cardinality/32 u16s.
@@ -402,11 +480,26 @@ bool simd_quad_intel_spine_padded(const uint16_t *carr, const uint16_t *spine,
 #endif
     }
 
-    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
-        uint16_t v = carr[j];
-        if (v >= pos) return v == pos;
+    // Partial last block: the vector membership test of the array's last gap
+    // elements, as in simd_quad_intel above (correctness argument there; the
+    // descent's lo == num_blocks again implies spine[num_blocks - 1] < pos).
+    {
+        if (cardinality == num_blocks * gap) return false;  // empty tail: nothing above the last full block
+        const uint16_t *tl = carr + cardinality - gap;
+#if defined(__AVX512VBMI2__)
+        __m512i needle = _mm512_set1_epi16((short)pos);
+        __m512i v = _mm512_loadu_si512((const void *)tl);
+        __mmask32 m = _mm512_cmpeq_epi16_mask(v, needle);
+        return m != 0;
+#else
+        __m256i needle = _mm256_set1_epi16((short)pos);
+        __m256i v0 = _mm256_loadu_si256((const __m256i *)tl);
+        __m256i v1 = _mm256_loadu_si256((const __m256i *)(tl + 16));
+        __m256i eq = _mm256_or_si256(_mm256_cmpeq_epi16(v0, needle),
+                                     _mm256_cmpeq_epi16(v1, needle));
+        return _mm256_movemask_epi8(eq) != 0;
+#endif
     }
-    return false;
 }
 
 // Build a padded spine. Caller allocates cardinality/32 + 2 u16s. Writes
