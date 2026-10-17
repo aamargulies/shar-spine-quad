@@ -314,7 +314,18 @@ as unmeasured until those sizes are re-run and archived.
   from `simd_quad_pi5.c`, which now compiles to the same instructions as
   `simd_quad_graviton`. Every archived Pi 5 number measured the kernel with
   the prefetch; the `gv4` columns of the same runs are the kernel as it is
-  now.
+  now. Update 2026-10-13, Intel: the AVX2 path of `simd_quad_intel.c`
+  (Skylake-SP, Coffee Lake) kept its in-loop prefetch "because the SKX A/B
+  was inconclusive"; two A/Bs on the Coffee Lake laptop at the base clock
+  (`cfl_runs/prefetch_ab_findings.md`) — ten interleaved flushed main-bench
+  pairs (`cfl_runs/bench_ab_pfab_vs_pfab_np_paired.txt`: without the
+  prefetch 3.6–7.5% faster warm at every size from 333 up, 10/10 in every
+  cell, faster at 9 of 28 cold cells and never slower) and the two-level
+  kernel A/B `sweep_abi1` (with the prefetch: a tie hot at 175 of 179
+  sizes and 3–5% slower at the other four, 3710–4096; 10–31 ns per query
+  slower in cold_bat from 128 up and 6–15 ns in cold_ser from 256 up) —
+  and the line was removed from that path too.
+  No kernel in the project prefetches inside its interpolation loop now.
 * **"One block = one cache line" is asserted but never enforced.** Arrays
   and spines are `std::vector` allocations (16-byte aligned), so about 75%
   of 64-byte blocks and 87.5% of 128-byte blocks straddle two lines, and a
@@ -346,7 +357,7 @@ as unmeasured until those sizes are re-run and archived.
   3–7% faster cold from n ≈ 512 but slower hot at nearly every size (WIN(F)
   at 113 / 106 of 179 sizes in hot_bat / hot_ser): 23–33 ns below n = 32,
   the footprint of one-line copies, and 4–17 ns by band median from 32 up,
-  a cost that is not understood above the footprint range. The kernel
+  a cost the layout experiment of 2026-10-13 (`pi5_runs/layout1_findings.md`, seven storage layouts of one kernel, two campaigns) traced to the kernel A/B harness itself (five of six variants refreshed the plain arrays in every hot pass, only Fa its copies); with every layout given its own storage, alignment is 5–17 ns FASTER hot at 32–1024 and 2–3 ns (1%, a tie) at 4096 (Fao vs Fa, Fapool vs Fpool), 48–74 ns faster cold at 3072–4096 (18–27 ns in cold_bat at 512–2048), and the position-only mirror of F's layout (Fmir) is slower cold than the originals at every size, by 18–72 ns per band (fresh pages) while a spine placed away from its array costs 40–65 ns cold at n ≥ 1024. The kernel
   headers now state the alignment precondition.
 * **Shar's outer search is a serial cmov chain, not "nine independent
   loads in parallel".** The compiled loop is load → compare → csel → load,
@@ -422,7 +433,8 @@ as unmeasured until those sizes are re-run and archived.
   512-bit integer compares trip license level L1, not L2, and the shipped
   gated build executes no zmm instruction at all, so nothing is downclocked
   and "kept because the scalar loop is downclocked" is not a reason for the
-  SKX prefetch. The Emerald Rapids 8559C core is Raptor Cove (not Granite
+  SKX prefetch (removed on 2026-10-13 after the Coffee Lake A/Bs, section
+  5's prefetch bullet). The Emerald Rapids 8559C core is Raptor Cove (not Granite
   Rapids, not Redwood Cove). The review reported Neoverse V2 has three
   load pipes rather than four (not verified on hardware here). M1 Pro runs
   at about 0.72× the M4 Max clock, not half. `thrash_llc()` was 256 MB,
@@ -518,7 +530,32 @@ otherwise differs only by WIN↔TIE flips, at 0–15% of sizes hot and 8–30%
 cold (`cfl_runs/sweep_fvl3_turbo_vs_noturbo.txt`, where that cell is the
 one line marked `flip`). See `cfl_runs/cfl_findings.md`.
 
-**Other hosts:** not yet re-measured. Rebuild `bench_twolevel` with the
+**Intel Ice Lake-SP (new host, 2026-10-13):** the user's AWS i4i.32xlarge
+(two Xeon Platinum 8375C, Sunny Cove, AVX-512 with VBMI2 so the zmm path,
+no in-loop prefetch) was onboarded with the repaired harness only, ten runs
+pinned to core 3 of socket 0 (`icx_runs/twolevel_paired_v2.txt`, drift
+1.03–1.04× except hot_bat 1.09×, where in nine of the ten runs the
+variant timed first in the hot_bat pass ran 1.9–2.7× slower than its
+level elsewhere (F in three of them, 122–123 ns against 47; Lem, first in
+the tenth, +15%) — so hot_ser carries the hot verdict): F best in hot_ser
+(10/10; E +15.2%, D +43.0%), C best in cold_bat (10/10; D +12.8%, F +22.8%)
+and cold_ser (10/10; D +6.5%, A +7.1%, F +30.1%); F vs Lem −76.5% / −74.9%
+/ −35.6% / −4.2% (10/10 in every mode); I vs F a hot_bat tie (+19.1%,
+3/10), +56.6% hot_ser (0/10), ties cold; H vs E +26.3% / +41.2% hot (0/10),
+ties cold. The five-variant size sweep (179 sizes × 4 modes × 10 runs,
+`icx_runs/sweep_fvl3_paired.txt`, drift 1.00–1.01×) has F ahead of both
+Lemire kernels hot at every size (WIN(F) 179 of 179 in both modes, +23 to
++70 ns, all of it the outer) and the branchy outer ahead cold at almost
+every size, by 93–222 ns per query in cold_ser in every band and in
+cold_bat by 21 / 64 / 126–221 ns at n = 1–32 / 33–128 / 129 up (Fb vs F,
+WIN(Fb) at 174 / 177 of 179 sizes; Lem vs LemS 42 / 120 / 143–223 ns,
+179 / 179), so Lemire's stack leads cold_ser at 170 of 179 sizes
+including n = 4096 — the Shar outer is not a cold option on this core. Its
+kernel A/B (`icx_runs/sweep_abi1_paired.txt`) confirmed the vector tail on
+the zmm path, which was adopted into `simd_quad_intel.c` on 2026-10-17. See
+`icx_runs/icx_findings.md`.
+
+**Other hosts** (M4 Max, M1 Pro, Skylake-SP, Emerald Rapids, Graviton 4): not yet re-measured. Rebuild `bench_twolevel` with the
 host's build line, then
 
 ```
