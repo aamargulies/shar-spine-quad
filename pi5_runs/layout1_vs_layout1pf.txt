@@ -1,0 +1,1143 @@
+Campaign comparison: A = pi5_layout1_data.py (layout1, 10 runs) vs B = pi5_layout1pf_data.py (layout1pf, 10 runs)
+host A Raspberry Pi 5 (Cortex-A76); host B Raspberry Pi 5 (Cortex-A76); 26 shared sizes, pairs: Fa vs F, Fmir vs F, Fv2 vs F, Fpool vs F, Fmir vs Fpool, Fao vs Fa, Fapool vs Fpool, Fapool vs Fa
+Per cell: the pair's median paired delta in A and in B (percent, ns, verdict), then B - A in ns and whether the verdicts agree. Negative delta = the first-named variant of the pair faster.
+
+==============================================================================================================
+Fa vs F   (aligned_alloc copies, second pass (the sweep_ab1 Fa): alignment, position, footprint and spine placement at once)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      25.3%     16.7 WIN(F)            29.6%     20.0 WIN(F)            +3.3  yes
+     16      10.5%      5.9 TIE               17.8%      9.8 WIN(F)            +3.9  no
+     24      13.0%      8.5 WIN(F)            10.6%      7.0 WIN(F)            -1.5  yes
+     32      -7.4%     -7.3 WIN(Fa)           -8.1%     -7.4 WIN(Fa)           -0.1  yes
+     40     -17.9%    -17.4 WIN(Fa)          -17.0%    -16.9 WIN(Fa)           +0.6  yes
+     48     -12.8%    -13.8 WIN(Fa)          -13.6%    -14.3 WIN(Fa)           -0.4  yes
+     56     -19.6%    -22.0 WIN(Fa)          -16.7%    -18.7 WIN(Fa)           +3.3  yes
+     64     -14.8%    -17.1 WIN(Fa)          -11.0%    -13.3 WIN(Fa)           +3.7  yes
+     80     -10.7%    -12.5 WIN(Fa)          -10.9%    -12.9 WIN(Fa)           -0.4  yes
+     96     -14.9%    -19.3 WIN(Fa)          -15.3%    -19.8 WIN(Fa)           -0.5  yes
+    112      -5.8%     -7.9 TIE               -7.4%    -10.1 WIN(Fa)           -2.2  no
+    128     -10.1%    -15.2 TIE               -1.9%     -2.8 TIE              +12.4  yes
+    160      -3.6%     -5.8 TIE               -0.4%     -0.6 TIE               +5.2  yes
+    192       0.8%      1.3 TIE                0.5%      0.8 TIE               -0.5  yes
+    224      -4.0%     -6.6 WIN(Fa)           -7.1%    -11.4 TIE               -4.8  no
+    256     -13.2%    -21.2 WIN(Fa)          -15.1%    -25.0 WIN(Fa)           -3.8  yes
+    320      -3.7%     -6.1 WIN(Fa)           -5.8%     -9.9 WIN(Fa)           -3.8  yes
+    384     -20.4%    -35.6 WIN(Fa)           -2.7%     -4.7 TIE              +30.9  no
+    512      -2.1%     -3.6 TIE               -2.5%     -4.2 TIE               -0.7  yes
+    640      -4.2%     -7.5 WIN(Fa)           -5.8%    -10.2 WIN(Fa)           -2.7  yes
+    768      -5.1%     -9.3 WIN(Fa)           -4.0%     -7.3 WIN(Fa)           +2.0  yes
+   1024      -4.1%     -7.4 WIN(Fa)           -6.9%    -12.5 WIN(Fa)           -5.1  yes
+   1536      -2.4%     -4.5 TIE               -2.5%     -4.6 TIE               -0.1  yes
+   2048      -1.8%     -3.5 TIE               -2.6%     -4.9 TIE               -1.3  yes
+   3072      -1.3%     -2.5 TIE               -1.2%     -2.4 TIE               +0.1  yes
+   4096      -1.5%     -3.2 TIE               -1.5%     -3.0 TIE               +0.2  yes
+  median of B - A by band: 1-32: +1.6 ns (4); 33-128: +0.1 ns (8); 129-265: -2.1 ns (4); 266-512: -0.7 ns (3); 513-1024: -2.7 ns (3); 1025-2048: -0.7 ns (2); 2049-4096: +0.1 ns (2); all sizes -0.3 ns
+  verdicts: agree 22, WIN<->TIE 4, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      33.2%     16.2 WIN(F)            45.3%     18.7 WIN(F)            +2.5  yes
+     16      15.6%      9.8 WIN(F)            17.0%      9.2 WIN(F)            -0.6  yes
+     24       8.8%      6.0 WIN(F)            11.5%      7.7 WIN(F)            +1.7  yes
+     32      -5.8%     -5.4 WIN(Fa)           -7.6%     -7.1 WIN(Fa)           -1.8  yes
+     40      -6.9%     -8.0 WIN(Fa)           -2.7%     -3.1 TIE               +4.9  no
+     48     -15.1%    -15.6 WIN(Fa)           -6.9%     -8.3 WIN(Fa)           +7.3  yes
+     56     -17.2%    -19.1 WIN(Fa)          -17.6%    -19.6 TIE               -0.5  no
+     64     -10.2%    -12.2 WIN(Fa)           -8.4%    -10.0 WIN(Fa)           +2.2  yes
+     80     -12.0%    -14.7 WIN(Fa)           -7.2%     -8.7 WIN(Fa)           +6.0  yes
+     96     -13.8%    -18.5 WIN(Fa)          -14.4%    -19.4 WIN(Fa)           -0.9  yes
+    112      -3.6%     -5.2 TIE               -6.4%     -9.0 WIN(Fa)           -3.8  no
+    128      -5.9%     -9.3 TIE                1.3%      2.1 TIE              +11.4  yes
+    160      -1.9%     -3.1 TIE               -1.8%     -3.0 TIE               +0.1  yes
+    192      -1.8%     -3.1 TIE               -0.3%     -0.5 TIE               +2.6  yes
+    224      -2.6%     -4.4 TIE              -16.1%    -25.7 WIN(Fa)          -21.3  no
+    256     -12.9%    -21.0 WIN(Fa)          -14.1%    -23.3 WIN(Fa)           -2.3  yes
+    320      -4.8%     -8.1 WIN(Fa)           -5.8%     -9.9 WIN(Fa)           -1.8  yes
+    384     -15.6%    -27.5 WIN(Fa)          -12.7%    -22.3 WIN(Fa)           +5.2  yes
+    512      -1.7%     -2.9 TIE               -2.7%     -4.7 TIE               -1.9  yes
+    640      -5.4%     -9.6 WIN(Fa)           -4.0%     -7.2 WIN(Fa)           +2.4  yes
+    768      -4.6%     -8.5 WIN(Fa)           -4.7%     -8.6 WIN(Fa)           -0.1  yes
+   1024      -4.7%     -8.6 WIN(Fa)           -6.1%    -11.2 WIN(Fa)           -2.6  yes
+   1536      -2.4%     -4.6 TIE               -3.0%     -5.7 TIE               -1.1  yes
+   2048      -3.2%     -6.3 WIN(Fa)           -4.0%     -7.9 WIN(Fa)           -1.6  yes
+   3072      -1.4%     -2.8 TIE               -1.7%     -3.4 TIE               -0.7  yes
+   4096      -1.4%     -2.9 TIE               -1.3%     -2.8 TIE               +0.2  yes
+  median of B - A by band: 1-32: +0.6 ns (4); 33-128: +3.6 ns (8); 129-265: -1.1 ns (4); 266-512: -1.8 ns (3); 513-1024: -0.1 ns (3); 1025-2048: -1.4 ns (2); 2049-4096: -0.3 ns (2); all sizes -0.3 ns
+  verdicts: agree 22, WIN<->TIE 4, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       6.6%     27.4 WIN(F)             2.7%     11.3 TIE              -16.1  no
+     16       3.0%     13.7 WIN(F)             5.3%     23.4 WIN(F)            +9.7  yes
+     24       3.2%     16.7 WIN(F)             0.8%      4.4 TIE              -12.3  no
+     32       5.8%     31.2 WIN(F)             6.0%     31.9 WIN(F)            +0.7  yes
+     40       6.6%     36.5 WIN(F)             7.1%     38.4 WIN(F)            +1.9  yes
+     48       2.8%     16.9 TIE                1.6%      9.3 TIE               -7.5  yes
+     56       2.7%     17.4 TIE                4.6%     27.8 WIN(F)           +10.4  no
+     64       3.3%     20.7 WIN(F)             2.3%     14.4 TIE               -6.4  no
+     80       2.2%     13.9 TIE                4.1%     26.0 WIN(F)           +12.1  no
+     96       2.6%     16.4 TIE                1.7%     11.0 TIE               -5.4  yes
+    112       0.2%      1.5 TIE                1.1%      7.1 TIE               +5.6  yes
+    128       2.4%     15.3 TIE                0.4%      2.5 TIE              -12.8  yes
+    160       2.6%     17.0 TIE                1.7%     11.5 TIE               -5.6  yes
+    192       0.9%      7.1 TIE                0.9%      7.4 TIE               +0.3  yes
+    224       0.3%      2.8 TIE               -0.4%     -3.5 TIE               -6.3  yes
+    256       0.3%      2.2 TIE               -1.2%     -8.0 TIE              -10.2  yes
+    320       0.4%      3.4 TIE               -0.5%     -4.2 TIE               -7.6  yes
+    384      -0.4%     -3.0 TIE               -2.0%    -16.8 TIE              -13.8  yes
+    512      -0.1%     -1.0 TIE               -0.8%     -6.9 TIE               -5.8  yes
+    640       1.4%     11.4 TIE               -0.2%     -1.3 TIE              -12.7  yes
+    768      -1.8%    -14.6 TIE               -2.3%    -19.4 TIE               -4.8  yes
+   1024      -2.1%    -17.7 TIE               -1.3%    -10.9 TIE               +6.8  yes
+   1536      -0.0%     -0.0 TIE                0.8%      6.4 TIE               +6.4  yes
+   2048      -0.9%     -8.4 TIE               -1.9%    -18.9 TIE              -10.5  yes
+   3072      -5.3%    -57.4 WIN(Fa)           -3.7%    -40.0 WIN(Fa)          +17.4  yes
+   4096      -2.4%    -27.1 TIE                1.3%     13.8 TIE              +40.9  yes
+  median of B - A by band: 1-32: -5.8 ns (4); 33-128: -1.7 ns (8); 129-265: -5.9 ns (4); 266-512: -7.6 ns (3); 513-1024: -4.8 ns (3); 1025-2048: -2.0 ns (2); 2049-4096: +29.2 ns (2); all sizes -5.5 ns
+  verdicts: agree 21, WIN<->TIE 5, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -0.7%     -3.0 TIE                0.1%      0.7 TIE               +3.7  yes
+     16       0.1%      0.7 TIE                2.8%     13.7 TIE              +13.0  yes
+     24       0.4%      2.8 TIE                4.2%     26.4 TIE              +23.6  yes
+     32      10.0%     67.1 WIN(F)            11.9%     80.2 WIN(F)           +13.1  yes
+     40      10.8%     73.7 WIN(F)            11.2%     75.3 WIN(F)            +1.6  yes
+     48       9.1%     66.4 WIN(F)             7.7%     56.7 WIN(F)            -9.7  yes
+     56       6.5%     50.1 WIN(F)             7.6%     57.4 WIN(F)            +7.3  yes
+     64       6.5%     50.5 WIN(F)             5.2%     39.7 WIN(F)           -10.8  yes
+     80       6.6%     52.6 WIN(F)             4.7%     36.8 WIN(F)           -15.8  yes
+     96       4.0%     31.6 WIN(F)             3.3%     26.2 WIN(F)            -5.4  yes
+    112       4.6%     36.8 WIN(F)             3.4%     27.7 WIN(F)            -9.2  yes
+    128       6.6%     53.1 WIN(F)             6.1%     50.3 WIN(F)            -2.8  yes
+    160       7.3%     61.3 WIN(F)             5.6%     48.1 WIN(F)           -13.2  yes
+    192       3.7%     32.1 WIN(F)             2.8%     24.3 TIE               -7.9  no
+    224       2.3%     20.6 TIE                3.0%     27.1 WIN(F)            +6.5  no
+    256       2.8%     24.6 TIE                2.8%     24.4 TIE               -0.2  yes
+    320      -0.4%     -3.5 TIE               -0.1%     -1.3 TIE               +2.2  yes
+    384       1.9%     16.6 TIE               -0.3%     -2.6 TIE              -19.2  yes
+    512      -1.3%    -12.0 TIE               -1.3%    -12.1 TIE               -0.1  yes
+    640      -0.4%     -3.9 TIE               -0.9%     -8.4 TIE               -4.5  yes
+    768      -1.8%    -16.0 TIE               -1.1%    -10.6 TIE               +5.5  yes
+   1024      -4.1%    -39.3 WIN(Fa)           -5.9%    -58.6 WIN(Fa)          -19.4  yes
+   1536      -4.8%    -46.1 WIN(Fa)           -5.5%    -54.5 WIN(Fa)           -8.4  yes
+   2048      -4.8%    -51.6 WIN(Fa)           -5.1%    -54.4 WIN(Fa)           -2.8  yes
+   3072      -3.9%    -43.0 WIN(Fa)           -4.8%    -53.0 WIN(Fa)          -10.0  yes
+   4096      -4.7%    -53.8 WIN(Fa)           -0.1%     -1.3 TIE              +52.5  no
+  median of B - A by band: 1-32: +13.0 ns (4); 33-128: -7.3 ns (8); 129-265: -4.0 ns (4); 266-512: -0.1 ns (3); 513-1024: -4.5 ns (3); 1025-2048: -5.6 ns (2); 2049-4096: +21.2 ns (2); all sizes -2.8 ns
+  verdicts: agree 23, WIN<->TIE 3, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fmir vs F   (F's first-pass layout mirrored into a page-aligned arena: position only, spine placement preserved)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8     -12.3%     -4.9 WIN(Fmir)        -12.3%     -5.3 WIN(Fmir)         -0.4  yes
+     16     -11.1%     -6.1 WIN(Fmir)        -12.8%     -6.9 WIN(Fmir)         -0.8  yes
+     24     -11.2%     -7.2 WIN(Fmir)        -11.0%     -7.3 WIN(Fmir)         -0.1  yes
+     32      -7.5%     -7.0 WIN(Fmir)         -6.1%     -5.5 WIN(Fmir)         +1.5  yes
+     40      -9.1%     -8.8 TIE               -9.0%     -8.9 TIE               -0.0  yes
+     48      -6.3%     -6.4 WIN(Fmir)         -8.1%     -8.5 WIN(Fmir)         -2.1  yes
+     56      -4.7%     -5.2 WIN(Fmir)         -7.2%     -8.2 WIN(Fmir)         -3.0  yes
+     64      -6.0%     -6.9 WIN(Fmir)         -4.6%     -5.3 WIN(Fmir)         +1.6  yes
+     80      -6.0%     -7.0 WIN(Fmir)         -5.8%     -6.9 WIN(Fmir)         +0.2  yes
+     96      -5.7%     -7.4 WIN(Fmir)         -5.9%     -7.6 WIN(Fmir)         -0.2  yes
+    112      -4.5%     -6.1 TIE               -5.3%     -7.2 TIE               -1.1  yes
+    128      -2.6%     -4.0 TIE                0.8%      1.3 TIE               +5.3  yes
+    160      -0.5%     -0.8 TIE                0.5%      0.8 TIE               +1.5  yes
+    192      -0.2%     -0.3 TIE                0.1%      0.1 TIE               +0.5  yes
+    224      -2.9%     -4.7 TIE               -0.8%     -1.3 TIE               +3.4  yes
+    256      -2.8%     -4.5 TIE               -1.0%     -1.6 TIE               +2.9  yes
+    320       0.6%      1.0 TIE               -0.6%     -1.0 TIE               -2.0  yes
+    384      -0.9%     -1.5 TIE               -0.7%     -1.1 TIE               +0.4  yes
+    512       0.2%      0.3 TIE                0.4%      0.6 TIE               +0.3  yes
+    640      -1.2%     -2.1 TIE               -0.5%     -0.9 TIE               +1.2  yes
+    768      -0.9%     -1.6 TIE               -0.0%     -0.1 TIE               +1.5  yes
+   1024       0.3%      0.6 TIE                0.6%      1.1 TIE               +0.5  yes
+   1536       0.4%      0.8 TIE                1.0%      1.8 TIE               +1.0  yes
+   2048       0.8%      1.6 TIE                1.1%      2.2 TIE               +0.6  yes
+   3072       0.2%      0.5 TIE                0.5%      0.9 TIE               +0.5  yes
+   4096       0.4%      0.9 TIE                0.1%      0.2 TIE               -0.6  yes
+  median of B - A by band: 1-32: -0.2 ns (4); 33-128: -0.1 ns (8); 129-265: +2.2 ns (4); 266-512: +0.3 ns (3); 513-1024: +1.2 ns (3); 1025-2048: +0.8 ns (2); 2049-4096: -0.1 ns (2); all sizes +0.4 ns
+  verdicts: agree 26, WIN<->TIE 0, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8     -10.1%     -4.2 TIE              -10.2%     -4.3 WIN(Fmir)         -0.1  no
+     16     -10.7%     -5.8 WIN(Fmir)        -10.9%     -5.8 WIN(Fmir)         -0.1  yes
+     24     -13.3%     -9.0 WIN(Fmir)        -10.4%     -6.9 WIN(Fmir)         +2.1  yes
+     32      -5.0%     -5.0 WIN(Fmir)         -6.5%     -6.1 WIN(Fmir)         -1.1  yes
+     40      -3.4%     -4.0 TIE               -0.4%     -0.5 TIE               +3.5  yes
+     48      -4.8%     -4.9 WIN(Fmir)         -5.5%     -5.8 TIE               -0.9  no
+     56      -5.5%     -6.2 TIE               -5.2%     -5.8 WIN(Fmir)         +0.5  no
+     64      -5.2%     -6.2 WIN(Fmir)         -5.0%     -6.0 WIN(Fmir)         +0.3  yes
+     80      -5.3%     -6.9 WIN(Fmir)         -5.4%     -6.6 WIN(Fmir)         +0.3  yes
+     96      -5.2%     -6.9 WIN(Fmir)         -5.5%     -7.3 WIN(Fmir)         -0.4  yes
+    112      -4.7%     -6.7 WIN(Fmir)         -2.4%     -3.3 TIE               +3.4  no
+    128      -0.7%     -1.1 TIE               -1.1%     -1.7 TIE               -0.6  yes
+    160       0.5%      0.8 TIE               -0.1%     -0.1 TIE               -0.9  yes
+    192      -0.9%     -1.4 TIE               -0.3%     -0.5 TIE               +0.9  yes
+    224      -1.8%     -2.9 TIE               -2.4%     -3.8 TIE               -0.9  yes
+    256      -1.5%     -2.6 TIE               -1.5%     -2.5 TIE               +0.1  yes
+    320      -1.1%     -1.9 TIE               -1.3%     -2.2 TIE               -0.3  yes
+    384      -1.1%     -2.0 TIE               -0.9%     -1.6 TIE               +0.4  yes
+    512      -0.8%     -1.4 TIE               -0.8%     -1.5 TIE               -0.1  yes
+    640      -0.9%     -1.7 TIE               -1.1%     -2.0 TIE               -0.3  yes
+    768      -0.2%     -0.4 TIE               -0.4%     -0.8 TIE               -0.4  yes
+   1024       0.0%      0.1 TIE                0.5%      1.0 TIE               +0.9  yes
+   1536       0.4%      0.8 TIE               -0.3%     -0.6 TIE               -1.5  yes
+   2048       1.3%      2.5 TIE                0.5%      1.0 TIE               -1.6  yes
+   3072       0.4%      0.8 TIE                0.0%      0.1 TIE               -0.7  yes
+   4096       0.0%      0.0 TIE                0.3%      0.6 TIE               +0.6  yes
+  median of B - A by band: 1-32: -0.1 ns (4); 33-128: +0.3 ns (8); 129-265: -0.4 ns (4); 266-512: -0.1 ns (3); 513-1024: -0.3 ns (3); 1025-2048: -1.5 ns (2); 2049-4096: -0.1 ns (2); all sizes -0.1 ns
+  verdicts: agree 22, WIN<->TIE 4, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       9.6%     40.6 WIN(F)            12.4%     52.2 WIN(F)           +11.7  yes
+     16       9.1%     41.5 WIN(F)             9.6%     43.3 WIN(F)            +1.9  yes
+     24       8.3%     43.9 WIN(F)             7.7%     41.1 WIN(F)            -2.8  yes
+     32      10.4%     55.6 WIN(F)            10.8%     57.8 WIN(F)            +2.1  yes
+     40       8.8%     48.0 WIN(F)             8.4%     45.5 WIN(F)            -2.5  yes
+     48       5.9%     35.1 WIN(F)             4.6%     27.9 WIN(F)            -7.2  yes
+     56       1.7%     10.5 TIE                9.5%     55.8 WIN(F)           +45.3  no
+     64       6.6%     40.6 WIN(F)             6.8%     41.7 WIN(F)            +1.0  yes
+     80       4.1%     26.9 WIN(F)             5.2%     33.2 WIN(F)            +6.3  yes
+     96       3.0%     19.5 WIN(F)             2.7%     17.4 TIE               -2.1  no
+    112       2.8%     18.5 TIE                1.1%      7.1 TIE              -11.4  yes
+    128       4.4%     28.3 WIN(F)             1.9%     12.3 TIE              -16.0  no
+    160       2.5%     16.7 TIE                2.5%     16.8 TIE               +0.1  yes
+    192       2.1%     16.9 TIE                3.2%     25.4 WIN(F)            +8.5  no
+    224       2.9%     23.7 TIE                2.4%     19.5 TIE               -4.2  yes
+    256       2.4%     16.2 TIE                2.8%     19.1 TIE               +2.9  yes
+    320       3.5%     28.1 WIN(F)             3.7%     30.3 WIN(F)            +2.1  yes
+    384       3.3%     26.7 WIN(F)             2.0%     16.3 TIE              -10.4  no
+    512       2.3%     18.9 TIE                4.6%     37.6 WIN(F)           +18.7  no
+    640       4.2%     34.1 WIN(F)             3.8%     30.5 WIN(F)            -3.6  yes
+    768       2.0%     16.3 TIE                1.2%     10.2 TIE               -6.1  yes
+   1024       3.7%     31.7 WIN(F)             5.3%     44.6 WIN(F)           +13.0  yes
+   1536       1.9%     15.5 TIE                1.9%     16.3 TIE               +0.8  yes
+   2048       2.6%     24.4 TIE                1.4%     13.2 TIE              -11.3  yes
+   3072       1.7%     18.2 TIE                1.2%     12.3 TIE               -5.9  yes
+   4096       3.9%     43.9 WIN(F)             0.9%     10.3 TIE              -33.6  no
+  median of B - A by band: 1-32: +2.0 ns (4); 33-128: -2.3 ns (8); 129-265: +1.5 ns (4); 266-512: +2.1 ns (3); 513-1024: -3.6 ns (3); 1025-2048: -5.2 ns (2); 2049-4096: -19.8 ns (2); all sizes -1.0 ns
+  verdicts: agree 19, WIN<->TIE 7, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       1.4%      6.7 TIE                3.0%     13.9 TIE               +7.2  yes
+     16       8.0%     39.8 WIN(F)             9.2%     47.5 WIN(F)            +7.7  yes
+     24       5.6%     37.1 WIN(F)             7.7%     50.8 WIN(F)           +13.7  yes
+     32      14.2%     96.8 WIN(F)            14.0%     95.1 WIN(F)            -1.7  yes
+     40      14.5%     98.8 WIN(F)            14.8%    100.1 WIN(F)            +1.3  yes
+     48      11.8%     85.4 WIN(F)             8.5%     62.3 WIN(F)           -23.1  yes
+     56       8.8%     66.6 WIN(F)             9.1%     69.5 WIN(F)            +2.9  yes
+     64      10.0%     77.3 WIN(F)            11.6%     88.0 WIN(F)           +10.6  yes
+     80       7.3%     57.0 WIN(F)             7.4%     58.4 WIN(F)            +1.4  yes
+     96       7.3%     57.9 WIN(F)             7.7%     60.9 WIN(F)            +3.1  yes
+    112       7.7%     61.7 WIN(F)             6.1%     50.9 WIN(F)           -10.7  yes
+    128       6.6%     54.1 WIN(F)             6.4%     53.8 WIN(F)            -0.3  yes
+    160       5.8%     47.8 WIN(F)             5.2%     44.3 WIN(F)            -3.5  yes
+    192       4.2%     35.8 WIN(F)             3.8%     33.3 WIN(F)            -2.5  yes
+    224       3.5%     30.8 WIN(F)             3.7%     33.5 WIN(F)            +2.7  yes
+    256       3.1%     27.6 WIN(F)             4.8%     41.4 WIN(F)           +13.8  yes
+    320       2.6%     23.8 TIE                4.0%     35.7 WIN(F)           +11.9  no
+    384       1.8%     15.8 TIE                0.7%      6.6 TIE               -9.3  yes
+    512       2.3%     21.2 TIE                3.9%     36.2 WIN(F)           +15.0  no
+    640       2.1%     19.2 TIE                1.9%     16.4 TIE               -2.8  yes
+    768       1.8%     16.7 TIE                0.7%      6.7 TIE              -10.0  yes
+   1024       3.0%     28.4 TIE                1.9%     18.4 TIE              -10.0  yes
+   1536       2.1%     20.5 TIE                1.3%     13.1 TIE               -7.4  yes
+   2048       2.3%     24.2 TIE                2.5%     27.4 TIE               +3.2  yes
+   3072       2.3%     24.8 TIE               -0.8%     -9.4 TIE              -34.2  yes
+   4096       1.0%     12.0 TIE                1.3%     14.7 TIE               +2.7  yes
+  median of B - A by band: 1-32: +7.4 ns (4); 33-128: +1.3 ns (8); 129-265: +0.1 ns (4); 266-512: +11.9 ns (3); 513-1024: -10.0 ns (3); 1025-2048: -2.1 ns (2); 2049-4096: -15.7 ns (2); all sizes +1.3 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fv2 vs F   (glibc second-pass copies at the originals' residues: position only, spines adjacent)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       4.1%      1.9 TIE                3.5%      1.4 TIE               -0.6  yes
+     16       1.1%      0.8 TIE                7.0%      3.7 WIN(F)            +2.9  no
+     24       4.1%      2.8 WIN(F)             4.8%      3.2 WIN(F)            +0.4  yes
+     32       1.7%      1.5 TIE                1.4%      1.4 TIE               -0.2  yes
+     40       0.4%      0.4 TIE               -0.0%     -0.0 TIE               -0.4  yes
+     48       1.7%      1.9 TIE                2.0%      2.2 TIE               +0.3  yes
+     56       0.2%      0.2 TIE               -0.4%     -0.4 TIE               -0.7  yes
+     64       0.5%      0.6 TIE                1.0%      1.2 TIE               +0.6  yes
+     80       1.1%      1.3 TIE                0.6%      0.8 TIE               -0.5  yes
+     96       0.8%      1.1 TIE                0.3%      0.4 TIE               -0.6  yes
+    112       1.1%      1.5 TIE                0.8%      1.1 TIE               -0.4  yes
+    128      -0.2%     -0.3 TIE                1.9%      2.8 TIE               +3.1  yes
+    160       0.7%      1.2 TIE                0.6%      0.9 TIE               -0.2  yes
+    192       1.1%      1.8 TIE                1.0%      1.7 TIE               -0.2  yes
+    224       0.4%      0.6 TIE                1.5%      2.3 TIE               +1.7  yes
+    256       1.3%      2.1 TIE                1.2%      1.9 TIE               -0.2  yes
+    320       3.2%      5.5 WIN(F)             2.4%      4.0 TIE               -1.5  no
+    384       0.3%      0.4 TIE                0.3%      0.5 TIE               +0.0  yes
+    512       1.6%      2.8 TIE                2.1%      3.5 TIE               +0.8  yes
+    640       1.1%      2.0 TIE                0.7%      1.2 TIE               -0.8  yes
+    768       0.6%      1.2 TIE                0.9%      1.5 TIE               +0.4  yes
+   1024       1.5%      2.7 TIE                1.4%      2.5 TIE               -0.2  yes
+   1536       0.5%      0.9 TIE                0.9%      1.7 TIE               +0.9  yes
+   2048       1.3%      2.5 TIE                1.1%      2.0 TIE               -0.4  yes
+   3072      -0.2%     -0.4 TIE               -0.1%     -0.2 TIE               +0.2  yes
+   4096      -0.0%     -0.1 TIE               -0.2%     -0.4 TIE               -0.3  yes
+  median of B - A by band: 1-32: +0.1 ns (4); 33-128: -0.4 ns (8); 129-265: -0.2 ns (4); 266-512: +0.0 ns (3); 513-1024: -0.2 ns (3); 1025-2048: +0.2 ns (2); 2049-4096: -0.0 ns (2); all sizes -0.2 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       3.1%      1.3 TIE                7.5%      3.1 WIN(F)            +1.9  no
+     16       4.9%      2.6 WIN(F)             5.4%      3.1 WIN(F)            +0.5  yes
+     24       0.9%      0.6 TIE                3.1%      2.0 WIN(F)            +1.4  no
+     32       3.0%      3.2 TIE                1.7%      1.6 TIE               -1.7  yes
+     40       1.4%      1.5 TIE                0.5%      0.6 TIE               -0.8  yes
+     48       0.7%      0.8 TIE                0.3%      0.3 TIE               -0.5  yes
+     56       0.6%      0.7 TIE                1.0%      1.1 TIE               +0.4  yes
+     64       0.6%      0.7 TIE                0.9%      1.2 TIE               +0.5  yes
+     80      -0.1%     -0.2 TIE                0.7%      0.8 TIE               +1.0  yes
+     96       0.3%      0.4 TIE               -0.0%     -0.0 TIE               -0.4  yes
+    112       0.9%      1.3 TIE                1.0%      1.4 TIE               +0.2  yes
+    128       0.6%      0.9 TIE                0.8%      1.2 TIE               +0.3  yes
+    160       0.6%      1.0 TIE                0.3%      0.5 TIE               -0.5  yes
+    192       0.8%      1.3 TIE                0.6%      1.1 TIE               -0.3  yes
+    224       1.2%      2.0 TIE                1.7%      2.8 TIE               +0.8  yes
+    256       1.2%      1.9 TIE                1.0%      1.7 TIE               -0.2  yes
+    320       2.5%      4.3 TIE                2.7%      4.6 TIE               +0.3  yes
+    384       0.0%      0.1 TIE                0.6%      1.0 TIE               +0.9  yes
+    512       1.7%      3.0 TIE                1.4%      2.5 TIE               -0.5  yes
+    640       1.3%      2.4 TIE                0.8%      1.4 TIE               -1.0  yes
+    768       1.1%      2.0 TIE                0.4%      0.8 TIE               -1.2  yes
+   1024       1.6%      3.0 TIE                2.1%      3.8 TIE               +0.9  yes
+   1536       1.4%      2.6 TIE                1.2%      2.3 TIE               -0.3  yes
+   2048       1.3%      2.6 TIE                0.8%      1.5 TIE               -1.1  yes
+   3072       0.2%      0.4 TIE               -0.3%     -0.5 TIE               -0.9  yes
+   4096      -0.4%     -0.8 TIE               -0.3%     -0.6 TIE               +0.2  yes
+  median of B - A by band: 1-32: +0.9 ns (4); 33-128: +0.2 ns (8); 129-265: -0.2 ns (4); 266-512: +0.3 ns (3); 513-1024: -1.0 ns (3); 1025-2048: -0.7 ns (2); 2049-4096: -0.4 ns (2); all sizes -0.0 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       2.2%      9.1 TIE               -0.5%     -2.2 TIE              -11.3  yes
+     16       1.7%      7.9 TIE                1.4%      6.3 TIE               -1.6  yes
+     24       3.5%     18.2 TIE                3.0%     16.6 WIN(F)            -1.6  no
+     32       6.6%     34.7 WIN(F)             5.7%     30.5 WIN(F)            -4.3  yes
+     40       4.6%     25.3 WIN(F)             5.4%     29.4 WIN(F)            +4.2  yes
+     48       4.5%     27.0 WIN(F)             2.7%     16.6 TIE              -10.5  no
+     56       0.7%      4.7 TIE                7.2%     41.9 WIN(F)           +37.2  no
+     64       4.5%     27.8 WIN(F)             4.4%     27.0 WIN(F)            -0.7  yes
+     80       3.7%     23.6 WIN(F)             3.3%     21.3 WIN(F)            -2.3  yes
+     96       1.8%     11.2 TIE                2.7%     17.1 TIE               +5.9  yes
+    112       0.7%      4.6 TIE                2.5%     15.9 TIE              +11.3  yes
+    128       4.0%     25.7 WIN(F)             3.5%     22.5 WIN(F)            -3.2  yes
+    160       3.1%     20.7 WIN(F)             2.5%     16.7 TIE               -4.1  no
+    192       1.6%     12.7 TIE                2.4%     19.0 TIE               +6.3  yes
+    224       2.7%     22.2 TIE                0.8%      6.3 TIE              -15.9  yes
+    256       0.5%      3.5 TIE                1.9%     13.1 TIE               +9.5  yes
+    320       3.2%     25.6 WIN(F)             3.0%     24.7 WIN(F)            -0.8  yes
+    384       4.1%     33.1 WIN(F)             1.0%      8.4 TIE              -24.7  no
+    512       2.6%     21.9 TIE                2.0%     16.5 TIE               -5.5  yes
+    640       2.2%     17.5 TIE                4.3%     34.4 WIN(F)           +16.9  no
+    768       1.6%     13.2 TIE               -0.0%     -0.2 TIE              -13.4  yes
+   1024       1.8%     15.2 TIE                2.1%     17.7 TIE               +2.5  yes
+   1536       2.0%     16.9 TIE                3.5%     28.8 WIN(F)           +11.9  no
+   2048      -0.2%     -2.2 TIE               -0.1%     -0.7 TIE               +1.5  yes
+   3072      -0.1%     -0.7 TIE               -1.2%    -12.9 TIE              -12.1  yes
+   4096       2.9%     32.9 TIE               -1.8%    -20.1 TIE              -53.0  yes
+  median of B - A by band: 1-32: -2.9 ns (4); 33-128: +1.7 ns (8); 129-265: +1.1 ns (4); 266-512: -5.5 ns (3); 513-1024: +2.5 ns (3); 1025-2048: +6.7 ns (2); 2049-4096: -32.5 ns (2); all sizes -1.6 ns
+  verdicts: agree 19, WIN<->TIE 7, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -1.4%     -6.7 TIE               -2.4%    -10.7 TIE               -4.1  yes
+     16      -0.4%     -1.9 TIE                1.1%      5.7 TIE               +7.6  yes
+     24       0.3%      2.1 TIE                3.6%     22.9 TIE              +20.7  yes
+     32       6.5%     43.2 WIN(F)             6.2%     42.4 WIN(F)            -0.8  yes
+     40       7.3%     50.8 WIN(F)             7.4%     49.2 WIN(F)            -1.7  yes
+     48       6.2%     45.0 WIN(F)             4.4%     32.2 WIN(F)           -12.8  yes
+     56       4.7%     35.1 WIN(F)             5.5%     42.0 WIN(F)            +6.9  yes
+     64       6.7%     51.0 WIN(F)             7.0%     53.7 WIN(F)            +2.7  yes
+     80       6.2%     49.6 WIN(F)             5.8%     45.2 WIN(F)            -4.4  yes
+     96       5.7%     44.3 WIN(F)             5.9%     47.3 WIN(F)            +3.0  yes
+    112       7.2%     57.8 WIN(F)             5.1%     42.4 WIN(F)           -15.4  yes
+    128       5.9%     48.5 WIN(F)             4.2%     34.7 WIN(F)           -13.8  yes
+    160       6.8%     55.7 WIN(F)             7.3%     62.8 WIN(F)            +7.0  yes
+    192       3.1%     26.6 WIN(F)             1.6%     13.4 TIE              -13.2  no
+    224       1.8%     16.0 TIE                2.4%     21.4 TIE               +5.4  yes
+    256       2.4%     21.0 TIE                3.6%     31.2 WIN(F)           +10.2  no
+    320       0.6%      5.2 TIE                1.5%     14.0 TIE               +8.8  yes
+    384       1.8%     15.8 TIE                0.6%      5.8 TIE              -10.1  yes
+    512      -0.9%     -8.0 TIE                0.2%      2.1 TIE              +10.1  yes
+    640       1.7%     14.7 TIE                2.3%     20.5 TIE               +5.7  yes
+    768       1.2%     11.2 TIE                0.9%      8.2 TIE               -3.0  yes
+   1024      -3.1%    -30.4 WIN(Fv2)          -2.8%    -27.5 TIE               +2.9  no
+   1536      -4.5%    -42.7 WIN(Fv2)          -5.5%    -53.1 WIN(Fv2)         -10.4  yes
+   2048      -3.3%    -35.8 WIN(Fv2)          -3.1%    -33.6 WIN(Fv2)          +2.2  yes
+   3072      -2.0%    -22.3 TIE               -3.1%    -34.2 WIN(Fv2)         -11.9  no
+   4096      -1.5%    -17.9 TIE               -3.2%    -35.7 WIN(Fv2)         -17.9  no
+  median of B - A by band: 1-32: +3.4 ns (4); 33-128: -3.1 ns (8); 129-265: +6.2 ns (4); 266-512: +8.8 ns (3); 513-1024: +2.9 ns (3); 1025-2048: -4.1 ns (2); 2049-4096: -14.9 ns (2); all sizes +0.7 ns
+  verdicts: agree 21, WIN<->TIE 5, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fpool vs F   (arena at the vectors' residues, tightly packed: position only, spines adjacent)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       3.5%      1.6 WIN(F)             2.7%      1.4 TIE               -0.1  no
+     16       5.8%      3.2 TIE                9.2%      5.0 WIN(F)            +1.8  no
+     24       4.3%      2.9 WIN(F)             4.4%      2.9 WIN(F)            +0.1  yes
+     32       0.8%      0.7 TIE                0.5%      0.5 TIE               -0.2  yes
+     40       0.6%      0.6 TIE                0.5%      0.6 TIE               -0.0  yes
+     48       0.2%      0.2 TIE               -0.9%     -0.9 TIE               -1.1  yes
+     56      -1.5%     -1.8 TIE               -0.8%     -0.9 TIE               +0.9  yes
+     64       0.4%      0.5 TIE                1.5%      1.9 TIE               +1.4  yes
+     80       0.7%      0.8 TIE                0.9%      1.1 TIE               +0.3  yes
+     96       0.0%      0.1 TIE               -0.1%     -0.2 TIE               -0.2  yes
+    112       1.2%      1.6 TIE                0.4%      0.5 TIE               -1.1  yes
+    128      -0.2%     -0.2 TIE                1.7%      2.6 TIE               +2.8  yes
+    160       1.0%      1.5 TIE                1.5%      2.4 TIE               +0.9  yes
+    192       0.4%      0.7 TIE                0.8%      1.4 TIE               +0.7  yes
+    224      -0.0%     -0.1 TIE                0.4%      0.7 TIE               +0.8  yes
+    256       0.4%      0.7 TIE                1.1%      1.8 TIE               +1.1  yes
+    320       2.5%      4.2 TIE                1.8%      3.2 TIE               -1.1  yes
+    384       0.2%      0.3 TIE                0.9%      1.5 TIE               +1.2  yes
+    512       1.7%      3.0 TIE                1.8%      3.1 TIE               +0.1  yes
+    640       0.8%      1.4 TIE                0.8%      1.4 TIE               -0.0  yes
+    768       0.3%      0.5 TIE                0.7%      1.3 TIE               +0.7  yes
+   1024       0.7%      1.3 TIE                0.5%      0.9 TIE               -0.4  yes
+   1536       0.3%      0.6 TIE                0.5%      1.0 TIE               +0.4  yes
+   2048       1.0%      2.0 TIE                1.1%      2.1 TIE               +0.1  yes
+   3072      -0.2%     -0.5 TIE               -0.2%     -0.4 TIE               +0.0  yes
+   4096      -0.3%     -0.6 TIE               -0.7%     -1.4 TIE               -0.8  yes
+  median of B - A by band: 1-32: -0.0 ns (4); 33-128: +0.1 ns (8); 129-265: +0.8 ns (4); 266-512: +0.1 ns (3); 513-1024: -0.0 ns (3); 1025-2048: +0.3 ns (2); 2049-4096: -0.4 ns (2); all sizes +0.1 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -0.4%     -1.0 TIE                8.7%      3.7 WIN(F)            +4.7  no
+     16      14.1%      7.6 WIN(F)            14.7%      8.0 WIN(F)            +0.4  yes
+     24       3.8%      2.6 WIN(F)             6.0%      4.0 WIN(F)            +1.4  yes
+     32       3.3%      3.0 TIE                2.8%      2.6 TIE               -0.4  yes
+     40       1.4%      1.5 TIE                0.1%      0.1 TIE               -1.4  yes
+     48       2.7%      2.8 TIE                1.1%      1.3 TIE               -1.4  yes
+     56       2.2%      2.5 TIE                1.9%      2.1 TIE               -0.4  yes
+     64       2.7%      3.2 TIE                2.7%      3.2 TIE               -0.0  yes
+     80       1.3%      1.6 TIE                3.6%      4.5 WIN(F)            +2.9  no
+     96       1.1%      1.5 TIE                0.7%      0.9 TIE               -0.6  yes
+    112       1.6%      2.3 TIE                1.8%      2.5 TIE               +0.2  yes
+    128       0.8%      1.2 TIE                1.3%      2.1 TIE               +0.9  yes
+    160       0.9%      1.5 TIE                1.0%      1.7 TIE               +0.2  yes
+    192       1.2%      2.1 TIE                0.6%      1.0 TIE               -1.1  yes
+    224       0.8%      1.3 TIE                0.8%      1.3 TIE               -0.0  yes
+    256       1.2%      1.9 TIE                1.2%      2.0 TIE               +0.1  yes
+    320       2.7%      4.6 TIE                1.8%      3.1 TIE               -1.4  yes
+    384       0.1%      0.2 TIE                1.1%      1.9 TIE               +1.7  yes
+    512       1.6%      2.9 TIE                1.4%      2.4 TIE               -0.4  yes
+    640       0.9%      1.5 TIE                1.0%      1.7 TIE               +0.2  yes
+    768       0.8%      1.4 TIE                0.5%      0.9 TIE               -0.6  yes
+   1024       0.8%      1.5 TIE                0.1%      0.1 TIE               -1.4  yes
+   1536       0.5%      0.9 TIE                0.2%      0.4 TIE               -0.5  yes
+   2048       0.9%      1.8 TIE               -0.1%     -0.2 TIE               -2.0  yes
+   3072      -0.2%     -0.5 TIE               -0.6%     -1.2 TIE               -0.7  yes
+   4096      -0.6%     -1.3 TIE               -0.7%     -1.4 TIE               -0.2  yes
+  median of B - A by band: 1-32: +0.9 ns (4); 33-128: -0.2 ns (8); 129-265: +0.0 ns (4); 266-512: -0.4 ns (3); 513-1024: -0.6 ns (3); 1025-2048: -1.3 ns (2); 2049-4096: -0.4 ns (2); all sizes -0.3 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       5.5%     22.5 WIN(F)             2.8%     11.5 TIE              -11.0  no
+     16       3.6%     16.4 WIN(F)             4.9%     21.9 WIN(F)            +5.6  yes
+     24       5.1%     26.9 WIN(F)             3.1%     16.6 TIE              -10.3  no
+     32       5.8%     30.7 WIN(F)             6.3%     34.4 WIN(F)            +3.7  yes
+     40       6.1%     33.2 WIN(F)             6.7%     36.0 WIN(F)            +2.9  yes
+     48       5.4%     32.4 WIN(F)             1.4%      8.6 TIE              -23.8  no
+     56       2.0%     12.7 TIE                6.5%     39.4 WIN(F)           +26.8  no
+     64       4.7%     29.1 WIN(F)             4.5%     27.3 WIN(F)            -1.8  yes
+     80       2.7%     17.4 TIE                3.1%     19.8 WIN(F)            +2.4  no
+     96       2.4%     15.7 TIE                4.1%     25.7 WIN(F)           +10.1  no
+    112       4.2%     27.3 WIN(F)             1.7%     11.5 TIE              -15.8  no
+    128       3.7%     23.8 WIN(F)             3.6%     22.7 WIN(F)            -1.1  yes
+    160       2.9%     19.1 TIE                3.3%     22.2 TIE               +3.2  yes
+    192       1.6%     13.4 TIE                2.4%     19.3 TIE               +5.8  yes
+    224       1.2%     10.1 TIE                0.5%      3.8 TIE               -6.3  yes
+    256      -0.1%     -0.5 TIE                0.9%      6.2 TIE               +6.7  yes
+    320       2.5%     20.6 TIE                3.2%     26.2 WIN(F)            +5.7  no
+    384       2.2%     17.8 TIE                0.5%      4.1 TIE              -13.7  yes
+    512       2.9%     24.4 TIE                2.5%     20.7 TIE               -3.6  yes
+    640       3.1%     25.3 WIN(F)             3.1%     24.4 WIN(F)            -0.9  yes
+    768       0.2%      2.0 TIE                0.1%      1.0 TIE               -1.0  yes
+   1024       1.8%     15.1 TIE                4.1%     34.4 WIN(F)           +19.4  no
+   1536      -0.1%     -1.1 TIE                2.1%     17.1 TIE              +18.2  yes
+   2048       0.1%      1.1 TIE                1.0%      9.8 TIE               +8.7  yes
+   3072      -1.1%    -12.3 TIE                0.9%     10.0 TIE              +22.3  yes
+   4096       0.9%     10.3 TIE                6.7%     73.0 WIN(F)           +62.7  no
+  median of B - A by band: 1-32: -3.3 ns (4); 33-128: +0.7 ns (8); 129-265: +4.5 ns (4); 266-512: -3.6 ns (3); 513-1024: -0.9 ns (3); 1025-2048: +13.5 ns (2); 2049-4096: +42.5 ns (2); all sizes +3.0 ns
+  verdicts: agree 16, WIN<->TIE 10, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -0.3%     -1.7 TIE                1.0%      4.5 TIE               +6.2  yes
+     16       3.6%     17.9 WIN(F)             3.0%     14.7 TIE               -3.1  no
+     24       2.7%     18.1 TIE               10.5%     69.1 WIN(F)           +51.0  no
+     32       9.0%     59.9 WIN(F)             8.1%     55.0 WIN(F)            -4.9  yes
+     40       9.9%     67.2 WIN(F)            10.4%     70.5 WIN(F)            +3.2  yes
+     48       9.0%     64.4 WIN(F)             7.2%     51.5 WIN(F)           -12.9  yes
+     56       8.6%     64.1 WIN(F)             6.7%     51.2 WIN(F)           -12.9  yes
+     64       9.6%     74.8 WIN(F)            10.0%     75.1 WIN(F)            +0.3  yes
+     80       8.2%     63.4 WIN(F)             7.7%     61.4 WIN(F)            -2.0  yes
+     96       6.8%     53.0 WIN(F)             6.6%     52.2 WIN(F)            -0.8  yes
+    112       6.5%     52.9 WIN(F)             6.0%     49.2 WIN(F)            -3.7  yes
+    128       5.6%     45.2 WIN(F)             4.7%     39.4 WIN(F)            -5.7  yes
+    160       6.4%     53.3 WIN(F)             6.2%     52.3 WIN(F)            -1.0  yes
+    192       3.4%     29.2 WIN(F)             3.9%     33.7 TIE               +4.5  no
+    224       1.6%     14.1 TIE                2.6%     23.0 TIE               +8.9  yes
+    256       2.5%     21.6 TIE                3.4%     29.7 WIN(F)            +8.1  no
+    320       0.7%      6.5 TIE                1.3%     11.9 TIE               +5.5  yes
+    384       1.5%     13.4 TIE                0.7%      6.3 TIE               -7.1  yes
+    512      -0.1%     -0.7 TIE                0.1%      0.9 TIE               +1.7  yes
+    640       1.5%     13.6 TIE                2.0%     17.5 TIE               +3.9  yes
+    768       0.3%      2.9 TIE                0.3%      2.7 TIE               -0.2  yes
+   1024      -1.9%    -18.2 TIE               -3.1%    -30.7 WIN(Fpool)       -12.4  no
+   1536      -4.7%    -44.6 WIN(Fpool)        -5.1%    -49.2 WIN(Fpool)        -4.5  yes
+   2048      -4.0%    -42.8 WIN(Fpool)        -2.1%    -22.1 TIE              +20.6  no
+   3072      -1.6%    -17.6 TIE               -1.1%    -11.9 TIE               +5.6  yes
+   4096      -2.1%    -23.7 TIE                1.8%     20.5 TIE              +44.2  yes
+  median of B - A by band: 1-32: +1.5 ns (4); 33-128: -2.9 ns (8); 129-265: +6.3 ns (4); 266-512: +1.7 ns (3); 513-1024: -0.2 ns (3); 1025-2048: +8.1 ns (2); 2049-4096: +24.9 ns (2); all sizes +0.0 ns
+  verdicts: agree 20, WIN<->TIE 6, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fmir vs Fpool   (F's placement (holes, clustered spines) against tight packing at the same residues)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8     -18.4%     -7.7 WIN(Fmir)        -16.4%     -7.2 WIN(Fmir)         +0.5  yes
+     16     -11.8%     -8.0 TIE              -20.3%    -11.9 WIN(Fmir)         -3.9  no
+     24     -17.5%    -12.1 WIN(Fmir)        -14.1%     -9.8 WIN(Fmir)         +2.3  yes
+     32      -9.0%     -8.2 WIN(Fmir)         -8.1%     -7.5 WIN(Fmir)         +0.7  yes
+     40      -8.6%     -8.4 WIN(Fmir)         -8.5%     -8.4 WIN(Fmir)         +0.0  yes
+     48      -6.8%     -7.1 WIN(Fmir)         -7.6%     -8.1 TIE               -1.0  no
+     56      -4.7%     -5.2 WIN(Fmir)         -6.3%     -7.0 WIN(Fmir)         -1.8  yes
+     64      -6.4%     -7.5 WIN(Fmir)         -6.9%     -8.1 WIN(Fmir)         -0.6  yes
+     80      -6.6%     -7.8 WIN(Fmir)         -6.3%     -7.5 WIN(Fmir)         +0.3  yes
+     96      -6.5%     -8.4 WIN(Fmir)         -5.7%     -7.8 WIN(Fmir)         +0.6  yes
+    112      -5.9%     -8.0 WIN(Fmir)         -5.8%     -7.9 WIN(Fmir)         +0.1  yes
+    128      -1.0%     -1.5 TIE               -2.6%     -4.0 TIE               -2.5  yes
+    160      -0.5%     -0.7 TIE               -0.8%     -1.2 TIE               -0.5  yes
+    192      -1.2%     -2.0 TIE               -0.1%     -0.1 TIE               +1.8  yes
+    224      -1.9%     -3.3 TIE               -2.2%     -3.6 TIE               -0.3  yes
+    256      -2.7%     -4.4 TIE               -2.9%     -4.9 TIE               -0.4  yes
+    320      -2.1%     -3.7 TIE               -2.7%     -4.7 TIE               -1.0  yes
+    384      -1.6%     -2.8 TIE               -1.5%     -2.5 TIE               +0.2  yes
+    512      -1.4%     -2.5 TIE               -1.5%     -2.6 TIE               -0.0  yes
+    640      -2.3%     -4.2 TIE               -1.3%     -2.3 TIE               +1.9  yes
+    768      -0.7%     -1.3 TIE               -0.5%     -0.9 TIE               +0.4  yes
+   1024      -0.2%     -0.3 TIE                0.5%      0.9 TIE               +1.2  yes
+   1536       0.4%      0.7 TIE                0.3%      0.5 TIE               -0.2  yes
+   2048      -0.3%     -0.5 TIE                0.2%      0.3 TIE               +0.9  yes
+   3072       0.4%      0.8 TIE                0.5%      1.0 TIE               +0.2  yes
+   4096       0.8%      1.6 TIE                0.8%      1.7 TIE               +0.0  yes
+  median of B - A by band: 1-32: +0.6 ns (4); 33-128: -0.3 ns (8); 129-265: -0.4 ns (4); 266-512: -0.0 ns (3); 513-1024: +1.2 ns (3); 1025-2048: +0.3 ns (2); 2049-4096: +0.1 ns (2); all sizes +0.1 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       0.9%     -0.3 TIE              -17.2%     -7.5 WIN(Fmir)         -7.1  no
+     16     -20.0%    -12.0 WIN(Fmir)        -21.9%    -13.6 WIN(Fmir)         -1.6  yes
+     24     -15.7%    -11.2 WIN(Fmir)        -16.2%    -11.2 WIN(Fmir)         -0.0  yes
+     32      -8.3%     -7.9 WIN(Fmir)         -9.5%     -9.2 WIN(Fmir)         -1.2  yes
+     40      -2.7%     -3.2 TIE               -1.1%     -1.3 TIE               +1.9  yes
+     48      -7.2%     -7.7 WIN(Fmir)         -6.2%     -6.6 TIE               +1.1  no
+     56      -7.5%     -8.6 WIN(Fmir)         -6.7%     -7.6 WIN(Fmir)         +1.0  yes
+     64      -8.0%     -9.9 WIN(Fmir)         -8.3%    -10.3 WIN(Fmir)         -0.4  yes
+     80      -7.3%     -9.1 WIN(Fmir)         -7.9%    -10.0 WIN(Fmir)         -0.9  yes
+     96      -6.1%     -8.3 WIN(Fmir)         -6.4%     -8.6 WIN(Fmir)         -0.4  yes
+    112      -5.5%     -8.1 WIN(Fmir)         -3.0%     -4.4 TIE               +3.7  no
+    128      -2.6%     -4.0 TIE               -2.9%     -4.3 TIE               -0.3  yes
+    160      -0.3%     -0.5 TIE               -0.9%     -1.4 TIE               -1.0  yes
+    192      -2.3%     -3.9 TIE               -0.4%     -0.6 TIE               +3.2  yes
+    224      -2.1%     -3.5 TIE               -2.6%     -4.3 TIE               -0.8  yes
+    256      -2.7%     -4.4 TIE               -3.2%     -5.3 WIN(Fmir)         -0.9  no
+    320      -4.1%     -7.1 WIN(Fmir)         -3.3%     -5.6 WIN(Fmir)         +1.5  yes
+    384      -1.6%     -2.9 TIE               -1.7%     -3.1 TIE               -0.2  yes
+    512      -3.1%     -5.5 WIN(Fmir)         -1.9%     -3.5 TIE               +2.0  no
+    640      -1.8%     -3.3 TIE               -1.8%     -3.2 TIE               +0.2  yes
+    768      -1.0%     -1.9 TIE               -1.0%     -1.8 TIE               +0.1  yes
+   1024      -0.7%     -1.2 TIE               -0.2%     -0.4 TIE               +0.8  yes
+   1536       0.1%      0.2 TIE               -0.2%     -0.4 TIE               -0.7  yes
+   2048       0.1%      0.2 TIE                0.0%      0.0 TIE               -0.2  yes
+   3072       0.8%      1.5 TIE                0.6%      1.3 TIE               -0.3  yes
+   4096       0.7%      1.5 TIE                0.8%      1.7 TIE               +0.3  yes
+  median of B - A by band: 1-32: -1.4 ns (4); 33-128: +0.3 ns (8); 129-265: -0.8 ns (4); 266-512: +1.5 ns (3); 513-1024: +0.2 ns (3); 1025-2048: -0.4 ns (2); 2049-4096: +0.0 ns (2); all sizes -0.2 ns
+  verdicts: agree 21, WIN<->TIE 5, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       6.0%     25.7 WIN(Fpool)         7.0%     30.4 WIN(Fpool)        +4.6  yes
+     16       5.1%     24.1 WIN(Fpool)         5.6%     26.9 WIN(Fpool)        +2.9  yes
+     24       3.3%     18.1 WIN(Fpool)         3.0%     16.5 WIN(Fpool)        -1.7  yes
+     32       4.5%     25.8 WIN(Fpool)         4.1%     23.3 WIN(Fpool)        -2.5  yes
+     40       2.6%     14.8 TIE                1.6%      9.0 TIE               -5.8  yes
+     48       0.8%      4.8 TIE                2.2%     13.3 TIE               +8.5  yes
+     56       0.1%      0.9 TIE                1.7%     10.9 TIE              +10.0  yes
+     64       1.3%      8.3 TIE                1.8%     11.5 TIE               +3.1  yes
+     80       0.4%      2.9 TIE                2.1%     14.0 TIE              +11.1  yes
+     96       0.4%      2.6 TIE               -1.9%    -12.7 TIE              -15.3  yes
+    112      -1.4%     -9.3 TIE               -0.7%     -5.0 TIE               +4.3  yes
+    128       0.6%      4.0 TIE                0.5%      3.4 TIE               -0.6  yes
+    160      -0.2%     -1.5 TIE                0.3%      2.0 TIE               +3.5  yes
+    192       0.8%      6.9 TIE                0.8%      6.3 TIE               -0.7  yes
+    224       1.5%     12.6 TIE                2.0%     16.9 TIE               +4.3  yes
+    256       1.7%     11.2 TIE                2.5%     17.0 TIE               +5.8  yes
+    320       0.6%      5.1 TIE                1.0%      8.3 TIE               +3.2  yes
+    384       1.8%     14.9 TIE                2.3%     18.6 TIE               +3.7  yes
+    512       0.4%      3.2 TIE                2.0%     17.3 TIE              +14.1  yes
+    640       1.2%      9.7 TIE                0.2%      1.3 TIE               -8.4  yes
+    768       0.0%      0.4 TIE                1.5%     13.0 TIE              +12.6  yes
+   1024       2.0%     17.2 TIE                0.7%      5.8 TIE              -11.4  yes
+   1536       2.2%     18.3 TIE                0.9%      7.3 TIE              -11.0  yes
+   2048       2.3%     21.9 TIE                0.5%      5.3 TIE              -16.6  yes
+   3072       2.5%     26.7 TIE               -1.2%    -13.3 TIE              -40.0  yes
+   4096       3.5%     39.8 WIN(Fpool)        -5.8%    -68.0 WIN(Fmir)       -107.8  flip
+  median of B - A by band: 1-32: +0.6 ns (4); 33-128: +3.7 ns (8); 129-265: +3.9 ns (4); 266-512: +3.7 ns (3); 513-1024: -8.4 ns (3); 1025-2048: -13.8 ns (2); 2049-4096: -73.9 ns (2); all sizes +3.0 ns
+  verdicts: agree 25, WIN<->TIE 0, opposite winners 1 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       0.6%      2.8 TIE                2.3%     10.7 TIE               +8.0  yes
+     16       4.9%     25.4 WIN(Fpool)         6.4%     32.8 WIN(Fpool)        +7.4  yes
+     24       2.8%     19.1 TIE               -1.5%    -10.1 TIE              -29.2  yes
+     32       4.8%     35.4 WIN(Fpool)         5.7%     41.5 WIN(Fpool)        +6.1  yes
+     40       4.5%     33.6 WIN(Fpool)         4.0%     30.0 WIN(Fpool)        -3.6  yes
+     48       2.5%     19.5 TIE                2.1%     16.4 TIE               -3.1  yes
+     56       1.3%     10.7 TIE                1.4%     11.3 TIE               +0.6  yes
+     64       0.3%      2.5 TIE                1.7%     13.9 TIE              +11.4  yes
+     80       0.4%      3.5 TIE               -0.1%     -0.6 TIE               -4.2  yes
+     96       1.8%     14.5 TIE                0.4%      3.7 TIE              -10.8  yes
+    112       1.8%     15.0 TIE                1.5%     12.6 TIE               -2.4  yes
+    128       2.2%     19.4 TIE                2.2%     19.1 TIE               -0.4  yes
+    160      -0.2%     -1.8 TIE               -0.8%     -7.7 TIE               -5.9  yes
+    192       0.5%      4.8 TIE                0.4%      3.7 TIE               -1.1  yes
+    224       0.9%      8.2 TIE                2.4%     22.3 TIE              +14.2  yes
+    256       1.1%     10.0 TIE                1.2%     10.7 TIE               +0.6  yes
+    320       2.0%     18.3 TIE                2.8%     25.5 TIE               +7.1  yes
+    384       1.0%      9.1 TIE                1.0%      9.7 TIE               +0.6  yes
+    512       2.7%     24.7 TIE                4.1%     37.4 WIN(Fpool)       +12.7  no
+    640       0.9%      8.2 TIE               -0.0%     -0.1 TIE               -8.3  yes
+    768       2.1%     19.1 TIE                0.9%      8.2 TIE              -10.8  yes
+   1024       4.5%     42.7 WIN(Fpool)         6.0%     57.1 WIN(Fpool)       +14.4  yes
+   1536       7.6%     68.7 WIN(Fpool)         6.3%     58.1 WIN(Fpool)       -10.6  yes
+   2048       6.3%     64.8 WIN(Fpool)         5.1%     53.4 WIN(Fpool)       -11.4  yes
+   3072       4.1%     43.6 WIN(Fpool)         0.3%      3.4 TIE              -40.2  no
+   4096       3.1%     34.7 WIN(Fpool)        -1.0%    -11.6 TIE              -46.3  no
+  median of B - A by band: 1-32: +6.8 ns (4); 33-128: -2.8 ns (8); 129-265: -0.2 ns (4); 266-512: +7.1 ns (3); 513-1024: -8.3 ns (3); 1025-2048: -11.0 ns (2); 2049-4096: -43.2 ns (2); all sizes -1.8 ns
+  verdicts: agree 23, WIN<->TIE 3, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fao vs Fa   (residue-16 copies in the second pass, footprint-equal to Fa: alignment only)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       1.1%      0.9 TIE                0.8%      0.6 TIE               -0.3  yes
+     16       0.3%      0.2 TIE               -1.5%     -1.1 TIE               -1.2  yes
+     24      -1.2%     -0.9 TIE               -0.5%     -0.4 TIE               +0.5  yes
+     32      20.8%     17.5 WIN(Fa)           20.3%     17.1 WIN(Fa)           -0.4  yes
+     40      30.8%     24.6 WIN(Fa)           23.9%     20.4 WIN(Fa)           -4.2  yes
+     48      14.0%     12.9 TIE               18.3%     16.7 WIN(Fa)           +3.8  no
+     56      16.9%     15.1 WIN(Fa)           13.0%     12.3 WIN(Fa)           -2.8  yes
+     64      20.5%     20.0 WIN(Fa)           12.9%     14.0 WIN(Fa)           -6.0  yes
+     80      11.0%     11.6 WIN(Fa)           10.6%     11.2 WIN(Fa)           -0.4  yes
+     96      23.1%     25.3 WIN(Fa)           23.8%     26.1 WIN(Fa)           +0.8  yes
+    112       7.1%      9.0 WIN(Fa)            7.7%      9.8 WIN(Fa)           +0.8  yes
+    128      12.8%     16.5 WIN(Fa)            8.0%     11.4 TIE               -5.1  no
+    160       4.6%      7.2 WIN(Fa)            2.3%      3.7 TIE               -3.5  no
+    192       1.7%      2.8 TIE                0.8%      1.3 TIE               -1.5  yes
+    224       4.1%      6.5 WIN(Fa)           11.8%     16.8 WIN(Fa)          +10.4  yes
+    256      22.7%     30.8 WIN(Fa)           19.0%     26.7 WIN(Fa)           -4.1  yes
+    320       5.7%      9.1 WIN(Fa)            4.1%      6.7 WIN(Fa)           -2.4  yes
+    384      19.3%     26.8 WIN(Fa)            3.2%      5.3 WIN(Fa)          -21.5  yes
+    512       4.9%      8.1 WIN(Fa)            4.1%      6.9 WIN(Fa)           -1.2  yes
+    640       3.1%      5.3 WIN(Fa)            3.3%      5.6 WIN(Fa)           +0.3  yes
+    768       5.6%      9.6 WIN(Fa)            4.1%      7.1 WIN(Fa)           -2.5  yes
+   1024       5.0%      8.7 WIN(Fa)            9.2%     15.4 WIN(Fa)           +6.7  yes
+   1536       2.4%      4.5 TIE                3.2%      5.9 WIN(Fa)           +1.3  no
+   2048       4.7%      8.8 WIN(Fa)            5.8%     10.7 WIN(Fa)           +2.0  yes
+   3072       1.5%      3.0 TIE                0.5%      1.0 TIE               -1.9  yes
+   4096       1.1%      2.3 TIE                1.3%      2.6 TIE               +0.3  yes
+  median of B - A by band: 1-32: -0.4 ns (4); 33-128: -1.6 ns (8); 129-265: -2.5 ns (4); 266-512: -2.4 ns (3); 513-1024: +0.3 ns (3); 1025-2048: +1.6 ns (2); 2049-4096: -0.8 ns (2); all sizes -0.8 ns
+  verdicts: agree 22, WIN<->TIE 4, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       3.8%      2.9 WIN(Fa)            1.8%      1.1 TIE               -1.9  no
+     16       1.2%      0.8 TIE                0.6%      0.4 TIE               -0.4  yes
+     24      -0.8%     -0.6 TIE               -0.8%     -0.6 TIE               +0.0  yes
+     32      19.9%     17.4 WIN(Fa)           20.4%     17.7 WIN(Fa)           +0.4  yes
+     40       6.8%      7.6 WIN(Fa)            5.2%      5.9 WIN(Fa)           -1.8  yes
+     48      22.0%     19.3 WIN(Fa)           11.8%     12.2 WIN(Fa)           -7.2  yes
+     56      15.7%     14.4 WIN(Fa)           16.0%     14.7 WIN(Fa)           +0.3  yes
+     64      13.7%     14.8 WIN(Fa)           11.2%     12.3 WIN(Fa)           -2.5  yes
+     80      10.2%     11.1 TIE                9.0%     10.0 TIE               -1.1  yes
+     96      20.9%     24.2 WIN(Fa)           22.1%     25.3 WIN(Fa)           +1.1  yes
+    112       5.8%      8.2 TIE                7.4%      9.7 WIN(Fa)           +1.5  no
+    128       8.5%     12.3 TIE                0.8%      1.3 TIE              -10.9  yes
+    160       5.1%      8.2 WIN(Fa)            3.4%      5.5 WIN(Fa)           -2.6  yes
+    192       2.1%      3.5 TIE                1.6%      2.8 TIE               -0.8  yes
+    224       5.8%      9.4 WIN(Fa)           26.8%     36.1 WIN(Fa)          +26.7  yes
+    256      20.6%     27.4 WIN(Fa)           20.0%     26.6 WIN(Fa)           -0.8  yes
+    320       8.9%     14.2 WIN(Fa)            8.2%     13.3 WIN(Fa)           -1.0  yes
+    384      18.5%     25.6 WIN(Fa)           18.5%     27.4 WIN(Fa)           +1.8  yes
+    512       4.3%      7.3 WIN(Fa)            4.0%      6.8 WIN(Fa)           -0.5  yes
+    640       4.6%      7.9 WIN(Fa)            3.3%      5.8 WIN(Fa)           -2.1  yes
+    768       4.5%      7.9 WIN(Fa)            5.1%      8.8 WIN(Fa)           +1.0  yes
+   1024       8.6%     14.9 WIN(Fa)            8.7%     15.0 WIN(Fa)           +0.1  yes
+   1536       3.0%      5.6 TIE                3.7%      6.8 WIN(Fa)           +1.2  no
+   2048       5.2%      9.7 WIN(Fa)            5.9%     10.9 WIN(Fa)           +1.2  yes
+   3072       1.4%      2.8 TIE                1.2%      2.5 TIE               -0.3  yes
+   4096       1.2%      2.5 TIE                1.5%      3.1 TIE               +0.7  yes
+  median of B - A by band: 1-32: -0.2 ns (4); 33-128: -1.4 ns (8); 129-265: -0.8 ns (4); 266-512: -0.5 ns (3); 513-1024: +0.1 ns (3); 1025-2048: +1.2 ns (2); 2049-4096: +0.2 ns (2); all sizes -0.4 ns
+  verdicts: agree 23, WIN<->TIE 3, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       0.6%      2.6 TIE                0.1%      0.6 TIE               -2.0  yes
+     16      -0.4%     -1.7 TIE               -0.6%     -3.0 TIE               -1.4  yes
+     24      -0.8%     -4.5 TIE                3.9%     20.6 TIE              +25.2  yes
+     32       2.5%     14.4 TIE                2.1%     12.0 TIE               -2.4  yes
+     40       1.0%      5.9 TIE                0.3%      2.0 TIE               -3.9  yes
+     48       0.7%      4.4 TIE                0.5%      3.2 TIE               -1.1  yes
+     56      -0.3%     -1.7 TIE               -0.1%     -0.7 TIE               +1.0  yes
+     64       2.5%     15.8 TIE                4.0%     24.7 WIN(Fa)           +8.9  no
+     80       0.5%      3.0 TIE                0.1%      0.6 TIE               -2.4  yes
+     96      -0.2%     -1.1 TIE                2.9%     18.3 TIE              +19.4  yes
+    112       0.3%      1.9 TIE                0.8%      5.3 TIE               +3.4  yes
+    128       1.3%      8.5 TIE                1.0%      6.6 TIE               -1.9  yes
+    160       0.4%      2.9 TIE                0.2%      1.2 TIE               -1.7  yes
+    192       1.8%     15.0 TIE                2.9%     23.8 TIE               +8.8  yes
+    224       2.1%     17.4 TIE                1.2%      9.9 TIE               -7.5  yes
+    256       1.6%     11.2 TIE                2.8%     18.8 TIE               +7.6  yes
+    320       3.0%     24.0 TIE                2.1%     16.8 TIE               -7.1  yes
+    384       1.5%     12.2 TIE                3.7%     30.3 WIN(Fa)          +18.1  no
+    512       3.0%     24.5 TIE                4.9%     40.1 WIN(Fa)          +15.6  no
+    640       1.8%     14.4 TIE                4.0%     32.5 WIN(Fa)          +18.1  no
+    768       2.2%     17.8 TIE                2.9%     24.2 TIE               +6.4  yes
+   1024       4.8%     39.8 WIN(Fa)            4.7%     38.5 WIN(Fa)           -1.3  yes
+   1536       1.1%      8.8 TIE               -0.3%     -2.7 TIE              -11.5  yes
+   2048       2.9%     26.9 TIE                2.8%     26.2 TIE               -0.7  yes
+   3072       3.2%     33.6 WIN(Fa)            5.7%     58.3 WIN(Fa)          +24.7  yes
+   4096      10.4%    114.4 WIN(Fa)            9.5%    103.1 WIN(Fa)          -11.3  yes
+  median of B - A by band: 1-32: -1.7 ns (4); 33-128: -0.1 ns (8); 129-265: +3.0 ns (4); 266-512: +15.6 ns (3); 513-1024: +6.4 ns (3); 1025-2048: -6.1 ns (2); 2049-4096: +6.7 ns (2); all sizes -0.9 ns
+  verdicts: agree 22, WIN<->TIE 4, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       2.4%     11.8 TIE                0.6%      3.1 TIE               -8.7  yes
+     16       1.2%      6.2 TIE                0.8%      4.2 TIE               -2.0  yes
+     24       1.1%      7.5 TIE               -0.0%     -0.2 TIE               -7.7  yes
+     32       3.0%     21.9 TIE                1.2%      8.9 TIE              -13.1  yes
+     40       1.5%     11.1 TIE                1.4%     10.2 TIE               -0.9  yes
+     48       1.2%      9.4 TIE               -0.2%     -1.9 TIE              -11.3  yes
+     56       0.7%      5.7 TIE               -1.1%     -8.6 TIE              -14.3  yes
+     64       4.7%     38.2 WIN(Fa)            4.5%     37.1 WIN(Fa)           -1.1  yes
+     80       1.9%     15.9 TIE                1.9%     15.4 TIE               -0.6  yes
+     96       3.2%     26.0 WIN(Fa)            5.5%     43.9 WIN(Fa)          +17.9  yes
+    112       1.6%     13.7 TIE                2.0%     16.7 TIE               +3.0  yes
+    128      -0.8%     -7.2 TIE               -0.9%     -7.6 TIE               -0.4  yes
+    160       0.3%      3.1 TIE               -0.5%     -4.3 TIE               -7.4  yes
+    192       0.5%      4.8 TIE                0.9%      7.9 TIE               +3.0  yes
+    224      -1.1%    -10.4 TIE               -0.1%     -0.8 TIE               +9.5  yes
+    256      -0.1%     -0.7 TIE               -0.7%     -6.5 TIE               -5.7  yes
+    320      -0.2%     -2.1 TIE               -0.0%     -0.3 TIE               +1.8  yes
+    384      -0.3%     -2.9 TIE                1.5%     13.6 TIE              +16.5  yes
+    512       1.7%     15.4 TIE                1.9%     17.7 TIE               +2.3  yes
+    640      -0.7%     -6.7 TIE                1.7%     15.2 TIE              +21.9  yes
+    768       0.5%      4.4 TIE                1.0%      9.7 TIE               +5.3  yes
+   1024       0.9%      8.0 TIE                3.4%     30.7 WIN(Fa)          +22.8  no
+   1536       0.4%      3.1 TIE                0.3%      2.6 TIE               -0.5  yes
+   2048       2.0%     20.9 TIE                4.4%     44.7 WIN(Fa)          +23.8  no
+   3072       3.1%     32.4 WIN(Fa)            5.1%     53.8 WIN(Fa)          +21.4  yes
+   4096       5.9%     66.3 WIN(Fa)            9.0%    100.7 WIN(Fa)          +34.4  yes
+  median of B - A by band: 1-32: -8.2 ns (4); 33-128: -0.7 ns (8); 129-265: -1.3 ns (4); 266-512: +2.3 ns (3); 513-1024: +21.9 ns (3); 1025-2048: +11.6 ns (2); 2049-4096: +27.9 ns (2); all sizes +0.7 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fapool vs Fpool   (alignment only, inside one arena per set)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       3.4%      1.9 TIE                4.1%      1.7 WIN(Fpool)        -0.2  no
+     16     -17.7%    -10.7 WIN(Fapool)      -20.4%    -12.0 WIN(Fapool)       -1.3  yes
+     24     -16.9%    -11.8 WIN(Fapool)      -16.0%    -10.9 WIN(Fapool)       +0.9  yes
+     32     -24.7%    -22.6 WIN(Fapool)      -24.9%    -22.8 WIN(Fapool)       -0.2  yes
+     40     -11.7%    -11.8 WIN(Fapool)      -11.1%    -11.6 WIN(Fapool)       +0.3  yes
+     48     -17.6%    -18.1 WIN(Fapool)      -17.9%    -18.7 WIN(Fapool)       -0.6  yes
+     56     -16.7%    -19.6 WIN(Fapool)      -18.6%    -20.9 WIN(Fapool)       -1.3  yes
+     64     -20.2%    -23.5 WIN(Fapool)      -20.1%    -23.5 WIN(Fapool)       -0.0  yes
+     80      -6.9%     -8.2 WIN(Fapool)       -7.2%     -8.9 WIN(Fapool)       -0.7  yes
+     96     -10.2%    -13.2 WIN(Fapool)       -9.9%    -12.8 WIN(Fapool)       +0.4  yes
+    112      -5.8%     -7.9 WIN(Fapool)       -8.2%    -11.3 WIN(Fapool)       -3.4  yes
+    128      -0.1%     -0.2 TIE               -0.7%     -1.0 TIE               -0.8  yes
+    160      -3.3%     -5.3 WIN(Fapool)       -5.8%     -9.4 WIN(Fapool)       -4.1  yes
+    192      -1.7%     -2.8 TIE               -1.3%     -2.1 TIE               +0.6  yes
+    224      -2.3%     -3.8 TIE              -25.3%    -40.4 WIN(Fapool)      -36.6  no
+    256     -14.6%    -24.0 WIN(Fapool)       -5.5%     -9.2 WIN(Fapool)      +14.8  yes
+    320      -4.7%     -8.1 WIN(Fapool)       -4.7%     -8.0 WIN(Fapool)       +0.1  yes
+    384     -19.7%    -34.3 WIN(Fapool)       -3.2%     -5.6 WIN(Fapool)      +28.7  yes
+    512      -5.2%     -9.1 WIN(Fapool)       -5.5%     -9.5 WIN(Fapool)       -0.5  yes
+    640      -5.4%     -9.7 WIN(Fapool)       -4.6%     -8.3 WIN(Fapool)       +1.5  yes
+    768      -4.8%     -8.8 WIN(Fapool)       -5.2%     -9.5 WIN(Fapool)       -0.7  yes
+   1024      -8.0%    -14.6 WIN(Fapool)      -14.0%    -24.1 WIN(Fapool)       -9.5  yes
+   1536      -2.3%     -4.3 TIE               -2.4%     -4.4 TIE               -0.1  yes
+   2048      -2.7%     -5.3 TIE               -3.3%     -6.4 WIN(Fapool)       -1.1  no
+   3072      -1.9%     -3.7 TIE               -2.0%     -4.0 TIE               -0.3  yes
+   4096      -1.4%     -2.8 TIE               -1.5%     -3.0 TIE               -0.2  yes
+  median of B - A by band: 1-32: -0.2 ns (4); 33-128: -0.6 ns (8); 129-265: -1.7 ns (4); 266-512: +0.1 ns (3); 513-1024: -0.7 ns (3); 1025-2048: -0.6 ns (2); 2049-4096: -0.3 ns (2); all sizes -0.3 ns
+  verdicts: agree 23, WIN<->TIE 3, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       7.8%      4.3 WIN(Fpool)         3.5%      1.6 TIE               -2.7  no
+     16     -23.4%    -14.3 WIN(Fapool)      -25.0%    -15.6 WIN(Fapool)       -1.2  yes
+     24     -19.6%    -13.5 WIN(Fapool)      -18.4%    -12.7 WIN(Fapool)       +0.8  yes
+     32     -22.3%    -21.4 WIN(Fapool)      -22.8%    -22.0 WIN(Fapool)       -0.6  yes
+     40      -9.1%    -10.7 WIN(Fapool)       -3.8%     -4.5 WIN(Fapool)       +6.2  yes
+     48     -19.1%    -20.2 WIN(Fapool)      -16.9%    -18.5 WIN(Fapool)       +1.7  yes
+     56     -17.7%    -19.9 WIN(Fapool)      -20.2%    -23.2 WIN(Fapool)       -3.3  yes
+     64     -17.1%    -21.1 WIN(Fapool)      -15.0%    -18.5 WIN(Fapool)       +2.5  yes
+     80      -8.4%    -10.6 WIN(Fapool)       -8.7%    -10.9 WIN(Fapool)       -0.4  yes
+     96     -10.4%    -14.1 WIN(Fapool)      -10.4%    -14.2 WIN(Fapool)       -0.1  yes
+    112      -7.0%    -10.4 WIN(Fapool)       -7.6%    -11.1 WIN(Fapool)       -0.6  yes
+    128      -6.8%    -10.6 TIE               -1.1%     -1.7 TIE               +8.9  yes
+    160      -1.7%     -2.9 TIE               -1.4%     -2.3 TIE               +0.6  yes
+    192      -2.0%     -3.3 TIE               -1.9%     -3.2 TIE               +0.1  yes
+    224      -5.3%     -8.8 WIN(Fapool)      -26.1%    -42.2 WIN(Fapool)      -33.4  yes
+    256      -3.9%     -6.5 WIN(Fapool)      -19.5%    -32.5 WIN(Fapool)      -26.0  yes
+    320      -5.0%     -8.9 WIN(Fapool)       -4.1%     -7.2 WIN(Fapool)       +1.7  yes
+    384      -5.5%     -9.7 WIN(Fapool)      -22.1%    -39.1 WIN(Fapool)      -29.4  yes
+    512      -5.6%    -10.1 WIN(Fapool)       -5.3%     -9.4 WIN(Fapool)       +0.6  yes
+    640      -5.4%     -9.7 WIN(Fapool)       -5.2%     -9.4 WIN(Fapool)       +0.4  yes
+    768      -6.2%    -11.3 WIN(Fapool)       -5.1%     -9.5 WIN(Fapool)       +1.8  yes
+   1024      -4.7%     -8.7 WIN(Fapool)       -5.1%     -9.4 WIN(Fapool)       -0.6  yes
+   1536      -1.5%     -2.9 TIE               -2.7%     -5.2 TIE               -2.3  yes
+   2048      -2.5%     -4.8 TIE               -2.2%     -4.3 TIE               +0.5  yes
+   3072      -1.7%     -3.5 TIE               -1.5%     -3.0 TIE               +0.5  yes
+   4096      -1.2%     -2.6 TIE               -1.8%     -3.7 TIE               -1.2  yes
+  median of B - A by band: 1-32: -0.9 ns (4); 33-128: +0.8 ns (8); 129-265: -12.9 ns (4); 266-512: +0.6 ns (3); 513-1024: +0.4 ns (3); 1025-2048: -0.9 ns (2); 2049-4096: -0.3 ns (2); all sizes +0.0 ns
+  verdicts: agree 25, WIN<->TIE 1, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -0.7%     -3.2 TIE               -0.9%     -3.8 TIE               -0.5  yes
+     16      -1.7%     -8.0 TIE               -2.9%    -13.5 TIE               -5.6  yes
+     24      -3.2%    -18.0 WIN(Fapool)       -1.5%     -8.2 TIE               +9.7  no
+     32      -1.3%     -7.3 TIE               -3.1%    -17.5 WIN(Fapool)      -10.2  no
+     40      -1.8%    -10.7 TIE               -0.7%     -4.1 TIE               +6.7  yes
+     48      -1.8%    -10.9 TIE               -2.2%    -13.4 TIE               -2.5  yes
+     56       0.0%      0.2 TIE               -1.6%    -10.2 TIE              -10.4  yes
+     64      -1.9%    -12.1 TIE               -0.5%     -3.5 TIE               +8.6  yes
+     80      -0.0%     -0.1 TIE                0.2%      1.3 TIE               +1.4  yes
+     96      -1.9%    -12.4 TIE               -3.3%    -22.0 WIN(Fapool)       -9.6  no
+    112      -1.7%    -11.6 TIE               -0.7%     -4.7 TIE               +6.9  yes
+    128      -1.9%    -12.4 TIE               -2.3%    -15.1 TIE               -2.7  yes
+    160      -1.1%     -7.6 TIE               -3.1%    -21.7 WIN(Fapool)      -14.1  no
+    192      -2.0%    -16.5 TIE               -1.9%    -15.2 TIE               +1.3  yes
+    224      -1.8%    -14.6 TIE                0.2%      1.5 TIE              +16.1  yes
+    256      -2.3%    -15.6 TIE               -2.2%    -15.3 TIE               +0.4  yes
+    320      -2.0%    -16.6 TIE               -1.1%     -9.4 TIE               +7.2  yes
+    384      -1.6%    -13.6 TIE                0.3%      2.8 TIE              +16.4  yes
+    512      -3.9%    -32.9 WIN(Fapool)       -2.1%    -17.8 TIE              +15.1  no
+    640      -2.7%    -22.6 TIE               -2.7%    -22.7 TIE               -0.1  yes
+    768      -2.8%    -23.7 TIE               -2.7%    -22.9 TIE               +0.8  yes
+   1024      -5.0%    -43.8 WIN(Fapool)       -5.6%    -49.4 WIN(Fapool)       -5.6  yes
+   1536      -1.1%     -9.3 TIE               -1.0%     -8.7 TIE               +0.6  yes
+   2048      -2.5%    -23.9 TIE               -2.8%    -26.4 TIE               -2.5  yes
+   3072      -4.5%    -48.9 WIN(Fapool)       -4.0%    -43.1 WIN(Fapool)       +5.8  yes
+   4096      -7.3%    -83.8 WIN(Fapool)       -4.4%    -50.8 WIN(Fapool)      +33.0  yes
+  median of B - A by band: 1-32: -3.1 ns (4); 33-128: -0.6 ns (8); 129-265: +0.8 ns (4); 266-512: +15.1 ns (3); 513-1024: -0.1 ns (3); 1025-2048: -1.0 ns (2); 2049-4096: +19.4 ns (2); all sizes +0.7 ns
+  verdicts: agree 21, WIN<->TIE 5, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -0.9%     -4.4 TIE               -2.5%    -12.0 TIE               -7.6  yes
+     16      -1.6%     -8.4 TIE               -0.9%     -4.9 TIE               +3.5  yes
+     24      -1.4%     -9.5 TIE               -6.2%    -45.6 WIN(Fapool)      -36.1  no
+     32       0.6%      4.4 TIE               -0.1%     -1.0 TIE               -5.4  yes
+     40      -0.5%     -3.4 TIE               -0.2%     -1.4 TIE               +2.0  yes
+     48       0.1%      1.1 TIE               -0.6%     -4.8 TIE               -5.9  yes
+     56      -1.0%     -7.7 TIE               -0.1%     -0.9 TIE               +6.8  yes
+     64      -4.5%    -37.9 WIN(Fapool)       -5.0%    -41.7 WIN(Fapool)       -3.8  yes
+     80      -3.0%    -26.6 WIN(Fapool)       -2.4%    -20.3 TIE               +6.3  no
+     96      -0.9%     -7.5 TIE               -1.5%    -12.1 TIE               -4.6  yes
+    112      -1.9%    -16.9 TIE               -1.6%    -13.9 TIE               +3.0  yes
+    128       1.1%      9.7 TIE                0.2%      2.2 TIE               -7.5  yes
+    160       2.9%     25.9 TIE               -0.8%     -7.0 TIE              -32.9  yes
+    192       1.2%     11.0 TIE               -0.0%     -0.3 TIE              -11.3  yes
+    224      -0.0%     -0.2 TIE               -0.5%     -4.4 TIE               -4.2  yes
+    256       1.3%     11.7 TIE               -1.8%    -16.3 TIE              -28.0  yes
+    320      -1.2%    -10.7 TIE               -1.8%    -16.2 TIE               -5.5  yes
+    384       1.4%     12.6 TIE                0.3%      2.5 TIE              -10.1  yes
+    512       0.4%      3.7 TIE               -1.3%    -11.6 TIE              -15.3  yes
+    640      -2.2%    -20.0 TIE               -1.9%    -17.1 TIE               +2.9  yes
+    768      -2.1%    -19.3 TIE               -2.6%    -23.7 TIE               -4.4  yes
+   1024      -3.5%    -33.4 WIN(Fapool)       -2.2%    -20.6 TIE              +12.9  no
+   1536       0.4%      3.2 TIE               -1.2%    -11.6 TIE              -14.8  yes
+   2048      -0.8%     -8.2 TIE               -2.7%    -27.7 TIE              -19.4  yes
+   3072      -3.6%    -39.1 WIN(Fapool)       -4.0%    -43.1 WIN(Fapool)       -4.0  yes
+   4096      -5.0%    -56.5 WIN(Fapool)       -3.4%    -39.4 WIN(Fapool)      +17.0  yes
+  median of B - A by band: 1-32: -6.5 ns (4); 33-128: -0.9 ns (8); 129-265: -19.6 ns (4); 266-512: -10.1 ns (3); 513-1024: +2.9 ns (3); 1025-2048: -17.1 ns (2); 2049-4096: +6.5 ns (2); all sizes -5.0 ns
+  verdicts: agree 23, WIN<->TIE 3, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+Fapool vs Fa   (arena vs glibc, both line-aligned)
+==============================================================================================================
+  hot_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8     -26.2%    -15.7 WIN(Fapool)      -28.1%    -16.8 WIN(Fapool)       -1.1  yes
+     16     -22.3%    -14.0 WIN(Fapool)      -26.0%    -16.6 WIN(Fapool)       -2.6  yes
+     24     -22.1%    -16.4 WIN(Fapool)      -22.1%    -16.3 WIN(Fapool)       +0.1  yes
+     32     -16.0%    -13.6 WIN(Fapool)      -16.1%    -13.6 WIN(Fapool)       +0.0  yes
+     40       1.2%      0.9 TIE                0.7%      0.6 TIE               -0.4  yes
+     48      -0.6%     -0.6 TIE               -3.7%     -3.3 WIN(Fapool)       -2.7  no
+     56       2.4%      2.2 TIE               -2.2%     -2.0 TIE               -4.2  yes
+     64      -6.4%     -6.4 WIN(Fapool)       -4.8%     -5.1 WIN(Fapool)       +1.3  yes
+     80       5.3%      5.6 WIN(Fa)            4.4%      4.6 WIN(Fa)           -1.0  yes
+     96       6.3%      6.9 WIN(Fa)            6.3%      6.8 WIN(Fa)           -0.1  yes
+    112      -0.7%     -0.9 TIE               -0.2%     -0.3 TIE               +0.7  yes
+    128       4.5%      5.8 TIE               -0.2%     -0.3 TIE               -6.1  yes
+    160       0.2%      0.4 TIE               -0.3%     -0.4 TIE               -0.8  yes
+    192      -0.6%     -1.0 TIE               -1.3%     -2.2 TIE               -1.2  yes
+    224      -0.9%     -1.5 TIE              -10.7%    -14.2 TIE              -12.7  yes
+    256      -0.1%     -0.0 TIE                4.0%      5.6 TIE               +5.6  yes
+    320       0.9%      1.4 TIE               -0.4%     -0.6 TIE               -2.1  yes
+    384       1.5%      2.0 TIE               -0.1%     -0.1 TIE               -2.1  yes
+    512      -1.1%     -1.8 TIE               -1.0%     -1.7 TIE               +0.2  yes
+    640      -0.4%     -0.8 TIE               -0.0%      0.0 TIE               +0.8  yes
+    768       0.2%      0.4 TIE               -1.8%     -3.1 TIE               -3.5  yes
+   1024      -1.6%     -2.5 TIE               -4.2%     -7.2 TIE               -4.7  yes
+   1536       0.7%      1.3 TIE               -0.5%     -0.8 TIE               -2.1  yes
+   2048       0.7%      1.3 TIE               -0.1%     -0.1 TIE               -1.4  yes
+   3072      -1.2%     -2.5 TIE               -1.0%     -2.0 TIE               +0.5  yes
+   4096      -0.4%     -0.8 TIE               -0.6%     -1.3 TIE               -0.5  yes
+  median of B - A by band: 1-32: -0.5 ns (4); 33-128: -0.7 ns (8); 129-265: -1.0 ns (4); 266-512: -2.1 ns (3); 513-1024: -3.5 ns (3); 1025-2048: -1.8 ns (2); 2049-4096: +0.0 ns (2); all sizes -1.0 ns
+  verdicts: agree 25, WIN<->TIE 1, opposite winners 0 (of 26 sizes)
+
+  hot_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8     -27.5%    -16.7 WIN(Fapool)      -24.8%    -15.2 WIN(Fapool)       +1.5  yes
+     16     -27.7%    -17.9 WIN(Fapool)      -26.2%    -16.5 WIN(Fapool)       +1.4  yes
+     24     -23.3%    -17.3 WIN(Fapool)      -22.5%    -16.6 WIN(Fapool)       +0.6  yes
+     32     -14.6%    -12.7 WIN(Fapool)      -14.1%    -12.2 WIN(Fapool)       +0.5  yes
+     40      -0.1%     -0.1 TIE               -0.7%     -0.7 TIE               -0.7  yes
+     48      -1.9%     -1.7 TIE               -1.7%     -1.8 TIE               -0.1  yes
+     56      -1.0%     -1.1 TIE               -0.7%     -0.7 TIE               +0.4  yes
+     64      -5.6%     -6.0 WIN(Fapool)       -4.1%     -4.7 WIN(Fapool)       +1.3  yes
+     80       4.7%      5.4 WIN(Fa)            3.3%      3.7 TIE               -1.7  no
+     96       5.4%      6.3 WIN(Fa)            5.3%      6.1 WIN(Fa)           -0.1  yes
+    112      -0.7%     -1.1 TIE               -0.2%     -0.2 TIE               +0.9  yes
+    128       1.6%      1.9 TIE               -0.5%     -0.7 TIE               -2.6  yes
+    160       1.6%      2.4 TIE                2.1%      3.4 TIE               +1.0  yes
+    192      -0.2%     -0.3 TIE               -1.5%     -2.6 TIE               -2.3  yes
+    224      -2.5%     -4.2 TIE               -8.5%    -11.0 TIE               -6.8  yes
+    256      -1.3%     -2.3 TIE               -5.5%     -7.0 WIN(Fapool)       -4.7  no
+    320       2.8%      4.2 TIE                4.5%      7.2 TIE               +3.0  yes
+    384       1.7%      2.7 TIE               -0.8%     -1.1 TIE               -3.8  yes
+    512      -1.6%     -2.7 TIE               -1.3%     -2.2 TIE               +0.5  yes
+    640      -0.2%     -0.4 TIE               -0.5%     -0.9 TIE               -0.5  yes
+    768      -1.5%     -2.6 TIE               -0.9%     -1.6 TIE               +1.0  yes
+   1024      -0.2%     -0.4 TIE               -0.2%     -0.4 TIE               +0.0  yes
+   1536       1.2%      2.2 TIE                0.2%      0.3 TIE               -1.9  yes
+   2048       1.4%      2.7 TIE                1.9%      3.6 TIE               +0.9  yes
+   3072      -0.6%     -1.3 TIE               -0.4%     -0.9 TIE               +0.4  yes
+   4096      -0.7%     -1.5 TIE               -0.7%     -1.4 TIE               +0.0  yes
+  median of B - A by band: 1-32: +1.0 ns (4); 33-128: -0.1 ns (8); 129-265: -3.5 ns (4); 266-512: +0.5 ns (3); 513-1024: +0.0 ns (3); 1025-2048: -0.5 ns (2); 2049-4096: +0.2 ns (2); all sizes +0.2 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  cold_bat
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8      -2.3%    -10.2 TIE               -0.7%     -3.0 TIE               +7.2  yes
+     16      -1.0%     -4.4 TIE               -1.8%     -8.2 TIE               -3.8  yes
+     24      -3.1%    -17.1 WIN(Fapool)       -1.4%     -7.8 TIE               +9.3  no
+     32      -1.3%     -7.7 TIE               -3.0%    -16.8 TIE               -9.2  yes
+     40      -2.1%    -12.9 TIE               -1.6%     -9.2 TIE               +3.7  yes
+     48       1.6%      9.3 TIE               -2.7%    -16.3 TIE              -25.6  yes
+     56      -0.3%     -2.0 TIE                0.2%      1.0 TIE               +3.0  yes
+     64       0.5%      3.1 TIE                1.6%     10.4 TIE               +7.2  yes
+     80       0.9%      5.9 TIE               -0.2%     -1.6 TIE               -7.5  yes
+     96       0.6%      3.8 TIE               -0.4%     -2.7 TIE               -6.5  yes
+    112       2.1%     14.1 TIE                0.5%      3.5 TIE              -10.5  yes
+    128      -0.6%     -3.8 TIE               -0.4%     -2.4 TIE               +1.4  yes
+    160      -0.3%     -2.0 TIE               -1.1%     -7.7 TIE               -5.7  yes
+    192      -2.0%    -16.8 TIE                0.4%      2.9 TIE              +19.6  yes
+    224       0.7%      5.6 TIE                0.5%      4.1 TIE               -1.6  yes
+    256      -1.1%     -7.3 TIE               -0.4%     -2.7 TIE               +4.6  yes
+    320       1.4%     11.1 TIE                1.5%     11.8 TIE               +0.7  yes
+    384       0.3%      2.6 TIE                1.8%     14.6 TIE              +12.0  yes
+    512      -0.8%     -6.8 TIE                1.6%     13.0 TIE              +19.7  yes
+    640      -0.6%     -4.9 TIE                0.7%      5.3 TIE              +10.2  yes
+    768      -1.4%    -11.9 TIE               -0.5%     -4.4 TIE               +7.4  yes
+   1024      -1.0%     -8.2 TIE               -0.1%     -1.0 TIE               +7.2  yes
+   1536       0.0%      0.3 TIE               -1.2%     -9.8 TIE              -10.1  yes
+   2048      -1.4%    -13.2 TIE                0.2%      1.9 TIE              +15.1  yes
+   3072      -1.1%    -11.4 TIE                0.8%      8.1 TIE              +19.5  yes
+   4096      -3.4%    -37.8 WIN(Fapool)        0.2%      2.4 TIE              +40.2  no
+  median of B - A by band: 1-32: +1.7 ns (4); 33-128: -2.5 ns (8); 129-265: +1.5 ns (4); 266-512: +12.0 ns (3); 513-1024: +7.4 ns (3); 1025-2048: +2.5 ns (2); 2049-4096: +29.9 ns (2); all sizes +4.2 ns
+  verdicts: agree 24, WIN<->TIE 2, opposite winners 0 (of 26 sizes)
+
+  cold_ser
+      n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
+      8       0.0%      0.1 TIE               -1.0%     -4.5 TIE               -4.6  yes
+     16      -0.7%     -3.6 TIE               -0.3%     -1.4 TIE               +2.2  yes
+     24       0.3%      2.0 TIE               -0.8%     -5.3 TIE               -7.3  yes
+     32      -0.4%     -2.6 TIE               -1.9%    -14.3 TIE              -11.7  yes
+     40      -1.5%    -11.6 TIE               -0.8%     -6.0 TIE               +5.6  yes
+     48      -0.8%     -6.0 TIE               -1.0%     -7.9 TIE               -1.9  yes
+     56      -0.2%     -1.2 TIE               -0.8%     -6.4 TIE               -5.2  yes
+     64      -1.2%     -9.6 TIE               -0.2%     -2.0 TIE               +7.6  yes
+     80      -0.1%     -0.9 TIE                0.1%      0.8 TIE               +1.8  yes
+     96       0.2%      1.8 TIE                0.6%      5.2 TIE               +3.3  yes
+    112       0.1%      0.7 TIE                1.0%      8.3 TIE               +7.6  yes
+    128      -0.5%     -4.1 TIE               -1.3%    -11.8 TIE               -7.7  yes
+    160       1.0%      9.2 TIE                0.3%      2.6 TIE               -6.6  yes
+    192       0.9%      8.1 TIE                0.6%      5.5 TIE               -2.7  yes
+    224      -0.3%     -2.5 TIE               -1.3%    -11.7 TIE               -9.2  yes
+    256       0.8%      7.0 TIE                0.4%      3.2 TIE               -3.8  yes
+    320       1.2%     10.7 TIE               -0.1%     -0.5 TIE              -11.2  yes
+    384       1.8%     15.7 TIE                1.6%     15.0 TIE               -0.7  yes
+    512       1.1%      9.5 TIE                1.0%      9.0 TIE               -0.6  yes
+    640       0.6%      5.1 TIE                0.8%      6.7 TIE               +1.6  yes
+    768       0.3%      3.1 TIE               -1.3%    -11.8 TIE              -15.0  yes
+   1024      -0.2%     -1.5 TIE                0.7%      6.3 TIE               +7.8  yes
+   1536       1.2%     11.0 TIE               -0.1%     -0.9 TIE              -11.9  yes
+   2048      -0.7%     -7.1 TIE                0.2%      1.9 TIE               +9.0  yes
+   3072      -1.1%    -11.5 TIE               -0.1%     -0.8 TIE              +10.6  yes
+   4096      -2.7%    -29.9 TIE               -0.3%     -3.0 TIE              +26.9  yes
+  median of B - A by band: 1-32: -6.0 ns (4); 33-128: +2.5 ns (8); 129-265: -5.2 ns (4); 266-512: -0.7 ns (3); 513-1024: +1.6 ns (3); 1025-2048: -1.5 ns (2); 2049-4096: +18.8 ns (2); all sizes -1.3 ns
+  verdicts: agree 26, WIN<->TIE 0, opposite winners 0 (of 26 sizes)
+
+==============================================================================================================
+all pairs and modes: 832 compared cells; verdicts agree 726, WIN<->TIE flips 105, opposite winners 1
+  opposite winner: Fmir vs Fpool, cold_bat, n=4096: WIN(Fpool)      3.5% in A, WIN(Fmir)     -5.8% in B
+
+==============================================================================================================
+levels (median ns/query) of the shared variants in A and B, and B/A - 1 in percent
+==============================================================================================================
+  hot_bat
+      n        FA       FB      %       FaA      FaB      %      Fv2A     Fv2B      %      FaoA     FaoB      %    FpoolA   FpoolB      %   FapoolA  FapoolB      %     FmirA    FmirB      %
+      8      59.6     62.2    4.4      73.4     71.5   -2.6      41.7     42.4    1.7      63.9     62.1   -2.8      74.6     43.8  -41.3      44.5     43.2   -2.8      35.2     35.0   -0.5
+     16      56.6     53.4   -5.7      63.3     63.4    0.2      57.5     57.4   -0.3      63.1     63.0   -0.0      58.7     58.8    0.3      48.6     46.6   -4.2      52.3     47.0  -10.2
+     24      66.7     66.3   -0.7      74.6     73.5   -1.6      69.8     69.6   -0.3      73.7     73.0   -0.9      69.6     69.2   -0.6      58.2     57.8   -0.6      58.7     59.5    1.4
+     32      95.4     92.7   -2.8      83.6     84.1    0.6      93.1     93.6    0.6     101.4    101.6    0.3      92.7     93.9    1.2      70.4     70.9    0.6      83.3     85.5    2.5
+     40     104.0    110.0    5.8      83.8     85.6    2.2      98.0    100.0    2.0     113.5    106.0   -6.6     109.9    106.7   -2.9      95.9     92.5   -3.6      89.5     90.4    1.0
+     48     103.2    106.3    3.1      95.5     91.1   -4.6     109.7    110.1    0.3     104.4    108.0    3.4     103.5    106.5    2.9      85.2     87.1    2.2      96.3     98.4    2.2
+     56     112.0    114.9    2.6      89.9     94.6    5.2     114.8    113.3   -1.4     105.4    107.2    1.7     111.6    112.8    1.0      92.3     91.6   -0.8     106.2    105.6   -0.6
+     64     115.2    116.5    1.2      98.2    108.9   10.9     116.1    116.8    0.6     117.6    118.8    1.0     116.0    123.8    6.7      92.6     95.5    3.2     108.6    109.8    1.1
+     80     117.8    118.8    0.8     105.2    105.6    0.4     120.1    120.0   -0.1     117.5    117.5   -0.1     118.6    119.3    0.6     110.5    110.6    0.0     110.7    111.3    0.6
+     96     129.2    129.7    0.4     109.9    109.9    0.0     130.3    130.7    0.3     135.5    136.3    0.6     129.8    130.0    0.2     116.3    116.5    0.2     121.5    122.4    0.8
+    112     135.9    136.3    0.3     127.7    127.0   -0.6     137.0    137.7    0.5     138.0    136.7   -0.9     136.5    136.8    0.2     128.3    126.0   -1.8     128.3    128.8    0.4
+    128     154.6    147.3   -4.8     137.9    142.7    3.5     150.8    152.1    0.9     155.1    155.0   -0.0     151.3    149.8   -1.0     155.5    149.9   -3.6     146.1    151.1    3.4
+    160     160.9    159.8   -0.7     155.9    159.4    2.3     160.7    158.9   -1.1     162.9    161.3   -1.0     163.1    162.7   -0.2     157.8    153.7   -2.6     161.0    159.9   -0.7
+    192     164.0    165.8    1.1     165.8    166.8    0.6     166.9    167.4    0.3     168.9    167.4   -0.9     166.2    166.1   -0.0     164.5    164.1   -0.3     165.7    165.9    0.1
+    224     163.3    159.3   -2.5     158.5    149.9   -5.4     163.8    161.5   -1.4     168.5    167.0   -0.9     162.2    159.6   -1.6     161.5    119.5  -26.0     160.5    158.6   -1.2
+    256     164.0    165.2    0.7     136.0    141.3    3.9     165.4    164.2   -0.7     169.0    167.7   -0.7     163.9    166.6    1.7     139.9    158.9   13.6     158.8    160.2    0.9
+    320     169.2    170.6    0.8     160.2    161.7    1.0     174.7    172.7   -1.1     172.6    170.5   -1.2     173.5    173.2   -0.1     165.8    162.8   -1.8     169.8    169.6   -0.1
+    384     173.9    172.2   -1.0     138.6    168.8   21.8     174.3    173.3   -0.6     174.3    173.9   -0.2     174.1    174.1   -0.0     139.8    168.1   20.3     171.3    170.9   -0.2
+    512     171.6    171.2   -0.2     166.3    167.7    0.8     175.1    175.1   -0.0     175.0    174.3   -0.4     174.9    174.6   -0.2     165.5    165.0   -0.3     171.9    171.7   -0.1
+    640     177.3    176.4   -0.5     170.1    169.5   -0.4     178.6    178.3   -0.2     176.3    176.8    0.3     178.8    178.8    0.0     167.7    170.8    1.9     175.1    175.4    0.2
+    768     181.9    181.0   -0.5     172.0    173.7    1.0     182.6    182.5   -0.0     181.2    180.5   -0.4     182.7    182.0   -0.4     173.4    172.4   -0.5     180.5    181.0    0.2
+   1024     181.2    180.9   -0.2     174.6    168.6   -3.5     183.3    183.1   -0.1     183.6    184.1    0.3     182.6    181.5   -0.6     167.2    151.8   -9.2     181.9    181.8   -0.0
+   1536     188.6    187.3   -0.7     184.4    182.9   -0.8     189.5    189.3   -0.2     188.5    188.0   -0.3     189.1    188.7   -0.2     185.1    182.7   -1.3     189.6    189.2   -0.2
+   2048     191.3    191.1   -0.1     187.4    186.8   -0.3     193.7    193.4   -0.1     196.7    197.4    0.4     193.4    192.9   -0.3     188.2    186.8   -0.8     193.2    193.3    0.0
+   3072     201.3    200.8   -0.3     198.7    198.3   -0.2     201.0    200.5   -0.2     201.0    199.8   -0.6     200.6    200.5   -0.1     197.0    196.5   -0.3     201.8    201.5   -0.2
+   4096     205.4    205.4    0.0     202.6    202.3   -0.1     205.2    205.2    0.0     205.2    204.7   -0.3     204.7    204.2   -0.2     201.9    201.2   -0.3     206.4    205.9   -0.2
+
+  hot_ser
+      n        FA       FB      %       FaA      FaB      %      Fv2A     Fv2B      %      FaoA     FaoB      %    FpoolA   FpoolB      %   FapoolA  FapoolB      %     FmirA    FmirB      %
+      8      56.9     41.9  -26.2      75.6     60.7  -19.6      42.4     45.1    6.3      72.7     62.6  -13.9      43.8     45.4    3.7      48.0     46.7   -2.8      60.0     37.5  -37.5
+     16      53.9     54.1    0.3      64.0     63.1   -1.4      56.1     56.7    1.0      64.1     63.3   -1.2      61.4     61.7    0.6      47.1     46.9   -0.4      48.2     48.1   -0.1
+     24      67.6     66.3   -2.0      73.7     73.8    0.1      68.5     67.9   -0.9      73.2     73.3    0.2      70.0     69.9   -0.2      56.7     57.2    0.9      58.7     58.3   -0.6
+     32      93.0     93.7    0.7      87.3     86.9   -0.4      96.4     95.1   -1.3     104.5    104.5   -0.0      96.3     96.7    0.4      75.1     74.7   -0.4      88.2     87.7   -0.5
+     40     114.2    116.5    2.1     105.5    113.3    7.4     117.4    116.8   -0.5     115.8    118.7    2.5     107.6    117.0    8.8     106.5    111.5    4.7     111.7    115.7    3.5
+     48     104.4    106.8    2.3      88.2    103.2   17.1     105.8    105.6   -0.1     107.7    111.4    3.5     106.9    106.9    0.0      86.4     88.4    2.3      98.7    100.1    1.4
+     56     112.5    112.4   -0.1      92.4     92.2   -0.2     114.4    113.0   -1.2     109.0    107.3   -1.5     114.9    114.6   -0.3      93.5     91.5   -2.1     106.3    106.5    0.2
+     64     120.8    120.7   -0.1     108.1    111.2    2.9     121.9    122.2    0.3     123.4    123.3   -0.1     124.5    129.3    3.8     103.8    104.7    0.9     114.4    114.6    0.2
+     80     130.3    122.8   -5.8     109.6    112.0    2.2     123.7    124.0    0.3     121.6    123.6    1.7     126.6    127.7    0.8     116.6    115.9   -0.6     116.7    116.6   -0.1
+     96     134.6    135.1    0.4     115.8    115.3   -0.5     135.0    135.2    0.1     140.2    140.4    0.1     135.8    136.0    0.2     121.8    121.5   -0.2     127.5    127.2   -0.2
+    112     147.6    141.3   -4.3     140.0    131.9   -5.8     144.1    142.1   -1.4     149.5    141.8   -5.2     153.9    143.1   -7.0     146.6    132.5   -9.6     134.9    141.7    5.0
+    128     152.7    156.1    2.2     147.6    160.2    8.5     154.2    159.9    3.7     158.8    160.8    1.3     158.4    160.6    1.4     146.0    159.2    9.0     150.7    152.1    1.0
+    160     165.3    165.2   -0.1     160.6    161.3    0.5     165.5    165.3   -0.1     166.6    167.1    0.3     166.2    166.5    0.2     163.5    164.4    0.6     165.6    165.4   -0.1
+    192     168.1    168.5    0.2     166.6    169.6    1.9     169.4    168.9   -0.3     170.9    171.6    0.4     169.5    169.9    0.3     165.9    166.4    0.3     165.4    169.0    2.2
+    224     165.7    161.0   -2.9     163.0    134.7  -17.4     166.7    164.3   -1.5     170.3    169.7   -0.3     167.4    162.1   -3.2     159.4    119.9  -24.8     161.8    157.6   -2.6
+    256     163.9    164.6    0.4     144.6    142.9   -1.2     166.8    165.5   -0.8     170.8    171.0    0.1     166.1    167.1    0.6     161.5    135.7  -16.0     160.5    161.3    0.5
+    320     169.4    172.3    1.7     161.2    161.5    0.2     174.7    176.9    1.3     175.1    174.6   -0.3     175.6    175.8    0.1     167.6    168.4    0.5     166.6    170.0    2.0
+    384     175.5    174.2   -0.7     148.3    149.8    1.0     175.9    175.1   -0.4     175.3    175.7    0.3     176.2    176.6    0.2     166.7    137.4  -17.6     172.8    172.5   -0.2
+    512     174.2    174.3    0.0     170.7    170.6   -0.0     176.8    177.5    0.4     177.2    177.2    0.0     177.2    176.9   -0.2     167.4    168.3    0.5     172.4    173.0    0.3
+    640     179.9    179.3   -0.3     171.3    172.4    0.6     181.9    181.2   -0.4     178.9    176.7   -1.3     181.5    181.1   -0.2     171.8    171.7   -0.1     178.2    177.8   -0.2
+    768     183.3    183.8    0.3     174.8    174.8    0.0     184.9    184.2   -0.4     182.8    183.1    0.2     184.3    184.3    0.0     172.5    173.7    0.7     182.7    182.8    0.0
+   1024     183.6    183.3   -0.1     173.9    173.0   -0.5     186.3    186.1   -0.1     188.3    187.3   -0.5     185.2    184.0   -0.7     175.8    175.2   -0.3     183.6    184.1    0.3
+   1536     189.4    190.5    0.6     185.2    185.1   -0.0     191.5    192.0    0.3     191.3    191.5    0.1     190.2    190.7    0.3     186.8    185.2   -0.9     190.7    189.7   -0.5
+   2048     193.2    193.7    0.3     186.9    186.8   -0.0     195.3    195.1   -0.1     197.6    197.8    0.1     195.1    194.6   -0.2     189.8    190.4    0.3     195.3    195.1   -0.1
+   3072     203.2    203.1   -0.0     200.5    200.0   -0.3     203.3    202.7   -0.3     203.1    202.6   -0.3     202.7    202.1   -0.3     199.2    199.4    0.1     204.1    203.1   -0.5
+   4096     207.8    208.2    0.2     204.8    205.2    0.2     207.1    207.6    0.3     207.5    208.2    0.3     206.3    206.8    0.2     203.6    203.8    0.1     207.9    208.7    0.4
+
+  cold_bat
+      n        FA       FB      %       FaA      FaB      %      Fv2A     Fv2B      %      FaoA     FaoB      %    FpoolA   FpoolB      %   FapoolA  FapoolB      %     FmirA    FmirB      %
+      8     413.5    418.5    1.2     443.3    429.9   -3.0     425.9    423.3   -0.6     439.5    431.5   -1.8     433.2    427.7   -1.3     431.3    427.8   -0.8     458.2    465.0    1.5
+     16     455.0    447.7   -1.6     469.4    468.3   -0.2     466.9    460.8   -1.3     465.4    463.9   -0.3     474.2    472.9   -0.3     467.4    459.4   -1.7     498.1    500.8    0.6
+     24     528.8    529.8    0.2     547.8    532.3   -2.8     540.8    539.2   -0.3     542.3    548.7    1.2     551.3    538.6   -2.3     533.1    536.0    0.5     574.4    566.3   -1.4
+     32     533.9    537.2    0.6     568.6    565.7   -0.5     566.5    565.5   -0.2     585.0    583.5   -0.3     566.7    573.6    1.2     562.7    552.0   -1.9     594.5    593.0   -0.3
+     40     544.8    540.8   -0.7     582.6    583.4    0.1     568.1    570.7    0.5     591.0    586.8   -0.7     582.5    577.4   -0.9     576.0    573.2   -0.5     598.1    589.1   -1.5
+     48     594.3    603.1    1.5     601.9    616.6    2.4     625.1    608.5   -2.7     614.4    620.2    0.9     623.9    620.5   -0.5     613.4    596.4   -2.8     626.4    624.6   -0.3
+     56     633.2    597.4   -5.7     640.1    628.5   -1.8     636.2    630.5   -0.9     648.2    633.0   -2.3     643.5    641.6   -0.3     641.9    634.6   -1.1     647.9    651.3    0.5
+     64     613.6    615.5    0.3     632.3    630.5   -0.3     640.1    641.8    0.3     647.7    650.5    0.4     644.5    643.3   -0.2     634.3    642.3    1.3     654.7    654.9    0.0
+     80     644.5    640.9   -0.6     665.4    668.9    0.5     675.7    663.1   -1.9     673.3    664.0   -1.4     668.8    661.8   -1.1     669.7    660.3   -1.4     674.6    671.8   -0.4
+     96     634.6    633.3   -0.2     645.6    644.2   -0.2     650.1    644.6   -0.8     651.7    658.2    1.0     655.1    660.8    0.9     647.4    643.7   -0.6     655.8    651.7   -0.6
+    112     655.2    653.4   -0.3     664.8    663.3   -0.2     664.0    671.4    1.1     668.5    668.6    0.0     681.2    668.8   -1.8     673.1    663.5   -1.4     670.8    664.9   -0.9
+    128     638.7    649.2    1.7     653.1    653.0   -0.0     667.6    667.9    0.0     660.8    660.4   -0.1     661.2    662.6    0.2     647.1    657.9    1.7     665.7    665.7   -0.0
+    160     661.5    670.7    1.4     683.6    680.8   -0.4     686.9    690.7    0.6     683.5    682.0   -0.2     687.7    696.5    1.3     683.1    674.6   -1.2     687.0    691.0    0.6
+    192     806.9    801.9   -0.6     815.6    807.0   -1.0     820.4    821.1    0.1     833.2    832.0   -0.1     821.4    821.8    0.1     800.8    810.7    1.2     826.5    827.8    0.2
+    224     820.5    823.9    0.4     817.3    828.0    1.3     840.1    835.8   -0.5     833.9    840.9    0.8     832.3    831.2   -0.1     821.0    835.3    1.7     849.4    848.9   -0.1
+    256     677.9    682.2    0.6     679.4    669.4   -1.5     680.8    691.3    1.5     691.5    689.4   -0.3     678.2    688.0    1.4     665.0    674.7    1.5     688.8    700.2    1.7
+    320     803.0    806.9    0.5     809.4    816.0    0.8     826.9    835.9    1.1     826.9    830.4    0.4     829.5    830.4    0.1     817.0    825.1    1.0     837.9    845.4    0.9
+    384     811.2    823.6    1.5     819.5    814.8   -0.6     845.1    837.0   -1.0     827.0    842.6    1.9     829.9    834.8    0.6     822.4    826.7    0.5     845.6    846.0    0.0
+    512     829.4    819.5   -1.2     824.9    816.8   -1.0     840.9    845.5    0.5     850.4    858.5    1.0     844.9    838.7   -0.7     813.8    824.1    1.3     844.4    858.2    1.6
+    640     805.3    804.5   -0.1     816.2    804.9   -1.4     825.8    831.4    0.7     830.2    840.1    1.2     831.8    825.1   -0.8     806.4    810.0    0.4     840.0    836.6   -0.4
+    768     831.4    848.2    2.0     823.4    831.8    1.0     849.2    854.5    0.6     838.3    851.0    1.5     845.3    849.2    0.5     818.3    828.8    1.3     847.7    856.4    1.0
+   1024     847.0    843.9   -0.4     831.4    829.8   -0.2     861.8    865.4    0.4     865.4    871.8    0.7     870.4    873.6    0.4     826.6    829.7    0.4     886.9    891.2    0.5
+   1536     839.2    836.8   -0.3     836.9    843.0    0.7     852.3    860.6    1.0     851.2    850.0   -0.1     850.7    852.0    0.2     844.0    843.8   -0.0     860.5    858.3   -0.3
+   2048     945.3    949.3    0.4     930.5    935.9    0.6     946.6    951.8    0.5     962.0    959.7   -0.2     941.1    961.4    2.2     921.9    934.0    1.3     969.4    968.0   -0.2
+   3072    1092.6   1073.4   -1.8    1035.9   1031.1   -0.5    1079.4   1059.5   -1.8    1067.0   1087.4    1.9    1076.2   1079.6    0.3    1028.1   1041.3    1.3    1104.6   1076.8   -2.5
+   4096    1127.3   1087.2   -3.6    1096.1   1106.2    0.9    1168.5   1068.3   -8.6    1219.2   1199.0   -1.7    1140.0   1161.8    1.9    1062.3   1106.9    4.2    1176.6   1101.6   -6.4
+
+  cold_ser
+      n        FA       FB      %       FaA      FaB      %      Fv2A     Fv2B      %      FaoA     FaoB      %    FpoolA   FpoolB      %   FapoolA  FapoolB      %     FmirA    FmirB      %
+      8     483.1    469.8   -2.8     480.5    473.7   -1.4     482.3    462.6   -4.1     494.8    480.5   -2.9     489.6    478.2   -2.3     484.4    468.1   -3.4     493.2    483.9   -1.9
+     16     497.6    500.8    0.7     502.0    511.1    1.8     492.2    504.7    2.5     508.6    515.9    1.4     516.4    521.2    0.9     496.6    516.3    4.0     537.4    541.1    0.7
+     24     673.5    649.2   -3.6     684.5    682.1   -0.4     674.6    666.0   -1.3     693.1    670.1   -3.3     686.8    720.0    4.8     674.4    670.2   -0.6     705.4    711.8    0.9
+     32     670.5    673.6    0.5     743.5    751.9    1.1     716.8    714.8   -0.3     763.2    759.4   -0.5     734.1    728.4   -0.8     739.2    737.9   -0.2     770.9    771.8    0.1
+     40     675.2    679.4    0.6     754.7    755.8    0.1     727.9    726.2   -0.2     760.6    758.5   -0.3     745.7    746.9    0.1     744.5    750.2    0.8     780.2    784.3    0.5
+     48     723.6    732.1    1.2     786.1    781.8   -0.6     770.1    760.2   -1.3     790.9    788.5   -0.3     785.4    780.8   -0.6     787.1    775.3   -1.5     805.4    791.0   -1.8
+     56     755.5    752.0   -0.5     799.6    812.5    1.6     790.1    795.2    0.6     814.6    807.5   -0.9     801.5    815.1    1.7     798.8    807.6    1.1     820.2    825.5    0.7
+     64     770.8    771.3    0.1     821.5    804.3   -2.1     831.1    817.4   -1.6     855.3    837.9   -2.0     845.5    828.3   -2.0     808.4    804.6   -0.5     857.9    857.0   -0.1
+     80     797.6    790.7   -0.9     841.1    838.6   -0.3     839.3    840.3    0.1     853.5    855.5    0.2     857.6    857.5   -0.0     833.6    840.8    0.9     854.7    852.2   -0.3
+     96     784.4    787.0    0.3     809.9    815.4    0.7     824.0    830.7    0.8     838.3    861.8    2.8     830.1    837.5    0.9     818.7    822.5    0.5     843.5    843.5    0.0
+    112     811.5    821.4    1.2     847.1    843.4   -0.4     858.6    869.8    1.3     858.0    871.2    1.5     862.6    867.8    0.6     843.4    857.0    1.6     870.8    875.4    0.5
+    128     820.6    833.0    1.5     869.7    875.4    0.6     864.6    871.5    0.8     860.5    870.9    1.2     861.7    868.5    0.8     867.5    869.1    0.2     878.4    884.8    0.7
+    160     831.8    854.9    2.8     901.2    897.8   -0.4     882.9    903.0    2.3     886.7    893.5    0.8     882.8    899.7    1.9     915.7    908.2   -0.8     883.5    896.8    1.5
+    192     854.7    864.6    1.2     890.7    885.4   -0.6     881.2    880.8   -0.0     893.1    901.7    1.0     886.9    889.9    0.3     898.7    888.5   -1.1     885.6    894.6    1.0
+    224     890.6    897.2    0.7     914.3    920.8    0.7     906.3    917.2    1.2     906.6    919.4    1.4     901.9    923.0    2.3     903.8    906.5    0.3     914.0    935.1    2.3
+    256     867.6    876.5    1.0     890.3    902.2    1.3     889.3    896.4    0.8     887.2    899.4    1.4     889.5    910.5    2.4     896.3    896.6    0.0     898.8    919.2    2.3
+    320     902.7    906.3    0.4     895.2    897.2    0.2     907.1    925.5    2.0     889.9    922.5    3.7     904.7    923.3    2.1     897.7    911.8    1.6     925.5    943.2    1.9
+    384     889.8    910.4    2.3     898.1    903.8    0.6     902.0    918.4    1.8     901.0    917.0    1.8     903.8    912.8    1.0     914.8    914.8   -0.0     900.9    932.4    3.5
+    512     917.5    919.9    0.3     904.4    910.1    0.6     910.4    927.8    1.9     915.9    923.5    0.8     908.1    917.0    1.0     915.1    915.9    0.1     936.9    956.8    2.1
+    640     888.3    890.5    0.3     887.2    882.8   -0.5     902.2    903.3    0.1     890.2    894.4    0.5     904.6    898.9   -0.6     890.8    888.5   -0.3     906.7    903.7   -0.3
+    768     910.6    928.0    1.9     895.5    909.7    1.6     921.6    925.5    0.4     900.9    922.7    2.4     913.7    918.5    0.5     898.4    892.6   -0.7     926.0    930.5    0.5
+   1024     957.2    982.5    2.6     914.0    928.1    1.5     930.1    944.8    1.6     925.8    956.1    3.3     942.9    946.4    0.4     913.2    929.1    1.7     981.4   1005.3    2.4
+   1536     954.0    971.6    1.8     906.7    929.3    2.5     913.7    929.5    1.7     908.2    922.6    1.6     910.7    922.2    1.3     913.2    920.1    0.8     975.4    983.0    0.8
+   2048    1077.0   1080.6    0.3    1020.7   1015.5   -0.5    1041.6   1046.4    0.5    1052.4   1057.7    0.5    1035.1   1048.0    1.3    1023.0   1021.7   -0.1    1098.8   1105.0    0.6
+   3072    1104.6   1105.5    0.1    1049.6   1050.7    0.1    1081.5   1076.0   -0.5    1082.2   1099.8    1.6    1077.9   1092.4    1.3    1033.1   1049.2    1.6    1114.9   1095.9   -1.7
+   4096    1156.6   1128.7   -2.4    1098.2   1126.5    2.6    1133.1   1091.6   -3.7    1177.5   1227.9    4.3    1128.4   1149.3    1.9    1076.9   1125.5    4.5    1167.6   1151.2   -1.4
+

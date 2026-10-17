@@ -1,0 +1,77 @@
+# date: 2026-10-13T10:52:29-07:00
+# host: Linux 6.18.50+rpt-rpi-2712 aarch64
+# machine: eight
+# command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 3
+# governor: ondemand
+# note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight
+# temp_before: 52.1'C
+two-level spine micro-bench
+num_sets=200 hot_reps=200 num_containers=512 inner_n=4096 mode=all order_seed=3 gap=32 desc_align=64 desc_size=64 aligned_twins=64
+per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
+# layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array
+correctness: ok
+
+timing order hot_bat: F D E G I Fa Ca Ea B A H Aa Ba C Lem Da
+timing order hot_ser: D Fa Da C Aa Lem B A E Ca Ea F I Ba G H
+timing order cold_bat: B F A Aa Fa I Ba Lem Da E H G C Ca Ea D
+timing order cold_ser: Ca Ba Lem Ea E C Aa B A Da G I H F Fa D
+
+var   description                                                  hot_bat     hot_ser    cold_bat    cold_ser
+----  --------------------------------------------------------  ----------  ----------  ----------  ----------
+A     bsearch outer + general-n spine inner                         228.08      245.71      926.75      912.40
+B     two-level spine + general-n spine inner                       209.38      215.74      878.51      838.33
+C     bsearch outer + compile-time n=4096 inner                     228.79      241.07      731.11      843.33
+D     two-level spine + compile-time n=4096 inner                   213.25      212.64      675.27      770.46
+E     Shar branchless outer + general-n spine inner                 213.44      214.85     1000.18     1000.46
+F     Shar branchless outer + compile-time n=4096 inner             213.65      212.12      889.25      917.59
+G     Shar outer + Shar inner (n=4096, no spine)                    352.77      353.40     1135.09     1292.21
+H     Eytzinger outer + K&M PF + general-n spine inner              223.11      232.93     1101.38     1118.42
+I     Eytzinger outer + K&M PF + compile-time n=4096 inner          224.57      233.19      880.09     1042.03
+Lem   Lemire reference (bsearch outer + simd_quad inner)            333.17      348.56     1104.81     1138.51
+Aa    A with the inner kernel on 64-B-aligned copies                230.68      241.10      915.18      888.79
+Ba    B with the inner kernel on 64-B-aligned copies                208.43      212.75      808.88      829.72
+Ca    C with the inner kernel on 64-B-aligned copies                225.28      240.01      718.88      802.77
+Da    D with the inner kernel on 64-B-aligned copies                203.44      207.62      648.61      745.92
+Ea    E with the inner kernel on 64-B-aligned copies                211.40      214.08      973.98      990.92
+Fa    F with the inner kernel on 64-B-aligned copies                209.32      207.11      877.12      898.05
+
+deltas vs A (hot_bat  hot_ser  cold_bat  cold_ser):
+  B   vs A:     -8.2%    -12.2%     -5.2%     -8.1%
+  C   vs A:     +0.3%     -1.9%    -21.1%     -7.6%
+  D   vs A:     -6.5%    -13.5%    -27.1%    -15.6%
+  E   vs A:     -6.4%    -12.6%     +7.9%     +9.7%
+  F   vs A:     -6.3%    -13.7%     -4.0%     +0.6%
+  G   vs A:    +54.7%    +43.8%    +22.5%    +41.6%
+  H   vs A:     -2.2%     -5.2%    +18.8%    +22.6%
+  I   vs A:     -1.5%     -5.1%     -5.0%    +14.2%
+  Lem vs A:    +46.1%    +41.9%    +19.2%    +24.8%
+  Aa  vs A:     +1.1%     -1.9%     -1.2%     -2.6%
+  Ba  vs A:     -8.6%    -13.4%    -12.7%     -9.1%
+  Ca  vs A:     -1.2%     -2.3%    -22.4%    -12.0%
+  Da  vs A:    -10.8%    -15.5%    -30.0%    -18.2%
+  Ea  vs A:     -7.3%    -12.9%     +5.1%     +8.6%
+  Fa  vs A:     -8.2%    -15.7%     -5.4%     -1.6%
+
+deltas vs D (outer spine + n=4096 inner):
+  E   vs D:     +0.1%     +1.0%    +48.1%    +29.9%
+  F   vs D:     +0.2%     -0.2%    +31.7%    +19.1%
+  G   vs D:    +65.4%    +66.2%    +68.1%    +67.7%
+
+deltas vs F (Shar outer + n=4096 inner, ship recommendation):
+  G   vs F:    +65.1%    +66.6%    +27.6%    +40.8%
+  H   vs F:     +4.4%     +9.8%    +23.9%    +21.9%
+  I   vs F:     +5.1%     +9.9%     -1.0%    +13.6%
+
+deltas vs Lemire reference (how much our stack improves on the published baseline):
+  A   vs Lem:   -31.5%    -29.5%    -16.1%    -19.9%
+  D   vs Lem:   -36.0%    -39.0%    -38.9%    -32.3%
+  F   vs Lem:   -35.9%    -39.1%    -19.5%    -19.4%
+
+deltas of the aligned twins vs their plain variant (Xa vs X: the alignment A/B, same outer, same kernel):
+  Aa  vs A  :    +1.1%     -1.9%     -1.2%     -2.6%
+  Ba  vs B  :    -0.5%     -1.4%     -7.9%     -1.0%
+  Ca  vs C  :    -1.5%     -0.4%     -1.7%     -4.8%
+  Da  vs D  :    -4.6%     -2.4%     -3.9%     -3.2%
+  Ea  vs E  :    -1.0%     -0.4%     -2.6%     -1.0%
+  Fa  vs F  :    -2.0%     -2.4%     -1.4%     -2.1%
+# temp_after: 52.7'C

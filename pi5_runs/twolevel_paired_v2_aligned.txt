@@ -1,0 +1,432 @@
+Paired aggregation of 10 bench_twolevel runs for host 'pi5'
+pattern: pi5_runs/twolevel_v2_aligned_run*.txt
+  twolevel_v2_aligned_run1.txt: num_sets=200 hot_reps=200 mode=all order_seed=1 gap=32 aligned_twins=64  date: 2026-10-13T10:49:46-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 1; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 46.1'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 51.6'C
+  twolevel_v2_aligned_run10.txt: num_sets=200 hot_reps=200 mode=all order_seed=10 gap=32 aligned_twins=64  date: 2026-10-13T11:02:02-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 10; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 54.3'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 54.3'C
+  twolevel_v2_aligned_run2.txt: num_sets=200 hot_reps=200 mode=all order_seed=2 gap=32 aligned_twins=64  date: 2026-10-13T10:51:07-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 2; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 51.6'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 52.1'C
+  twolevel_v2_aligned_run3.txt: num_sets=200 hot_reps=200 mode=all order_seed=3 gap=32 aligned_twins=64  date: 2026-10-13T10:52:29-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 3; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 52.1'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 52.7'C
+  twolevel_v2_aligned_run4.txt: num_sets=200 hot_reps=200 mode=all order_seed=4 gap=32 aligned_twins=64  date: 2026-10-13T10:53:51-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 4; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 52.7'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 53.2'C
+  twolevel_v2_aligned_run5.txt: num_sets=200 hot_reps=200 mode=all order_seed=5 gap=32 aligned_twins=64  date: 2026-10-13T10:55:13-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 5; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 53.8'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 53.8'C
+  twolevel_v2_aligned_run6.txt: num_sets=200 hot_reps=200 mode=all order_seed=6 gap=32 aligned_twins=64  date: 2026-10-13T10:56:35-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 6; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 53.8'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 53.2'C
+  twolevel_v2_aligned_run7.txt: num_sets=200 hot_reps=200 mode=all order_seed=7 gap=32 aligned_twins=64  date: 2026-10-13T10:57:57-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 7; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 53.8'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 53.8'C
+  twolevel_v2_aligned_run8.txt: num_sets=200 hot_reps=200 mode=all order_seed=8 gap=32 aligned_twins=64  date: 2026-10-13T10:59:18-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 8; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 53.8'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 53.8'C
+  twolevel_v2_aligned_run9.txt: num_sets=200 hot_reps=200 mode=all order_seed=9 gap=32 aligned_twins=64  date: 2026-10-13T11:00:40-07:00; host: Linux 6.18.50+rpt-rpi-2712 aarch64; machine: eight; command: taskset -c 3 ./bin/bench_twolevel_twins 200 200 all 9; governor: ondemand; note: aligned twins Aa..Fa (-DQUADSEARCH_TWOLEVEL_ALIGNED=64) with one-line descriptors (-DQUADSEARCH_DESCRIPTOR_ALIGN=64), -DQUADSEARCH_ARM_PI5, 512 MB flush before every cold cell; built on trixie with GCC 17.0.0 20260704, run on the second board eight; temp_before: 53.8'C; layout: plain carr residue mod 64 (0/16/32/48) 24916/26347/24929/26208; plain spine 26239/24979/26234/24948; aligned copies (carr_al+spine_al, 64-B) 204800/0/0/0; descriptors 64 B, 200/200 sets with a line-aligned descriptor array; temp_after: 54.3'C
+
+Deltas are X/Y - 1 in percent; negative means X is faster. Levels are ns/query.
+WIN = X faster in >= 80% of runs AND |median paired delta| >= 3%; otherwise TIE.
+
+==============================================================================
+hot_bat  (10 runs with all 16 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 233, 235, 231, 230, 230, 234, 231, 231, 231, 234  (max/min = 1.02x)
+
+ var      median         min         max    range   description
+   A      232.03      228.08      236.71       4%   bsearch outer + general-n spine inner
+   B      209.37      208.20      216.53       4%   outer spine + general-n spine inner
+   C      230.50      228.73      236.93       4%   bsearch outer + compile-time n=4096 inner
+   D      212.07      208.86      216.60       4%   outer spine + compile-time n=4096 inner
+   E      213.09      210.84      218.77       4%   Shar outer + general-n spine inner
+   F      212.59      206.63      217.99       5%   Shar outer + compile-time n=4096 inner
+   G      353.56      349.78      360.01       3%   Shar outer + Shar inner (no spine)
+   H      226.29      223.11      232.04       4%   Eytzinger outer + K&M prefetch + general-n inner
+   I      226.88      224.31      231.77       3%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      335.94      333.17      342.31       3%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  Aa      231.99      228.86      236.71       3%   A with the inner kernel on 64-B-aligned copies
+  Ba      213.55      208.43      215.47       3%   B with the inner kernel on 64-B-aligned copies
+  Ca      226.66      223.08      230.99       4%   C with the inner kernel on 64-B-aligned copies
+  Da      205.07      201.92      209.62       4%   D with the inner kernel on 64-B-aligned copies
+  Ea      216.13      210.90      218.46       4%   E with the inner kernel on 64-B-aligned copies
+  Fa      209.02      204.99      214.14       4%   F with the inner kernel on 64-B-aligned copies
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: Fa Da Fa Da Da Da Da Da Da Da
+  Da       1.40       8/10 
+  Fa       2.70       2/10 
+   B       4.10       0/10 
+   D       4.70       0/10 
+  Ba       4.80       0/10 
+   F       5.30       0/10 
+  Ea       6.30       0/10 
+   E       6.70       0/10 
+   H      10.10       0/10 
+  Ca      10.20       0/10 
+   I      10.60       0/10 
+   C      12.50       0/10 
+  Aa      12.70       0/10 
+   A      12.90       0/10 
+ Lem      15.00       0/10 
+   G      16.00       0/10 
+
+best by mean rank: Da.  Paired delta of each variant vs Da:
+    A vs Da : median    +13.1%  range [   +10.7%,    +15.9%]  Da faster in 10/10  -> WIN for Da
+    B vs Da : median     +3.0%  range [    -0.5%,     +4.8%]  Da faster in 9/10  -> WIN for Da
+    C vs Da : median    +12.1%  range [    +9.5%,    +16.0%]  Da faster in 10/10  -> WIN for Da
+    D vs Da : median     +3.4%  range [    +1.5%,     +4.8%]  Da faster in 10/10  -> WIN for Da
+    E vs Da : median     +4.4%  range [    +1.5%,     +6.4%]  Da faster in 10/10  -> WIN for Da
+    F vs Da : median     +3.6%  range [    -0.7%,     +6.7%]  Da faster in 9/10  -> WIN for Da
+    G vs Da : median    +71.6%  range [   +69.5%,    +76.3%]  Da faster in 10/10  -> WIN for Da
+    H vs Da : median    +10.1%  range [    +7.1%,    +13.6%]  Da faster in 10/10  -> WIN for Da
+    I vs Da : median    +10.5%  range [    +8.9%,    +13.5%]  Da faster in 10/10  -> WIN for Da
+  Lem vs Da : median    +63.9%  range [   +59.3%,    +67.6%]  Da faster in 10/10  -> WIN for Da
+   Aa vs Da : median    +13.9%  range [    +9.2%,    +15.8%]  Da faster in 10/10  -> WIN for Da
+   Ba vs Da : median     +3.1%  range [    +1.8%,     +5.5%]  Da faster in 10/10  -> WIN for Da
+   Ca vs Da : median    +10.6%  range [    +8.0%,    +13.2%]  Da faster in 10/10  -> WIN for Da
+   Ea vs Da : median     +4.4%  range [    +2.5%,     +8.1%]  Da faster in 10/10  -> WIN for Da
+   Fa vs Da : median     +2.5%  range [    -0.9%,     +4.8%]  Da faster in 8/10  -> TIE
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median     +0.1%  [    -2.1%,     +3.5%]  F faster 4/10  TIE         per-run: -2.1 +2.2 -1.5 +0.2 -1.1 +0.0 +0.1 -1.7 +3.5 +1.6
+    F vs A  : median     -8.1%  [   -11.9%,     -6.3%]  F faster 10/10  WIN for F   per-run: -11.9 -7.9 -10.5 -6.3 -9.7 -6.6 -7.4 -11.9 -6.5 -8.4
+    F vs C  : median     -8.6%  [   -12.1%,     -5.3%]  F faster 10/10  WIN for F   per-run: -10.8 -8.0 -12.1 -6.6 -10.7 -5.5 -9.9 -9.2 -5.3 -5.7
+    F vs E  : median     -1.4%  [    -2.2%,     +1.8%]  F faster 7/10  TIE         per-run: -2.1 +0.8 -2.2 +0.1 -2.0 -0.9 -1.7 -1.8 +1.8 -1.1
+    E vs A  : median     -8.0%  [   -10.4%,     -5.7%]  E faster 10/10  WIN for E   per-run: -9.9 -8.7 -8.5 -6.4 -7.9 -5.7 -5.8 -10.4 -8.2 -7.4
+    D vs C  : median     -8.7%  [   -10.8%,     -5.6%]  D faster 10/10  WIN for D   per-run: -8.9 -10.0 -10.8 -6.8 -9.7 -5.6 -10.0 -7.6 -8.5 -7.3
+    D vs A  : median     -9.4%  [   -10.4%,     -6.5%]  D faster 10/10  WIN for D   per-run: -9.9 -9.9 -9.2 -6.5 -8.8 -6.6 -7.5 -10.4 -9.6 -9.9
+    B vs A  : median     -9.0%  [   -11.7%,     -6.7%]  B faster 10/10  WIN for B   per-run: -11.7 -11.0 -10.0 -8.2 -9.1 -6.7 -8.5 -8.5 -9.6 -9.0
+    C vs A  : median     -0.5%  [    -3.0%,     +2.7%]  C faster 5/10  TIE         per-run: -1.2 +0.1 +1.9 +0.3 +1.1 -1.1 +2.7 -3.0 -1.2 -2.8
+    I vs F  : median     +7.0%  [    +4.3%,    +11.3%]  I faster 0/10  WIN for F   per-run: +11.3 +6.3 +8.5 +5.1 +10.3 +6.9 +6.2 +7.9 +4.3 +7.0
+    H vs E  : median     +5.7%  [    +3.9%,     +7.7%]  H faster 0/10  WIN for E   per-run: +5.5 +7.3 +6.5 +4.5 +7.7 +6.0 +3.9 +7.0 +5.0 +4.8
+    H vs I  : median     -0.4%  [    -3.1%,     +0.9%]  H faster 6/10  TIE         per-run: -3.1 +0.1 +0.3 -0.7 -0.3 +0.1 -0.5 +0.9 -1.1 -1.0
+    I vs D  : median     +7.4%  [    +5.3%,     +9.1%]  I faster 0/10  WIN for D   per-run: +8.9 +8.7 +7.0 +5.3 +9.1 +6.9 +6.3 +6.1 +7.9 +8.8
+    G vs F  : median    +65.6%  [   +62.1%,    +72.3%]  G faster 0/10  WIN for F   per-run: +72.3 +65.1 +68.7 +65.1 +71.5 +63.9 +65.6 +68.3 +62.1 +65.5
+    F vs Lem: median    -37.1%  [   -39.0%,    -35.1%]  F faster 10/10  WIN for F   per-run: -39.0 -36.3 -38.3 -35.9 -38.4 -35.1 -38.0 -37.7 -35.3 -36.6
+    A vs Lem: median    -30.8%  [   -33.1%,    -29.2%]  A faster 10/10  WIN for A   per-run: -30.8 -30.8 -31.1 -31.5 -31.7 -30.5 -33.1 -29.2 -30.8 -30.8
+    D vs Lem: median    -37.6%  [   -38.1%,    -35.1%]  D faster 10/10  WIN for D   per-run: -37.7 -37.7 -37.4 -36.0 -37.7 -35.1 -38.1 -36.6 -37.5 -37.7
+    I vs Lem: median    -32.4%  [   -34.2%,    -30.6%]  I faster 10/10  WIN for I   per-run: -32.1 -32.3 -33.0 -32.6 -32.0 -30.6 -34.2 -32.7 -32.6 -32.2
+   Aa vs A  : median     +0.4%  [    -3.1%,     +2.3%]  Aa faster 5/10  TIE         per-run: -3.1 -0.1 +2.0 +1.1 +1.0 -0.7 +2.3 -2.6 +2.1 -1.4
+   Ba vs B  : median     -0.0%  [    -1.3%,     +3.1%]  Ba faster 5/10  TIE         per-run: +3.1 +2.3 +3.0 -0.5 +0.8 -0.5 +0.2 -1.3 -0.3 -0.4
+   Ca vs C  : median     -1.6%  [    -5.3%,     +0.4%]  Ca faster 9/10  TIE         per-run: -1.2 -2.5 -5.3 -1.5 -3.6 -1.4 -1.7 -1.9 -0.7 +0.4
+   Da vs D  : median     -3.3%  [    -4.6%,     -1.5%]  Da faster 10/10  WIN for Da  per-run: -1.5 -4.2 -2.7 -4.6 -3.3 -3.3 -3.6 -2.5 -2.1 -3.5
+   Ea vs E  : median     +0.3%  [    -3.6%,     +3.6%]  Ea faster 5/10  TIE         per-run: +2.7 +1.0 +2.5 -1.0 +3.6 -1.9 -1.0 +3.2 -0.5 -3.6
+   Fa vs F  : median     -1.3%  [    -2.8%,     +0.2%]  Fa faster 9/10  TIE         per-run: -0.2 -1.8 -1.3 -2.0 +0.2 -1.2 -1.3 -0.1 -2.8 -1.5
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem      Aa      Ba      Ca      Da      Ea      Fa
+    A        .    +9.9    +0.5   +10.4    +8.7    +8.9   -34.2    +2.4    +2.0   -30.8    -0.4    +9.6    +2.5   +13.1    +8.1   +10.6
+    B     -9.0       .    -9.3    -0.6    -1.7    -0.4   -40.4    -6.5    -7.3   -37.7    -9.6    +0.0    -6.9    +3.0    -1.5    +0.5
+    C     -0.5   +10.2       .    +9.5    +8.6    +9.4   -34.8    +2.3    +1.7   -31.3    -0.2    +9.7    +1.7   +12.1    +8.1   +10.4
+    D     -9.4    +0.6    -8.7       .    -1.0    -0.1   -40.1    -6.6    -6.9   -37.6    -9.1    -0.5    -7.0    +3.4    -1.7    +1.2
+    E     -8.0    +1.7    -8.0    +1.0       .    +1.4   -39.5    -5.4    -5.8   -36.7    -7.9    +1.0    -5.7    +4.4    -0.3    +2.1
+    F     -8.1    +0.4    -8.6    +0.1    -1.4       .   -39.6    -6.3    -6.5   -37.1    -8.7    +0.8    -6.7    +3.6    -0.5    +1.3
+    G    +52.0   +67.7   +53.3   +67.0   +65.2   +65.6       .   +56.1   +55.5    +5.0   +52.6   +67.2   +55.8   +71.6   +64.6   +68.3
+    H     -2.4    +7.0    -2.2    +7.1    +5.7    +6.7   -35.9       .    -0.4   -32.8    -1.9    +7.0    -0.0   +10.1    +5.2    +8.1
+    I     -1.9    +7.8    -1.7    +7.4    +6.1    +7.0   -35.7    +0.4       .   -32.4    -2.2    +7.6    +0.4   +10.5    +6.1    +8.2
+  Lem    +44.6   +60.5   +45.5   +60.2   +58.0   +59.1    -4.8   +48.9   +48.0       .   +44.9   +59.2   +48.1   +63.9   +56.5   +60.4
+   Aa     +0.4   +10.6    +0.2   +10.0    +8.6    +9.6   -34.5    +1.9    +2.2   -31.0       .    +9.9    +2.3   +13.9    +8.5   +10.5
+   Ba     -8.8    -0.0    -8.8    +0.5    -1.0    -0.8   -40.2    -6.6    -7.1   -37.2    -9.0       .    -6.7    +3.1    -1.4    +0.6
+   Ca     -2.4    +7.4    -1.6    +7.5    +6.0    +7.1   -35.8    +0.0    -0.4   -32.5    -2.3    +7.2       .   +10.6    +5.7    +8.0
+   Da    -11.5    -2.9   -10.8    -3.3    -4.2    -3.5   -41.7    -9.2    -9.5   -39.0   -12.2    -3.0    -9.6       .    -4.2    -2.4
+   Ea     -7.5    +1.5    -7.5    +1.8    +0.3    +0.5   -39.3    -4.9    -5.7   -36.1    -7.8    +1.4    -5.4    +4.4       .    +2.0
+   Fa     -9.6    -0.5    -9.5    -1.2    -2.0    -1.3   -40.6    -7.5    -7.6   -37.7    -9.5    -0.6    -7.4    +2.5    -2.0       .
+
+==============================================================================
+hot_ser  (10 runs with all 16 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 234, 234, 234, 236, 234, 234, 234, 234, 234, 237  (max/min = 1.01x)
+
+ var      median         min         max    range   description
+   A      242.03      240.12      245.71       2%   bsearch outer + general-n spine inner
+   B      210.83      209.82      215.74       3%   outer spine + general-n spine inner
+   C      241.62      239.98      244.40       2%   bsearch outer + compile-time n=4096 inner
+   D      212.48      211.40      213.68       1%   outer spine + compile-time n=4096 inner
+   E      211.17      210.52      214.85       2%   Shar outer + general-n spine inner
+   F      209.81      208.04      212.12       2%   Shar outer + compile-time n=4096 inner
+   G      350.68      349.17      354.86       2%   Shar outer + Shar inner (no spine)
+   H      229.78      228.74      232.93       2%   Eytzinger outer + K&M prefetch + general-n inner
+   I      231.09      229.96      235.56       2%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      344.75      341.43      348.56       2%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  Aa      243.19      241.10      244.60       1%   A with the inner kernel on 64-B-aligned copies
+  Ba      210.94      208.64      212.75       2%   B with the inner kernel on 64-B-aligned copies
+  Ca      236.92      234.74      240.01       2%   C with the inner kernel on 64-B-aligned copies
+  Da      208.61      206.96      213.74       3%   D with the inner kernel on 64-B-aligned copies
+  Ea      211.75      208.75      215.29       3%   E with the inner kernel on 64-B-aligned copies
+  Fa      207.15      206.07      208.65       1%   F with the inner kernel on 64-B-aligned copies
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: Fa Fa Fa Fa Fa Fa Fa Fa Fa Fa
+  Fa       1.00      10/10 
+  Da       2.40       0/10 
+   F       3.70       0/10 
+  Ba       4.90       0/10 
+   B       5.50       0/10 
+   E       5.70       0/10 
+  Ea       6.10       0/10 
+   D       6.70       0/10 
+   H       9.00       0/10 
+   I      10.00       0/10 
+  Ca      11.00       0/10 
+   C      12.70       0/10 
+   A      12.70       0/10 
+  Aa      13.60       0/10 
+ Lem      15.00       0/10 
+   G      16.00       0/10 
+
+best by mean rank: Fa.  Paired delta of each variant vs Fa:
+    A vs Fa : median    +16.9%  range [   +16.1%,    +18.6%]  Fa faster in 10/10  -> WIN for Fa
+    B vs Fa : median     +2.0%  range [    +1.1%,     +4.2%]  Fa faster in 10/10  -> TIE
+    C vs Fa : median    +16.8%  range [   +15.0%,    +18.5%]  Fa faster in 10/10  -> WIN for Fa
+    D vs Fa : median     +2.6%  range [    +1.4%,     +3.3%]  Fa faster in 10/10  -> TIE
+    E vs Fa : median     +2.0%  range [    +1.3%,     +3.7%]  Fa faster in 10/10  -> TIE
+    F vs Fa : median     +1.0%  range [    +0.7%,     +2.5%]  Fa faster in 10/10  -> TIE
+    G vs Fa : median    +69.5%  range [   +68.8%,    +70.6%]  Fa faster in 10/10  -> WIN for Fa
+    H vs Fa : median    +11.0%  range [   +10.5%,    +12.5%]  Fa faster in 10/10  -> WIN for Fa
+    I vs Fa : median    +12.0%  range [   +10.7%,    +13.2%]  Fa faster in 10/10  -> WIN for Fa
+  Lem vs Fa : median    +66.6%  range [   +64.8%,    +68.3%]  Fa faster in 10/10  -> WIN for Fa
+   Aa vs Fa : median    +17.4%  range [   +16.4%,    +18.2%]  Fa faster in 10/10  -> WIN for Fa
+   Ba vs Fa : median     +2.0%  range [    +0.9%,     +2.8%]  Fa faster in 10/10  -> TIE
+   Ca vs Fa : median    +14.5%  range [   +13.4%,    +15.9%]  Fa faster in 10/10  -> WIN for Fa
+   Da vs Fa : median     +0.7%  range [    +0.2%,     +2.7%]  Fa faster in 10/10  -> TIE
+   Ea vs Fa : median     +2.5%  range [    +0.8%,     +3.5%]  Fa faster in 10/10  -> TIE
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median     -1.3%  [    -1.9%,     -0.2%]  F faster 10/10  TIE         per-run: -1.9 -0.8 -1.7 -0.2 -1.3 -0.6 -1.5 -1.3 -0.6 -1.8
+    F vs A  : median    -13.5%  [   -14.1%,    -12.0%]  F faster 10/10  WIN for F   per-run: -13.5 -12.0 -14.0 -13.7 -13.5 -12.8 -13.5 -13.5 -13.1 -14.1
+    F vs C  : median    -13.2%  [   -14.2%,    -12.0%]  F faster 10/10  WIN for F   per-run: -13.8 -12.9 -13.4 -12.0 -13.7 -12.9 -13.0 -14.2 -12.4 -14.0
+    F vs E  : median     -0.8%  [    -2.0%,     +0.2%]  F faster 9/10  TIE         per-run: -1.0 +0.2 -2.0 -1.3 -1.2 -0.2 -0.4 -0.7 -0.4 -1.0
+    E vs A  : median    -12.6%  [   -13.2%,    -12.2%]  E faster 10/10  WIN for E   per-run: -12.6 -12.2 -12.2 -12.6 -12.4 -12.7 -13.1 -12.9 -12.8 -13.2
+    D vs C  : median    -12.2%  [   -13.1%,    -11.7%]  D faster 10/10  WIN for D   per-run: -12.1 -12.2 -12.0 -11.8 -12.6 -12.4 -11.7 -13.1 -11.8 -12.4
+    D vs A  : median    -12.4%  [   -13.5%,    -11.3%]  D faster 10/10  WIN for D   per-run: -11.9 -11.3 -12.5 -13.5 -12.4 -12.3 -12.1 -12.4 -12.6 -12.5
+    B vs A  : median    -12.9%  [   -13.1%,    -11.9%]  B faster 10/10  WIN for B   per-run: -12.9 -11.9 -12.9 -12.2 -13.0 -13.0 -13.1 -12.5 -12.9 -12.2
+    C vs A  : median     -0.0%  [    -1.9%,     +1.0%]  C faster 5/10  TIE         per-run: +0.3 +1.0 -0.6 -1.9 +0.3 +0.1 -0.5 +0.9 -0.9 -0.2
+    I vs F  : median    +10.1%  [    +9.4%,    +12.3%]  I faster 0/10  WIN for F   per-run: +10.2 +9.4 +11.2 +9.9 +10.1 +10.2 +9.8 +10.1 +9.8 +12.3
+    H vs E  : median     +8.9%  [    +7.7%,     +9.8%]  H faster 0/10  WIN for E   per-run: +8.7 +8.9 +7.7 +8.4 +8.8 +8.9 +8.9 +9.0 +9.2 +9.8
+    H vs I  : median     -0.3%  [    -1.2%,     -0.0%]  H faster 10/10  TIE         per-run: -0.3 -0.7 -1.1 -0.1 -0.0 -1.0 -0.3 -0.3 -0.2 -1.2
+    I vs D  : median     +8.9%  [    +8.1%,    +10.2%]  I faster 0/10  WIN for D   per-run: +8.2 +8.6 +9.3 +9.7 +8.7 +9.5 +8.1 +8.6 +9.2 +10.2
+    G vs F  : median    +67.6%  [   +65.8%,    +69.1%]  G faster 0/10  WIN for F   per-run: +67.6 +65.8 +67.9 +66.6 +67.9 +66.1 +67.5 +67.3 +68.1 +69.1
+    F vs Lem: median    -39.2%  [   -39.8%,    -38.4%]  F faster 10/10  WIN for F   per-run: -39.2 -38.7 -39.5 -39.1 -39.4 -38.4 -39.2 -39.2 -38.8 -39.8
+    A vs Lem: median    -29.7%  [   -30.3%,    -29.4%]  A faster 10/10  WIN for A   per-run: -29.7 -30.3 -29.7 -29.5 -30.0 -29.4 -29.7 -29.7 -29.6 -29.9
+    D vs Lem: median    -38.4%  [   -39.0%,    -38.0%]  D faster 10/10  WIN for D   per-run: -38.0 -38.2 -38.5 -39.0 -38.7 -38.1 -38.2 -38.4 -38.5 -38.7
+    I vs Lem: median    -33.0%  [   -33.3%,    -32.2%]  I faster 10/10  WIN for I   per-run: -33.0 -32.9 -32.8 -33.1 -33.3 -32.2 -33.2 -33.1 -32.8 -32.4
+   Aa vs A  : median     +0.3%  [    -1.9%,     +1.4%]  Aa faster 2/10  TIE         per-run: +0.8 +1.4 +0.4 -1.9 +0.0 +0.9 +0.3 -0.1 +0.9 +0.1
+   Ba vs B  : median     -0.1%  [    -1.7%,     +1.1%]  Ba faster 6/10  TIE         per-run: +0.1 -0.1 +0.2 -1.4 +1.0 +1.1 -0.6 -1.5 -0.2 -1.7
+   Ca vs C  : median     -2.1%  [    -3.2%,     -0.4%]  Ca faster 10/10  TIE         per-run: -2.2 -3.2 -1.4 -0.4 -2.2 -2.0 -1.6 -2.8 -1.4 -2.3
+   Da vs D  : median     -1.8%  [    -2.4%,     +0.0%]  Da faster 9/10  TIE         per-run: -2.0 -1.7 -2.2 -2.4 -1.4 -1.3 -1.8 -1.8 -1.2 +0.0
+   Ea vs E  : median     +0.2%  [    -1.1%,     +1.6%]  Ea faster 4/10  TIE         per-run: +0.3 +0.1 -0.4 -0.4 +0.4 +0.7 +1.1 -1.1 -0.5 +1.6
+   Fa vs F  : median     -1.0%  [    -2.5%,     -0.7%]  Fa faster 10/10  TIE         per-run: -0.7 -2.5 -0.9 -2.4 -0.7 -1.9 -1.2 -1.6 -0.8 -0.8
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem      Aa      Ba      Ca      Da      Ea      Fa
+    A        .   +14.8    +0.0   +14.1   +14.5   +15.6   -31.0    +5.2    +4.9   -29.7    -0.3   +14.8    +2.1   +15.8   +14.0   +16.9
+    B    -12.9       .   -12.7    -0.5    -0.1    +0.7   -39.8    -8.1    -8.6   -38.7   -13.2    +0.1   -11.0    +0.9    -0.4    +2.0
+    C     -0.0   +14.6       .   +13.9   +14.6   +15.2   -31.1    +5.2    +4.5   -29.9    -0.5   +14.4    +2.1   +16.0   +13.9   +16.8
+    D    -12.4    +0.5   -12.2       .    +0.5    +1.3   -39.5    -7.7    -8.2   -38.4   -12.6    +0.7   -10.6    +1.8    +0.0    +2.6
+    E    -12.6    +0.1   -12.7    -0.5       .    +0.8   -39.8    -8.2    -8.5   -38.6   -13.3    +0.4   -10.8    +1.1    -0.2    +2.0
+    F    -13.5    -0.7   -13.2    -1.3    -0.8       .   -40.3    -8.9    -9.2   -39.2   -13.7    -0.4   -11.7    +0.5    -1.1    +1.0
+    G    +45.0   +66.0   +45.1   +65.2   +66.0   +67.6       .   +52.5   +51.8    +1.8   +44.6   +66.1   +47.9   +68.1   +65.2   +69.5
+    H     -5.0    +8.8    -4.9    +8.4    +8.9    +9.8   -34.4       .    -0.3   -33.2    -5.6    +9.2    -3.0   +10.1    +8.4   +11.0
+    I     -4.6    +9.4    -4.3    +8.9    +9.3   +10.1   -34.1    +0.3       .   -33.0    -4.8    +9.5    -2.7   +10.5    +9.3   +12.0
+  Lem    +42.3   +63.0   +42.6   +62.4   +62.9   +64.4    -1.8   +49.8   +49.2       .   +41.8   +63.3   +45.2   +64.8   +62.6   +66.6
+   Aa     +0.3   +15.2    +0.5   +14.4   +15.4   +15.8   -30.8    +6.0    +5.0   -29.5       .   +15.4    +2.6   +16.3   +14.8   +17.4
+   Ba    -12.9    -0.1   -12.6    -0.6    -0.4    +0.4   -39.8    -8.4    -8.7   -38.8   -13.4       .   -11.1    +1.0    -0.1    +2.0
+   Ca     -2.0   +12.4    -2.1   +11.9   +12.1   +13.3   -32.4    +3.1    +2.7   -31.2    -2.5   +12.4       .   +13.5   +11.7   +14.5
+   Da    -13.7    -0.9   -13.8    -1.8    -1.1    -0.5   -40.5    -9.2    -9.5   -39.3   -14.0    -1.0   -11.9       .    -1.5    +0.7
+   Ea    -12.2    +0.4   -12.2    -0.0    +0.2    +1.1   -39.5    -7.7    -8.5   -38.5   -12.9    +0.1   -10.5    +1.6       .    +2.5
+   Fa    -14.5    -1.9   -14.4    -2.6    -2.0    -1.0   -41.0    -9.9   -10.7   -40.0   -14.8    -1.9   -12.7    -0.7    -2.4       .
+
+==============================================================================
+cold_bat  (10 runs with all 16 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 869, 876, 888, 879, 876, 870, 864, 873, 873, 876  (max/min = 1.03x)
+
+ var      median         min         max    range   description
+   A      893.00      875.64      926.75       6%   bsearch outer + general-n spine inner
+   B      834.44      821.20      878.51       7%   outer spine + general-n spine inner
+   C      732.08      714.90      738.33       3%   bsearch outer + compile-time n=4096 inner
+   D      677.21      670.27      698.88       4%   outer spine + compile-time n=4096 inner
+   E     1000.32      988.04     1007.12       2%   Shar outer + general-n spine inner
+   F      877.78      869.07      891.48       3%   Shar outer + compile-time n=4096 inner
+   G     1122.16     1111.29     1201.84       8%   Shar outer + Shar inner (no spine)
+   H     1117.03     1086.47     1169.62       8%   Eytzinger outer + K&M prefetch + general-n inner
+   I      911.11      876.85      935.08       7%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem     1115.31     1090.83     1174.62       8%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  Aa      874.21      857.30      918.79       7%   A with the inner kernel on 64-B-aligned copies
+  Ba      810.40      798.32      820.73       3%   B with the inner kernel on 64-B-aligned copies
+  Ca      700.54      678.05      718.88       6%   C with the inner kernel on 64-B-aligned copies
+  Da      655.28      648.61      669.62       3%   D with the inner kernel on 64-B-aligned copies
+  Ea      984.25      973.98      993.05       2%   E with the inner kernel on 64-B-aligned copies
+  Fa      872.08      864.25      881.93       2%   F with the inner kernel on 64-B-aligned copies
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: Da Da Da Da Da Da Da Da Da Da
+  Da       1.00      10/10 
+   D       2.00       0/10 
+  Ca       3.00       0/10 
+   C       4.00       0/10 
+  Ba       5.00       0/10 
+   B       6.10       0/10 
+  Fa       7.70       0/10 
+  Aa       8.20       0/10 
+   F       8.60       0/10 
+   A      10.10       0/10 
+   I      10.30       0/10 
+  Ea      12.10       0/10 
+   E      12.90       0/10 
+ Lem      14.80       0/10 
+   H      14.90       0/10 
+   G      15.30       0/10 
+
+best by mean rank: Da.  Paired delta of each variant vs Da:
+    A vs Da : median    +36.0%  range [   +33.3%,    +42.9%]  Da faster in 10/10  -> WIN for Da
+    B vs Da : median    +27.7%  range [   +25.0%,    +35.4%]  Da faster in 10/10  -> WIN for Da
+    C vs Da : median    +12.2%  range [    +8.9%,    +12.7%]  Da faster in 10/10  -> WIN for Da
+    D vs Da : median     +3.2%  range [    +1.3%,     +6.4%]  Da faster in 10/10  -> WIN for Da
+    E vs Da : median    +52.6%  range [   +49.3%,    +54.7%]  Da faster in 10/10  -> WIN for Da
+    F vs Da : median    +33.8%  range [   +32.5%,    +37.1%]  Da faster in 10/10  -> WIN for Da
+    G vs Da : median    +71.0%  range [   +68.6%,    +83.9%]  Da faster in 10/10  -> WIN for Da
+    H vs Da : median    +70.9%  range [   +65.3%,    +74.7%]  Da faster in 10/10  -> WIN for Da
+    I vs Da : median    +38.3%  range [   +33.7%,    +42.4%]  Da faster in 10/10  -> WIN for Da
+  Lem vs Da : median    +70.4%  range [   +66.3%,    +75.4%]  Da faster in 10/10  -> WIN for Da
+   Aa vs Da : median    +33.7%  range [   +31.2%,    +41.1%]  Da faster in 10/10  -> WIN for Da
+   Ba vs Da : median    +23.8%  range [   +21.5%,    +25.6%]  Da faster in 10/10  -> WIN for Da
+   Ca vs Da : median     +6.3%  range [    +3.2%,    +10.8%]  Da faster in 10/10  -> WIN for Da
+   Ea vs Da : median    +50.2%  range [   +47.4%,    +51.7%]  Da faster in 10/10  -> WIN for Da
+   Fa vs Da : median    +33.5%  range [   +29.7%,    +35.2%]  Da faster in 10/10  -> WIN for Da
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    +29.3%  [   +25.2%,    +31.7%]  F faster 0/10  WIN for D   per-run: +31.0 +31.2 +31.4 +31.7 +29.3 +28.8 +28.7 +28.2 +29.3 +25.2
+    F vs A  : median     -1.9%  [    -4.0%,     -0.5%]  F faster 10/10  TIE         per-run: -1.3 -1.9 -2.0 -4.0 -2.1 -1.7 -0.5 -1.8 -0.5 -2.5
+    F vs C  : median    +20.5%  [   +18.0%,    +23.5%]  F faster 0/10  WIN for C   per-run: +21.6 +20.0 +21.0 +21.6 +18.5 +19.9 +21.7 +18.0 +23.5 +18.7
+    F vs E  : median    -12.2%  [   -13.2%,    -10.8%]  F faster 10/10  WIN for F   per-run: -12.5 -11.2 -10.8 -11.1 -12.6 -12.9 -12.7 -13.2 -12.0 -11.4
+    E vs A  : median    +12.4%  [    +7.9%,    +14.0%]  E faster 0/10  WIN for A   per-run: +12.8 +10.4 +9.9 +7.9 +12.0 +12.9 +14.0 +13.1 +13.1 +10.1
+    D vs C  : median     -7.4%  [    -8.6%,     -4.5%]  D faster 10/10  WIN for D   per-run: -7.2 -8.6 -7.9 -7.6 -8.4 -6.9 -5.4 -8.0 -4.5 -5.2
+    D vs A  : median    -24.0%  [   -27.1%,    -22.1%]  D faster 10/10  WIN for D   per-run: -24.6 -25.3 -25.4 -27.1 -24.3 -23.7 -22.7 -23.4 -23.1 -22.1
+    B vs A  : median     -6.0%  [    -8.1%,     -4.4%]  B faster 10/10  WIN for B   per-run: -7.3 -7.6 -5.0 -5.2 -8.1 -6.9 -5.5 -4.4 -5.1 -6.4
+    C vs A  : median    -18.3%  [   -21.1%,    -16.8%]  C faster 10/10  WIN for C   per-run: -18.8 -18.3 -19.0 -21.1 -17.4 -18.0 -18.3 -16.8 -19.4 -17.9
+    I vs F  : median     +3.6%  [    -1.0%,     +6.9%]  I faster 2/10  WIN for F   per-run: -0.5 +2.6 +3.3 -1.0 +4.1 +4.1 +2.4 +5.0 +4.0 +6.9
+    H vs E  : median    +11.4%  [    +8.4%,    +17.0%]  H faster 0/10  WIN for E   per-run: +8.4 +13.9 +17.0 +10.1 +12.7 +11.4 +8.9 +11.3 +12.0 +11.4
+    H vs I  : median    +23.3%  [   +17.7%,    +27.1%]  H faster 0/10  WIN for I   per-run: +24.5 +25.0 +27.1 +25.1 +23.9 +22.8 +21.8 +22.1 +22.4 +17.7
+    I vs D  : median    +34.3%  [   +30.3%,    +35.7%]  I faster 0/10  WIN for D   per-run: +30.4 +34.6 +35.7 +30.3 +34.6 +34.1 +31.8 +34.6 +34.5 +33.8
+    G vs F  : median    +27.8%  [   +26.4%,    +36.6%]  G faster 0/10  WIN for F   per-run: +26.4 +36.6 +26.7 +27.6 +27.9 +26.9 +29.1 +29.8 +26.8 +28.0
+    F vs Lem: median    -21.3%  [   -24.1%,    -19.2%]  F faster 10/10  WIN for F   per-run: -19.2 -21.0 -24.1 -19.5 -22.8 -21.6 -20.8 -21.7 -21.0 -21.6
+    A vs Lem: median    -20.2%  [   -22.6%,    -16.1%]  A faster 10/10  WIN for A   per-run: -18.2 -19.5 -22.6 -16.1 -21.1 -20.2 -20.3 -20.2 -20.6 -19.6
+    D vs Lem: median    -38.9%  [   -42.3%,    -37.4%]  D faster 10/10  WIN for D   per-run: -38.3 -39.8 -42.3 -38.9 -40.3 -39.1 -38.4 -38.9 -38.9 -37.4
+    I vs Lem: median    -18.9%  [   -21.6%,    -16.2%]  I faster 10/10  WIN for I   per-run: -19.6 -19.0 -21.6 -20.3 -19.6 -18.4 -18.9 -17.8 -17.9 -16.2
+   Aa vs A  : median     -1.4%  [    -4.4%,     +1.0%]  Aa faster 9/10  TIE         per-run: -1.7 -4.4 +1.0 -1.2 -1.1 -2.6 -1.1 -1.1 -1.6 -2.8
+   Ba vs B  : median     -3.4%  [    -7.9%,     -0.3%]  Ba faster 10/10  WIN for Ba  per-run: -0.9 -1.0 -5.8 -7.9 -0.3 -3.1 -2.4 -4.0 -5.2 -3.8
+   Ca vs C  : median     -4.7%  [    -6.6%,     -1.4%]  Ca faster 10/10  WIN for Ca  per-run: -4.3 -4.6 -4.8 -1.7 -4.3 -6.1 -5.2 -6.6 -1.4 -4.7
+   Da vs D  : median     -3.1%  [    -6.0%,     -1.3%]  Da faster 10/10  WIN for Da  per-run: -2.5 -2.5 -1.3 -3.9 -2.8 -4.4 -2.9 -3.4 -4.3 -6.0
+   Ea vs E  : median     -1.6%  [    -2.6%,     +0.1%]  Ea faster 9/10  TIE         per-run: -1.4 +0.1 -1.2 -2.6 -1.5 -2.2 -1.7 -1.6 -2.1 -1.1
+   Fa vs F  : median     -0.7%  [    -2.6%,     +1.2%]  Fa faster 8/10  TIE         per-run: -0.3 -0.7 -2.6 -1.4 -0.4 -1.0 -0.6 +1.2 -2.1 +0.8
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem      Aa      Ba      Ca      Da      Ea      Fa
+    A        .    +6.4   +22.4   +31.5   -11.0    +1.9   -20.0   -20.5    -1.8   -20.2    +1.4   +10.1   +28.6   +36.0    -9.5    +2.6
+    B     -6.0       .   +14.5   +23.2   -16.2    -4.8   -25.2   -24.6    -7.7   -24.8    -4.2    +3.6   +20.3   +27.7   -15.0    -4.4
+    C    -18.3   -12.7       .    +8.0   -26.7   -17.0   -34.8   -34.3   -19.5   -34.4   -16.9    -9.7    +4.9   +12.2   -25.6   -16.3
+    D    -24.0   -18.8    -7.4       .   -32.3   -22.7   -39.7   -39.2   -25.5   -38.9   -22.2   -16.5    -3.1    +3.2   -31.1   -22.1
+    E    +12.4   +19.3   +36.3   +47.7       .   +14.0   -11.3   -10.2    +9.8   -10.1   +14.6   +23.1   +42.4   +52.6    +1.6   +14.8
+    F     -1.9    +5.1   +20.5   +29.3   -12.2       .   -21.7   -21.6    -3.5   -21.3    +0.4    +8.1   +26.0   +33.8   -11.1    +0.7
+    G    +25.0   +33.7   +53.5   +65.9   +12.7   +27.8       .    +1.5   +23.3    +1.0   +28.1   +38.9   +60.7   +71.0   +14.5   +28.9
+    H    +25.7   +32.7   +52.3   +64.5   +11.4   +27.6    -1.5       .   +23.3    -0.1   +27.3   +37.3   +59.9   +70.9   +13.4   +28.0
+    I     +1.9    +8.3   +24.2   +34.3    -9.0    +3.6   -18.9   -18.9       .   -18.9    +3.6   +11.8   +30.7   +38.3    -7.5    +4.1
+  Lem    +25.4   +32.9   +52.5   +63.7   +11.2   +27.1    -1.0    +0.1   +23.4       .   +27.9   +37.4   +59.8   +70.4   +13.5   +27.3
+   Aa     -1.4    +4.4   +20.4   +28.6   -12.7    -0.4   -21.9   -21.4    -3.5   -21.8       .    +8.0   +26.5   +33.7   -11.1    +0.1
+   Ba     -9.1    -3.4   +10.7   +19.8   -18.7    -7.5   -28.0   -27.2   -10.5   -27.2    -7.4       .   +16.6   +23.8   -17.5    -7.0
+   Ca    -22.2   -16.8    -4.7    +3.2   -29.8   -20.6   -37.8   -37.5   -23.5   -37.4   -21.0   -14.2       .    +6.3   -29.2   -20.1
+   Da    -26.5   -21.7   -10.9    -3.1   -34.5   -25.3   -41.5   -41.5   -27.7   -41.3   -25.2   -19.2    -6.0       .   -33.4   -25.1
+   Ea    +10.5   +17.6   +34.3   +45.2    -1.6   +12.5   -12.6   -11.8    +8.1   -11.9   +12.5   +21.2   +41.2   +50.2       .   +13.2
+   Fa     -2.5    +4.6   +19.5   +28.4   -12.9    -0.7   -22.4   -21.8    -4.0   -21.4    -0.1    +7.6   +25.2   +33.5   -11.7       .
+
+==============================================================================
+cold_ser  (10 runs with all 16 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 931, 928, 953, 929, 933, 926, 925, 935, 927, 928  (max/min = 1.03x)
+
+ var      median         min         max    range   description
+   A      896.52      882.87      917.50       4%   bsearch outer + general-n spine inner
+   B      848.88      838.33      890.08       6%   outer spine + general-n spine inner
+   C      832.02      816.57      853.24       4%   bsearch outer + compile-time n=4096 inner
+   D      767.77      756.75      793.88       5%   outer spine + compile-time n=4096 inner
+   E     1007.44      989.43     1035.83       5%   Shar outer + general-n spine inner
+   F      917.36      908.88      943.24       4%   Shar outer + compile-time n=4096 inner
+   G     1289.43     1282.66     1299.71       1%   Shar outer + Shar inner (no spine)
+   H     1131.10     1113.60     1290.83      16%   Eytzinger outer + K&M prefetch + general-n inner
+   I     1032.99     1018.51     1053.23       3%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem     1140.82     1100.28     1183.88       8%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  Aa      893.33      881.94      970.00      10%   A with the inner kernel on 64-B-aligned copies
+  Ba      830.74      810.27      838.50       3%   B with the inner kernel on 64-B-aligned copies
+  Ca      810.09      785.37      836.75       7%   C with the inner kernel on 64-B-aligned copies
+  Da      739.58      733.88      745.92       2%   D with the inner kernel on 64-B-aligned copies
+  Ea      995.09      988.88     1003.51       1%   E with the inner kernel on 64-B-aligned copies
+  Fa      903.52      898.05      927.03       3%   F with the inner kernel on 64-B-aligned copies
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: Da Da Da Da Da Da Da Da Da Da
+  Da       1.00      10/10 
+   D       2.00       0/10 
+  Ca       3.10       0/10 
+  Ba       4.20       0/10 
+   C       4.80       0/10 
+   B       5.90       0/10 
+  Aa       7.60       0/10 
+   A       8.00       0/10 
+  Fa       8.70       0/10 
+   F       9.70       0/10 
+  Ea      11.10       0/10 
+   E      12.00       0/10 
+   I      12.90       0/10 
+   H      14.40       0/10 
+ Lem      14.60       0/10 
+   G      16.00       0/10 
+
+best by mean rank: Da.  Paired delta of each variant vs Da:
+    A vs Da : median    +21.8%  range [   +18.9%,    +23.4%]  Da faster in 10/10  -> WIN for Da
+    B vs Da : median    +14.9%  range [   +12.4%,    +20.8%]  Da faster in 10/10  -> WIN for Da
+    C vs Da : median    +12.4%  range [   +10.8%,    +14.7%]  Da faster in 10/10  -> WIN for Da
+    D vs Da : median     +3.5%  range [    +2.7%,     +7.7%]  Da faster in 10/10  -> WIN for Da
+    E vs Da : median    +36.1%  range [   +34.1%,    +40.6%]  Da faster in 10/10  -> WIN for Da
+    F vs Da : median    +24.2%  range [   +22.8%,    +28.5%]  Da faster in 10/10  -> WIN for Da
+    G vs Da : median    +74.7%  range [   +73.0%,    +76.8%]  Da faster in 10/10  -> WIN for Da
+    H vs Da : median    +53.4%  range [   +49.9%,    +73.6%]  Da faster in 10/10  -> WIN for Da
+    I vs Da : median    +39.9%  range [   +38.7%,    +41.8%]  Da faster in 10/10  -> WIN for Da
+  Lem vs Da : median    +54.1%  range [   +48.2%,    +59.2%]  Da faster in 10/10  -> WIN for Da
+   Aa vs Da : median    +20.9%  range [   +19.2%,    +30.4%]  Da faster in 10/10  -> WIN for Da
+   Ba vs Da : median    +11.8%  range [    +9.6%,    +13.8%]  Da faster in 10/10  -> WIN for Da
+   Ca vs Da : median     +9.1%  range [    +7.0%,    +12.5%]  Da faster in 10/10  -> WIN for Da
+   Ea vs Da : median    +34.6%  range [   +32.8%,    +35.7%]  Da faster in 10/10  -> WIN for Da
+   Fa vs Da : median    +22.5%  range [   +20.4%,    +25.8%]  Da faster in 10/10  -> WIN for Da
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    +19.4%  [   +16.6%,    +22.6%]  F faster 0/10  WIN for D   per-run: +21.2 +18.7 +21.4 +19.1 +19.6 +19.7 +22.6 +16.6 +19.1 +18.0
+    F vs A  : median     +2.2%  [    +0.6%,     +5.5%]  F faster 0/10  TIE         per-run: +2.5 +0.9 +1.1 +0.6 +1.1 +3.9 +5.5 +3.1 +2.0 +3.7
+    F vs C  : median    +10.0%  [    +8.7%,    +15.0%]  F faster 0/10  WIN for C   per-run: +10.3 +9.7 +8.7 +8.8 +10.7 +9.0 +15.0 +13.4 +9.1 +12.7
+    F vs E  : median     -8.6%  [   -11.5%,     -6.5%]  F faster 10/10  WIN for F   per-run: -11.5 -8.9 -10.0 -8.3 -9.1 -9.0 -6.5 -8.1 -8.1 -7.9
+    E vs A  : median    +12.2%  [    +9.7%,    +15.8%]  E faster 0/10  WIN for A   per-run: +15.8 +10.8 +12.3 +9.7 +11.2 +14.1 +12.8 +12.1 +11.0 +12.6
+    D vs C  : median     -8.0%  [   -10.5%,     -2.8%]  D faster 10/10  WIN for D   per-run: -9.0 -7.6 -10.5 -8.6 -7.5 -9.0 -6.2 -2.8 -8.4 -4.5
+    D vs A  : median    -14.7%  [   -16.7%,    -11.6%]  D faster 10/10  WIN for D   per-run: -15.4 -15.0 -16.7 -15.6 -15.5 -13.2 -14.0 -11.6 -14.4 -12.1
+    B vs A  : median     -5.7%  [    -8.1%,     -0.9%]  B faster 10/10  WIN for B   per-run: -5.4 -6.0 -6.5 -8.1 -5.7 -4.1 -5.7 -0.9 -3.5 -5.8
+    C vs A  : median     -7.8%  [    -9.1%,     -4.7%]  C faster 10/10  WIN for C   per-run: -7.1 -8.1 -7.0 -7.6 -8.7 -4.7 -8.3 -9.1 -6.5 -8.0
+    I vs F  : median    +12.9%  [    +8.0%,    +14.8%]  I faster 0/10  WIN for F   per-run: +12.5 +12.9 +13.5 +13.6 +12.9 +14.8 +8.0 +11.7 +13.4 +11.0
+    H vs E  : median    +12.6%  [    +9.0%,    +25.3%]  H faster 0/10  WIN for E   per-run: +9.0 +12.2 +25.3 +11.8 +13.8 +11.0 +13.3 +10.5 +14.6 +13.1
+    H vs I  : median     +9.7%  [    +6.2%,    +22.7%]  H faster 0/10  WIN for I   per-run: +9.4 +9.1 +22.7 +7.3 +11.0 +6.2 +12.2 +7.7 +9.9 +10.6
+    I vs D  : median    +35.0%  [   +30.2%,    +37.7%]  I faster 0/10  WIN for D   per-run: +36.4 +34.0 +37.7 +35.2 +35.0 +37.4 +32.4 +30.2 +35.1 +31.0
+    G vs F  : median    +40.4%  [   +36.3%,    +43.0%]  G faster 0/10  WIN for F   per-run: +40.5 +40.8 +40.2 +40.8 +41.3 +40.4 +36.3 +38.5 +43.0 +39.5
+    F vs Lem: median    -19.3%  [   -21.7%,    -16.6%]  F faster 10/10  WIN for F   per-run: -18.5 -19.4 -21.7 -19.4 -19.3 -16.6 -17.5 -20.4 -20.6 -19.1
+    A vs Lem: median    -21.2%  [   -22.7%,    -19.8%]  A faster 10/10  WIN for A   per-run: -20.5 -20.1 -22.5 -19.9 -20.1 -19.8 -21.8 -22.7 -22.1 -22.0
+    D vs Lem: median    -32.4%  [   -35.5%,    -30.3%]  D faster 10/10  WIN for D   per-run: -32.8 -32.1 -35.5 -32.3 -32.5 -30.3 -32.7 -31.7 -33.3 -31.5
+    I vs Lem: median     -9.5%  [   -11.1%,     -4.3%]  I faster 10/10  WIN for I   per-run: -8.3 -9.1 -11.1 -8.5 -8.9 -4.3 -10.9 -11.1 -9.9 -10.2
+   Aa vs A  : median     -0.3%  [    -2.6%,     +5.7%]  Aa faster 6/10  TIE         per-run: +1.3 -1.7 +5.7 -2.6 -0.6 +0.6 -1.4 -0.2 +1.0 -0.4
+   Ba vs B  : median     -2.9%  [    -5.8%,     -0.9%]  Ba faster 10/10  TIE         per-run: -2.6 -2.3 -3.1 -1.0 -2.1 -3.8 -3.9 -5.8 -5.7 -0.9
+   Ca vs C  : median     -2.5%  [    -4.8%,     -0.0%]  Ca faster 10/10  TIE         per-run: -0.9 -2.5 -1.9 -4.8 -2.3 -3.7 -4.3 -0.0 -3.9 -2.5
+   Da vs D  : median     -3.4%  [    -7.2%,     -2.6%]  Da faster 10/10  WIN for Da  per-run: -2.6 -3.4 -2.7 -3.2 -3.4 -3.1 -4.6 -7.2 -3.7 -5.7
+   Ea vs E  : median     -1.1%  [    -4.3%,     +0.5%]  Ea faster 9/10  TIE         per-run: -4.3 -1.4 -3.0 -1.0 -0.5 -0.7 -1.3 -1.0 +0.5 -1.2
+   Fa vs F  : median     -1.8%  [    -4.3%,     +1.1%]  Fa faster 8/10  TIE         per-run: +1.1 -1.6 -2.9 -2.1 -1.4 -1.9 -4.3 -2.2 +0.0 -1.7
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem      Aa      Ba      Ca      Da      Ea      Fa
+    A        .    +6.0    +8.4   +17.2   -10.9    -2.2   -30.2   -21.0   -13.0   -21.2    +0.3    +8.7   +11.4   +21.8    -9.8    -0.9
+    B     -5.7       .    +2.3   +11.1   -16.1    -7.6   -34.1   -25.0   -17.7   -24.9    -4.9    +2.9    +5.0   +14.9   -14.6    -5.7
+    C     -7.8    -2.3       .    +8.7   -17.5    -9.1   -35.7   -26.6   -19.4   -27.1    -7.5    +1.1    +2.6   +12.4   -16.1    -8.4
+    D    -14.7   -10.0    -8.0       .   -23.5   -16.2   -40.4   -32.1   -26.0   -32.4   -13.6    -6.5    -4.9    +3.5   -23.0   -14.8
+    E    +12.2   +19.2   +21.2   +30.7       .    +9.4   -21.9   -11.2    -2.6   -12.0   +12.6   +21.3   +24.4   +36.1    +1.1   +11.6
+    F     +2.2    +8.2   +10.0   +19.4    -8.6       .   -28.8   -18.6   -11.4   -19.3    +3.0   +11.2   +13.3   +24.2    -7.4    +1.9
+    G    +43.3   +51.8   +55.5   +67.9   +28.0   +40.4       .   +14.2   +24.8   +13.5   +44.5   +56.0   +59.4   +74.7   +30.1   +43.0
+    H    +26.6   +33.4   +36.2   +47.4   +12.6   +22.9   -12.5       .    +9.7    -0.4   +26.2   +37.0   +40.5   +53.4   +14.0   +24.8
+    I    +14.9   +21.5   +24.1   +35.0    +2.6   +12.9   -19.9    -8.8       .    -9.5   +15.4   +25.4   +28.1   +39.9    +3.9   +14.3
+  Lem    +26.8   +33.1   +37.2   +48.0   +13.6   +24.0   -11.9    +0.4   +10.5       .   +27.3   +37.3   +41.7   +54.1   +14.9   +26.1
+   Aa     -0.3    +5.1    +8.1   +15.7   -11.2    -2.9   -30.8   -20.8   -13.3   -21.5       .    +8.2   +10.9   +20.9   -10.1    -1.0
+   Ba     -8.0    -2.9    -1.1    +7.0   -17.6   -10.0   -35.9   -27.0   -20.3   -27.1    -7.6       .    +2.6   +11.8   -16.6    -8.0
+   Ca    -10.2    -4.7    -2.5    +5.2   -19.6   -11.7   -37.3   -28.8   -21.9   -29.4    -9.8    -2.5       .    +9.1   -19.0   -10.5
+   Da    -17.9   -13.0   -11.0    -3.4   -26.5   -19.5   -42.8   -34.8   -28.5   -35.1   -17.3   -10.6    -8.4       .   -25.7   -18.4
+   Ea    +10.9   +17.2   +19.3   +29.9    -1.1    +8.0   -23.1   -12.2    -3.8   -12.9   +11.2   +19.9   +23.4   +34.6       .   +10.2
+   Fa     +0.9    +6.0    +9.1   +17.4   -10.4    -1.8   -30.1   -19.9   -12.5   -20.7    +1.0    +8.7   +11.8   +22.5    -9.3       .
+
