@@ -281,6 +281,49 @@ cfl_cold = {
 }
 have_cfl = len(cfl_warm["simd_quad_intel"]) == len(cfl_sizes)
 
+# Intel Ice Lake-SP (Xeon Platinum 8375C, the user's AWS i4i.32xlarge "big";
+# host tag icx). Onboarded 2026-10-13. GCC 17.0.0 20260610 with -O3
+# -march=native (= icelake-server: AVX-512 with VBMI2), so simd_quad_intel
+# takes the one-zmm block check and has no in-loop prefetch, as on Emerald
+# Rapids. Pinned to core 3 of socket 0; no cpufreq interface on the instance.
+#
+# PROVENANCE: icx_runs/rebench_flushed_run{1..10}.txt (2026-10-13, run-level
+# drift 1.00x warm / 1.02x cold), all 22 sizes, per-cell median of the 10 runs
+# of `./bench 4000 5000` as printed by `compute_bench_paired.py icx
+# --plot-dicts icx` (plain rows and the 'nA' line-aligned rows). FLUSHED
+# harness like the cfl and pi5_flushed dicts: own figures only, never mixed
+# into the pre-flush cross-host facets and tables.
+icx_sizes = [8, 11, 16, 23, 32, 47, 64, 89, 128, 177, 256, 333, 512, 617, 1001, 1024, 1234, 1777, 2048, 2999, 3967, 4096]
+icx_warm = {
+    "linear (std::find)":            [    3.70,     4.10,     5.10,     7.10,     5.30,     7.40,     6.20,     7.90,     8.60,    10.90,    13.60,    17.50,    22.50,    30.90,    40.40,    40.80,    49.05,    67.90,    79.80,   111.10,   150.50,   160.45],
+    "binary (std::binary_search)":   [   15.30,    17.10,    19.60,    21.80,    24.10,    26.80,    29.40,    31.70,    35.70,    37.80,    42.10,    43.60,    47.70,    48.50,    52.60,    52.80,    53.60,    56.70,    57.80,    60.30,    63.00,    63.20],
+    "simd_quad (reference)":         [    4.50,     5.10,     4.60,    11.85,     5.60,    14.20,     7.20,    11.10,     8.30,    12.10,    10.30,    13.10,    11.90,    16.40,    16.20,    14.40,    16.00,    17.80,    16.00,    18.70,    18.90,    18.70],
+    "simd_quad_intel":               [    3.00,     7.40,     3.00,     9.30,     4.30,    12.60,     5.40,    14.50,     7.20,    11.60,     8.80,    11.70,    10.40,    14.80,    14.60,    11.80,    16.50,    14.60,    14.40,    17.60,    17.80,    16.20],
+    "simd_quad_intel + spine":       [    3.00,     7.50,     3.00,     9.40,     3.70,    12.30,     5.40,    14.60,     6.20,    10.30,     7.30,    10.10,     8.90,    12.40,    12.20,    10.00,    13.60,    12.30,    12.00,    14.80,    15.00,    13.40],
+}
+icx_cold = {
+    "linear (std::find)":            [   13.35,    13.40,    14.95,    16.20,    21.80,    26.10,    26.95,    30.90,    35.30,    41.70,    50.75,    61.85,    83.35,   100.05,   150.25,   153.05,   180.45,   246.65,   279.10,   389.05,   503.50,   515.50],
+    "binary (std::binary_search)":   [   21.00,    22.30,    25.40,    27.60,    30.80,    33.20,    37.35,    41.10,    47.55,    52.35,    63.65,    69.80,    88.75,    96.55,   123.15,   124.40,   133.95,   152.10,   162.95,   180.05,   197.35,   199.70],
+    "simd_quad (reference)":         [   13.95,    14.20,    13.90,    19.55,    17.05,    24.50,    21.50,    27.75,    30.10,    43.95,    56.30,    68.10,    88.35,   108.75,   136.85,   131.55,   159.25,   185.20,   179.90,   216.80,   236.85,   233.70],
+    "simd_quad_intel":               [   10.20,    14.20,     9.90,    18.00,    14.80,    22.15,    19.85,    29.30,    28.40,    36.60,    45.40,    62.70,    77.85,   102.05,   132.80,   114.35,   148.95,   152.45,   153.00,   203.10,   214.75,   196.85],
+    "simd_quad_intel + spine":       [   10.45,    14.85,    10.65,    18.10,    14.05,    21.60,    21.00,    29.90,    29.50,    39.80,    44.45,    53.80,    62.85,    73.20,    75.45,    71.90,    90.75,    81.15,    85.75,   105.60,   112.30,   108.65],
+}
+icx_aligned_warm = {
+    "linear (std::find)":            [    3.30,     3.90,     5.10,     7.00,     3.30,     7.60,     4.90,     7.80,     6.90,     9.50,    11.90,    17.60,    20.60,    26.60,    39.90,    39.00,    47.30,    66.20,    75.20,   109.50,   150.40,   150.65],
+    "binary (std::binary_search)":   [   15.20,    17.30,    19.90,    22.30,    25.10,    27.40,    31.00,    33.00,    37.10,    38.70,    42.90,    44.20,    48.20,    48.80,    53.10,    53.30,    54.00,    57.15,    58.30,    60.70,    63.50,    63.60],
+    "simd_quad (reference)":         [    4.30,     5.40,     4.60,    11.70,     5.70,    14.20,     7.20,    11.10,     8.30,    12.10,    10.30,    13.10,    11.90,    16.40,    16.20,    14.40,    16.00,    17.80,    16.00,    18.60,    18.80,    18.70],
+    "simd_quad_intel":               [    3.00,     7.30,     3.00,     9.30,     4.20,    12.55,     5.20,    14.50,     7.10,    11.50,     8.70,    11.45,    10.30,    14.70,    14.50,    11.70,    16.30,    14.50,    14.25,    17.40,    17.60,    16.00],
+    "simd_quad_intel + spine":       [    3.00,     7.10,     3.00,     9.10,     3.60,    11.50,     5.20,    14.10,     6.00,     9.80,     7.00,     9.80,     8.60,    12.00,    11.80,     9.70,    13.00,    11.90,    11.60,    14.10,    14.30,    12.90],
+}
+icx_aligned_cold = {
+    "linear (std::find)":            [   19.50,    21.60,    19.10,    19.70,    24.50,    30.10,    29.10,    33.70,    35.30,    42.30,    49.20,    63.75,    77.20,    90.60,   138.45,   134.65,   165.60,   227.95,   258.50,   370.25,   481.65,   499.05],
+    "binary (std::binary_search)":   [   25.40,    25.25,    27.95,    28.95,    32.90,    36.20,    40.15,    43.10,    50.40,    55.30,    66.80,    72.75,    88.45,    96.65,   126.60,   124.90,   132.25,   151.15,   163.20,   181.30,   195.20,   201.90],
+    "simd_quad (reference)":         [   21.65,    22.00,    19.45,    22.60,    22.00,    29.30,    26.15,    32.20,    32.70,    51.65,    55.30,    72.15,    82.05,   107.50,   134.15,   127.35,   154.60,   187.85,   174.15,   218.00,   235.90,   230.75],
+    "simd_quad_intel":               [   14.20,    18.65,    13.50,    21.80,    18.50,    26.50,    24.15,    31.95,    31.10,    40.75,    45.95,    64.25,    74.95,    97.20,   132.20,   112.05,   149.85,   151.80,   146.45,   202.40,   214.95,   194.95],
+    "simd_quad_intel + spine":       [   15.05,    19.50,    14.35,    22.15,    17.75,    26.20,    25.05,    32.65,    38.85,    43.90,    43.50,    50.25,    51.30,    59.40,    61.55,    57.05,    72.85,    70.20,    68.85,    77.45,    83.40,    76.60],
+}
+have_icx = len(icx_warm["simd_quad_intel"]) == len(icx_sizes)
+
 # Raspberry Pi 5, FLUSHED harness, second board "eight" (same model, idle).
 # PROVENANCE: pi5_runs/rebench_flushed_eight_run{1..10}.txt (2026-10-12/13,
 # bench_flush_al built on trixie with GCC 17.0.0 20260704, -O3
@@ -1042,6 +1085,9 @@ if have_cfl:
     # Flushed harness (2026-10-12): these two figures only; see the cfl dict comment.
     lineplot(cfl_sizes, cfl_warm, "Intel Coffee Lake (i9-9980HK) - warm cache (flushed harness, turbo on)", "bench_cfl_warm.png")
     lineplot(cfl_sizes, cfl_cold, "Intel Coffee Lake (i9-9980HK) - cold cache (512 MB flush before every pass, turbo on)", "bench_cfl_cold.png")
+if have_icx:
+    lineplot(icx_sizes, icx_warm, "Intel Ice Lake-SP (Xeon 8375C, i4i.32xlarge) - warm cache (flushed harness, 10 runs)", "bench_icx_warm.png")
+    lineplot(icx_sizes, icx_cold, "Intel Ice Lake-SP (Xeon 8375C, i4i.32xlarge) - cold cache (512 MB flush before every pass, 10 runs)", "bench_icx_cold.png")
 
 
 # --- Cross-machine comparison: a faceted view (one subplot per host, all

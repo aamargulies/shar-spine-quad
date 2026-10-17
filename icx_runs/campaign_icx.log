@@ -1,0 +1,5 @@
+icx campaign start 2026-10-13T19:44:49+00:00 on ip-172-31-11-73.us-west-2.compute.internal, g++ (GCC) 17.0.0 20260610 (experimental), load 0.07 0.14 0.06
+flushed runs done 2026-10-13T20:05:37+00:00 exit 0
+two-level runs done 2026-10-13T20:15:12+00:00 exit 0
+sweep done 2026-10-13T21:44:37+00:00 exit 0
+kernel A/B sweep done 2026-10-14T00:03:25+00:00 exit 0

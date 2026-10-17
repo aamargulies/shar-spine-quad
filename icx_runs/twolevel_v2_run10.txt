@@ -1,0 +1,55 @@
+# date: 2026-10-13T20:14:15+00:00
+# host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64
+# machine: ip-172-31-11-73.us-west-2.compute.internal
+# command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 10
+# note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors
+# temp_before: unknown
+two-level spine micro-bench
+num_sets=200 hot_reps=200 num_containers=512 inner_n=4096 mode=all order_seed=10 gap=32 desc_align=64 desc_size=64
+per set: 1024 B of keys + 4194304 B of container data + 131072 B of spines
+correctness: ok
+
+timing order hot_bat: D H G C F Lem A I B E
+timing order hot_ser: I F C D G H Lem E A B
+timing order cold_bat: Lem F C D A G E I B H
+timing order cold_ser: E I Lem F A B D G H C
+
+var   description                                                  hot_bat     hot_ser    cold_bat    cold_ser
+----  --------------------------------------------------------  ----------  ----------  ----------  ----------
+A     bsearch outer + general-n spine inner                          74.11      111.96      475.56      658.50
+B     two-level spine + general-n spine inner                        69.16       76.87      539.37      678.68
+C     bsearch outer + compile-time n=4096 inner                      67.75      104.21      369.91      627.58
+D     two-level spine + compile-time n=4096 inner                   171.62       72.96      417.94      645.41
+E     Shar branchless outer + general-n spine inner                  53.27       59.30      665.75      833.88
+F     Shar branchless outer + compile-time n=4096 inner              48.43       50.49      447.98      809.09
+G     Shar outer + Shar inner (n=4096, no spine)                    233.25      141.28      660.86     1236.31
+H     Eytzinger outer + K&M PF + general-n spine inner               76.57       82.89      707.79      848.57
+I     Eytzinger outer + K&M PF + compile-time n=4096 inner           57.35       79.22      445.03      825.88
+Lem   Lemire reference (bsearch outer + simd_quad inner)            203.54      187.89      701.25      844.24
+
+deltas vs A (hot_bat  hot_ser  cold_bat  cold_ser):
+  B   vs A:     -6.7%    -31.3%    +13.4%     +3.1%
+  C   vs A:     -8.6%     -6.9%    -22.2%     -4.7%
+  D   vs A:   +131.6%    -34.8%    -12.1%     -2.0%
+  E   vs A:    -28.1%    -47.0%    +40.0%    +26.6%
+  F   vs A:    -34.6%    -54.9%     -5.8%    +22.9%
+  G   vs A:   +214.8%    +26.2%    +39.0%    +87.7%
+  H   vs A:     +3.3%    -26.0%    +48.8%    +28.9%
+  I   vs A:    -22.6%    -29.2%     -6.4%    +25.4%
+  Lem vs A:   +174.7%    +67.8%    +47.5%    +28.2%
+
+deltas vs D (outer spine + n=4096 inner):
+  E   vs D:    -69.0%    -18.7%    +59.3%    +29.2%
+  F   vs D:    -71.8%    -30.8%     +7.2%    +25.4%
+  G   vs D:    +35.9%    +93.6%    +58.1%    +91.6%
+
+deltas vs F (Shar outer + n=4096 inner, ship recommendation):
+  G   vs F:   +381.6%   +179.8%    +47.5%    +52.8%
+  H   vs F:    +58.1%    +64.2%    +58.0%     +4.9%
+  I   vs F:    +18.4%    +56.9%     -0.7%     +2.1%
+
+deltas vs Lemire reference (how much our stack improves on the published baseline):
+  A   vs Lem:   -63.6%    -40.4%    -32.2%    -22.0%
+  D   vs Lem:   -15.7%    -61.2%    -40.4%    -23.6%
+  F   vs Lem:   -76.2%    -73.1%    -36.1%     -4.2%
+# temp_after: unknown

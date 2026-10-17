@@ -1,0 +1,312 @@
+Paired aggregation of 10 bench_twolevel runs for host 'icx'
+pattern: icx_runs/twolevel_v2_run*.txt
+  twolevel_v2_run1.txt: num_sets=200 hot_reps=200 mode=all order_seed=1 gap=32  date: 2026-10-13T20:05:37+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 1; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run10.txt: num_sets=200 hot_reps=200 mode=all order_seed=10 gap=32  date: 2026-10-13T20:14:15+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 10; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run2.txt: num_sets=200 hot_reps=200 mode=all order_seed=2 gap=32  date: 2026-10-13T20:06:34+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 2; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run3.txt: num_sets=200 hot_reps=200 mode=all order_seed=3 gap=32  date: 2026-10-13T20:07:32+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 3; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run4.txt: num_sets=200 hot_reps=200 mode=all order_seed=4 gap=32  date: 2026-10-13T20:08:30+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 4; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run5.txt: num_sets=200 hot_reps=200 mode=all order_seed=5 gap=32  date: 2026-10-13T20:09:27+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 5; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run6.txt: num_sets=200 hot_reps=200 mode=all order_seed=6 gap=32  date: 2026-10-13T20:10:25+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 6; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run7.txt: num_sets=200 hot_reps=200 mode=all order_seed=7 gap=32  date: 2026-10-13T20:11:22+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 7; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run8.txt: num_sets=200 hot_reps=200 mode=all order_seed=8 gap=32  date: 2026-10-13T20:12:20+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 8; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+  twolevel_v2_run9.txt: num_sets=200 hot_reps=200 mode=all order_seed=9 gap=32  date: 2026-10-13T20:13:17+00:00; host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64; machine: ip-172-31-11-73.us-west-2.compute.internal; command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench_twolevel 200 200 all 9; note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages; g++ -O3 -march=native -std=c++20 -DQUADSEARCH_DESCRIPTOR_ALIGN=64 bench_twolevel.cpp simd_quad_intel.c; line-aligned container descriptors; temp_before: unknown; temp_after: unknown
+
+Deltas are X/Y - 1 in percent; negative means X is faster. Levels are ns/query.
+WIN = X faster in >= 80% of runs AND |median paired delta| >= 3%; otherwise TIE.
+
+==============================================================================
+hot_bat  (10 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 89, 89, 86, 88, 88, 82, 85, 89, 86, 88  (max/min = 1.09x)
+
+ var      median         min         max    range   description
+   A       73.33       72.79      136.73      88%   bsearch outer + general-n spine inner
+   B       69.93       69.07      175.75     154%   outer spine + general-n spine inner
+   C       67.34       64.87      127.55      97%   bsearch outer + compile-time n=4096 inner
+   D       64.52       64.00      171.62     168%   outer spine + compile-time n=4096 inner
+   E       53.47       52.66       59.13      12%   Shar outer + general-n spine inner
+   F       48.48       46.58      122.81     164%   Shar outer + compile-time n=4096 inner
+   G      227.27      173.84      233.25      34%   Shar outer + Shar inner (no spine)
+   H       68.33       67.22       76.57      14%   Eytzinger outer + K&M prefetch + general-n inner
+   I       58.16       57.00       66.10      16%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      204.31      202.98      235.16      16%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: E F F E F F F F F I
+   E       1.80       2/10 
+   I       2.80       1/10 
+   F       3.10       7/10 
+   D       4.50       0/10 
+   H       5.20       0/10 
+   C       5.50       0/10 
+   B       6.30       0/10 
+   A       6.80       0/10 
+ Lem       9.10       0/10 
+   G       9.90       0/10 
+
+best by mean rank: E.  Paired delta of each variant vs E:
+    A vs E  : median    +38.3%  range [   +23.4%,   +146.9%]  E faster in 10/10  -> WIN for E
+    B vs E  : median    +29.8%  range [   +17.6%,   +233.7%]  E faster in 10/10  -> WIN for E
+    C vs E  : median    +27.1%  range [   +10.5%,   +142.2%]  E faster in 10/10  -> WIN for E
+    D vs E  : median    +21.4%  range [    +8.4%,   +222.2%]  E faster in 10/10  -> WIN for E
+    F vs E  : median     -9.0%  range [   -19.3%,   +130.0%]  E faster in 3/10  -> TIE
+    G vs E  : median   +316.9%  range [  +226.5%,   +337.9%]  E faster in 10/10  -> WIN for E
+    H vs E  : median    +26.3%  range [   +15.8%,    +43.7%]  E faster in 10/10  -> WIN for E
+    I vs E  : median     +8.1%  range [    -1.6%,    +25.5%]  E faster in 9/10  -> WIN for E
+  Lem vs E  : median   +280.9%  range [  +244.1%,   +341.6%]  E faster in 10/10  -> WIN for E
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    -25.5%  [   -72.4%,    +91.6%]  F faster 7/10  TIE         per-run: +90.3 -71.8 -28.1 +76.4 -72.4 -24.2 -27.1 -26.9 -21.4 +91.6
+    F vs A  : median    -34.6%  [   -65.7%,    +68.6%]  F faster 7/10  TIE         per-run: +67.4 -34.7 -36.4 +68.6 -36.3 -34.5 -65.7 -38.4 -29.9 +68.3
+    F vs C  : median    -29.2%  [   -63.5%,    +89.2%]  F faster 7/10  TIE         per-run: +83.2 -28.5 -63.5 +89.2 -28.5 -51.7 -33.7 -29.8 -59.7 +88.0
+    F vs E  : median     -9.0%  [   -19.3%,   +130.0%]  F faster 7/10  TIE         per-run: +130.0 -9.1 -11.5 +128.7 -19.3 -8.9 -15.4 -10.8 -5.0 +107.7
+    E vs A  : median    -27.7%  [   -59.5%,    -19.0%]  E faster 10/10  WIN for E   per-run: -27.2 -28.1 -28.1 -26.3 -21.0 -28.2 -59.5 -30.9 -26.1 -19.0
+    D vs C  : median     -3.9%  [   -49.2%,   +158.6%]  D faster 7/10  TIE         per-run: -3.7 +153.3 -49.2 +7.3 +158.6 -36.2 -9.1 -4.1 -48.8 -1.9
+    D vs A  : median    -11.8%  [   -53.0%,   +131.6%]  D faster 8/10  WIN for D   per-run: -12.1 +131.6 -11.6 -4.4 +130.7 -13.7 -53.0 -15.8 -10.8 -12.2
+    B vs A  : median     -4.8%  [   -48.4%,   +130.6%]  B faster 7/10  TIE         per-run: +1.1 -6.7 +4.1 -3.6 -5.1 -6.8 -48.4 +130.6 -4.9 -4.7
+    C vs A  : median     -9.6%  [   -48.3%,    +74.0%]  C faster 7/10  TIE         per-run: -8.7 -8.6 +74.0 -10.9 -10.8 +35.4 -48.3 -12.2 +74.0 -10.5
+    I vs F  : median    +19.1%  [   -52.9%,    +40.8%]  I faster 3/10  TIE         per-run: -46.0 +18.4 +23.6 -52.9 +25.1 +19.9 +21.6 +40.8 +14.2 -52.6
+    H vs E  : median    +26.3%  [   +15.8%,    +43.7%]  H faster 0/10  WIN for E   per-run: +30.4 +43.7 +30.4 +26.3 +16.9 +26.2 +23.1 +31.0 +25.6 +15.8
+    H vs I  : median    +16.6%  [    +4.4%,    +33.5%]  H faster 0/10  WIN for I   per-run: +4.9 +33.5 +19.3 +17.3 +15.8 +15.6 +19.6 +4.4 +15.8 +17.7
+    I vs D  : median    -10.6%  [   -66.6%,     +3.0%]  I faster 8/10  WIN for I   per-run: +2.9 -66.6 -11.1 -17.0 -65.4 -9.1 -11.3 +3.0 -10.2 -9.3
+    G vs F  : median   +363.6%  [   +77.4%,   +396.2%]  G faster 0/10  WIN for F   per-run: +77.4 +381.6 +388.7 +87.8 +396.2 +258.2 +378.6 +383.2 +348.6 +79.6
+    F vs Lem: median    -76.5%  [   -79.4%,    -39.6%]  F faster 10/10  WIN for F   per-run: -40.4 -76.2 -77.4 -39.8 -77.3 -79.4 -77.1 -76.9 -75.0 -39.6
+    A vs Lem: median    -64.3%  [   -68.5%,    -33.3%]  A faster 10/10  WIN for A   per-run: -64.4 -63.6 -64.4 -64.3 -64.3 -68.5 -33.3 -62.4 -64.3 -64.1
+    D vs Lem: median    -68.4%  [   -72.8%,    -15.7%]  D faster 10/10  WIN for D   per-run: -68.7 -15.7 -68.5 -65.8 -17.7 -72.8 -68.6 -68.4 -68.2 -68.5
+    I vs Lem: median    -71.6%  [   -75.3%,    -67.4%]  I faster 10/10  WIN for I   per-run: -67.8 -71.8 -72.0 -71.6 -71.6 -75.3 -72.2 -67.4 -71.4 -71.4
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .    +5.0   +10.6   +13.4   +38.3   +52.9   -67.4    +7.6   +25.7   -64.3
+    B     -4.8       .    +4.2    +8.2   +29.8   +42.6   -68.5    +3.1   +20.1   -65.7
+    C     -9.6    -4.0       .    +4.1   +27.1   +41.2   -69.8    -3.2   +15.2   -66.9
+    D    -11.8    -7.6    -3.9       .   +21.4   +34.3   -70.7    -5.2   +11.9   -68.4
+    E    -27.7   -22.9   -21.3   -17.6       .    +9.9   -76.0   -20.8    -7.5   -73.7
+    F    -34.6   -29.9   -29.2   -25.5    -9.0       .   -78.4   -29.4   -16.1   -76.5
+    G   +206.4  +217.7  +231.3  +240.8  +316.9  +363.6       .  +228.9  +293.1   +11.2
+    H     -7.1    -3.0    +3.3    +5.5   +26.3   +41.7   -69.6       .   +16.6   -66.7
+    I    -20.5   -16.7   -13.2   -10.6    +8.1   +19.1   -74.6   -14.2       .   -71.6
+  Lem   +180.0  +191.6  +201.9  +216.8  +280.9  +326.3   -10.1  +200.0  +252.1       .
+
+==============================================================================
+hot_ser  (10 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 89, 90, 90, 89, 89, 87, 90, 89, 90, 89  (max/min = 1.04x)
+
+ var      median         min         max    range   description
+   A      111.15      110.69      111.96       1%   bsearch outer + general-n spine inner
+   B       76.77       76.24       77.60       2%   outer spine + general-n spine inner
+   C      104.23      103.83      105.76       2%   bsearch outer + compile-time n=4096 inner
+   D       72.93       72.41       74.33       3%   outer spine + compile-time n=4096 inner
+   E       58.55       58.24       59.30       2%   Shar outer + general-n spine inner
+   F       50.75       50.49       51.24       1%   Shar outer + compile-time n=4096 inner
+   G      130.85       94.28      142.86      52%   Shar outer + Shar inner (no spine)
+   H       82.75       82.24       83.51       2%   Eytzinger outer + K&M prefetch + general-n inner
+   I       79.50       79.04       79.68       1%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      203.34      175.83      244.33      39%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: F F F F F F F F F F
+   F       1.00      10/10 
+   E       2.00       0/10 
+   D       3.00       0/10 
+   B       4.00       0/10 
+   I       5.00       0/10 
+   H       6.00       0/10 
+   C       7.20       0/10 
+   A       8.30       0/10 
+   G       8.50       0/10 
+ Lem      10.00       0/10 
+
+best by mean rank: F.  Paired delta of each variant vs F:
+    A vs F  : median   +118.6%  range [  +116.2%,   +121.7%]  F faster in 10/10  -> WIN for F
+    B vs F  : median    +51.0%  range [   +49.5%,    +53.0%]  F faster in 10/10  -> WIN for F
+    C vs F  : median   +105.0%  range [  +102.9%,   +108.4%]  F faster in 10/10  -> WIN for F
+    D vs F  : median    +43.0%  range [   +41.7%,    +46.4%]  F faster in 10/10  -> WIN for F
+    E vs F  : median    +15.2%  range [   +13.7%,    +17.4%]  F faster in 10/10  -> WIN for F
+    G vs F  : median   +155.4%  range [   +85.8%,   +180.2%]  F faster in 10/10  -> WIN for F
+    H vs F  : median    +62.6%  range [   +61.3%,    +64.2%]  F faster in 10/10  -> WIN for F
+    I vs F  : median    +56.6%  range [   +54.3%,    +57.1%]  F faster in 10/10  -> WIN for F
+  Lem vs F  : median   +298.4%  range [  +246.5%,   +381.3%]  F faster in 10/10  -> WIN for F
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    -30.1%  [   -31.7%,    -29.4%]  F faster 10/10  WIN for F   per-run: -30.1 -30.8 -29.4 -30.3 -29.9 -30.0 -30.4 -29.8 -30.1 -31.7
+    F vs A  : median    -54.3%  [   -54.9%,    -53.8%]  F faster 10/10  WIN for F   per-run: -54.1 -54.9 -54.1 -54.4 -54.4 -54.3 -54.3 -53.8 -53.9 -54.2
+    F vs C  : median    -51.2%  [   -52.0%,    -50.7%]  F faster 10/10  WIN for F   per-run: -51.0 -51.5 -51.0 -51.1 -51.5 -51.4 -51.3 -50.7 -51.0 -52.0
+    F vs E  : median    -13.2%  [   -14.9%,    -12.0%]  F faster 10/10  WIN for F   per-run: -12.8 -14.9 -12.0 -13.3 -13.5 -14.0 -13.0 -12.1 -12.9 -13.5
+    E vs A  : median    -47.4%  [   -47.8%,    -46.8%]  E faster 10/10  WIN for E   per-run: -47.4 -47.0 -47.8 -47.4 -47.3 -46.8 -47.5 -47.4 -47.1 -47.1
+    D vs C  : median    -30.0%  [   -30.8%,    -29.7%]  D faster 10/10  WIN for D   per-run: -30.0 -30.0 -30.6 -29.9 -30.8 -30.6 -30.0 -29.8 -29.9 -29.7
+    D vs A  : median    -34.5%  [   -35.0%,    -32.9%]  D faster 10/10  WIN for D   per-run: -34.4 -34.8 -34.9 -34.7 -35.0 -34.7 -34.3 -34.1 -34.1 -32.9
+    B vs A  : median    -30.9%  [   -31.3%,    -30.2%]  B faster 10/10  WIN for B   per-run: -31.1 -31.3 -30.9 -30.3 -31.2 -30.9 -31.3 -30.9 -30.4 -30.2
+    C vs A  : median     -6.2%  [    -6.9%,     -4.6%]  C faster 10/10  WIN for C   per-run: -6.3 -6.9 -6.2 -6.8 -6.1 -5.9 -6.2 -6.2 -6.0 -4.6
+    I vs F  : median    +56.6%  [   +54.3%,    +57.1%]  I faster 0/10  WIN for F   per-run: +55.7 +56.9 +54.3 +57.0 +56.6 +57.1 +56.5 +54.6 +56.0 +56.9
+    H vs E  : median    +41.2%  [   +39.8%,    +43.3%]  H faster 0/10  WIN for E   per-run: +41.6 +39.8 +41.9 +41.9 +41.3 +39.9 +41.1 +43.3 +41.1 +40.5
+    H vs I  : median     +4.2%  [    +3.5%,     +5.5%]  H faster 0/10  WIN for I   per-run: +4.3 +4.6 +4.6 +4.3 +4.2 +3.6 +3.6 +5.5 +3.9 +3.5
+    I vs D  : median     +8.9%  [    +7.1%,     +9.9%]  I faster 0/10  WIN for D   per-run: +8.9 +8.6 +8.9 +9.5 +9.8 +9.9 +8.8 +8.5 +9.0 +7.1
+    G vs F  : median   +155.4%  [   +85.8%,   +180.2%]  G faster 0/10  WIN for F   per-run: +105.6 +179.8 +151.0 +173.5 +167.8 +85.8 +134.2 +159.9 +180.2 +91.8
+    F vs Lem: median    -74.9%  [   -79.2%,    -71.1%]  F faster 10/10  WIN for F   per-run: -78.6 -73.1 -75.3 -71.5 -71.1 -75.5 -79.1 -72.6 -74.4 -79.2
+    A vs Lem: median    -45.4%  [   -54.6%,    -36.7%]  A faster 10/10  WIN for A   per-run: -53.4 -40.4 -46.3 -37.5 -36.7 -46.4 -54.2 -40.8 -44.5 -54.6
+    D vs Lem: median    -64.2%  [   -69.9%,    -58.8%]  D faster 10/10  WIN for D   per-run: -69.4 -61.2 -65.1 -59.2 -58.8 -65.0 -69.9 -61.0 -63.4 -69.6
+    I vs Lem: median    -60.8%  [   -67.4%,    -54.8%]  I faster 10/10  WIN for I   per-run: -66.7 -57.8 -62.0 -55.3 -54.8 -61.6 -67.3 -57.6 -60.1 -67.4
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .   +44.7    +6.6   +52.7   +90.0  +118.6   -15.0   +34.4   +39.9   -45.4
+    B    -30.9       .   -26.4    +5.5   +31.2   +51.0   -41.2    -7.2    -3.2   -62.1
+    C     -6.2   +35.9       .   +42.8   +78.2  +105.0   -20.3   +26.1   +31.2   -48.7
+    D    -34.5    -5.2   -30.0       .   +24.6   +43.0   -44.3   -12.1    -8.1   -64.2
+    E    -47.4   -23.8   -43.9   -19.8       .   +15.2   -55.5   -29.2   -26.3   -71.1
+    F    -54.3   -33.8   -51.2   -30.1   -13.2       .   -60.8   -38.5   -36.1   -74.9
+    G    +17.7   +70.3   +25.5   +79.7  +124.6  +155.4       .   +57.5   +65.4   -33.5
+    H    -25.6    +7.8   -20.7   +13.7   +41.2   +62.6   -36.5       .    +4.2   -59.4
+    I    -28.5    +3.4   -23.8    +8.9   +35.8   +56.6   -39.5    -4.1       .   -60.8
+  Lem    +83.2  +164.2   +95.0  +179.6  +245.9  +298.4   +51.0  +146.2  +155.4       .
+
+==============================================================================
+cold_bat  (10 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 530, 529, 523, 532, 525, 524, 520, 534, 525, 523  (max/min = 1.03x)
+
+ var      median         min         max    range   description
+   A      485.76      475.56      556.40      17%   bsearch outer + general-n spine inner
+   B      530.70      518.77      606.10      17%   outer spine + general-n spine inner
+   C      364.81      357.83      374.98       5%   bsearch outer + compile-time n=4096 inner
+   D      412.27      398.56      424.81       7%   outer spine + compile-time n=4096 inner
+   E      668.12      662.80      696.61       5%   Shar outer + general-n spine inner
+   F      448.84      435.76      474.34       9%   Shar outer + compile-time n=4096 inner
+   G      603.88      595.22      666.37      12%   Shar outer + Shar inner (no spine)
+   H      697.68      659.22      746.29      13%   Eytzinger outer + K&M prefetch + general-n inner
+   I      448.46      441.86      462.31       5%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      699.52      680.26      722.86       6%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: C C C C C C C C C C
+   C       1.00      10/10 
+   D       2.00       0/10 
+   I       3.40       0/10 
+   F       3.60       0/10 
+   A       5.20       0/10 
+   B       5.90       0/10 
+   G       6.90       0/10 
+   E       8.40       0/10 
+   H       9.10       0/10 
+ Lem       9.50       0/10 
+
+best by mean rank: C.  Paired delta of each variant vs C:
+    A vs C  : median    +34.1%  range [   +27.6%,    +51.6%]  C faster in 10/10  -> WIN for C
+    B vs C  : median    +45.4%  range [   +40.2%,    +65.4%]  C faster in 10/10  -> WIN for C
+    D vs C  : median    +12.8%  range [    +8.0%,    +15.9%]  C faster in 10/10  -> WIN for C
+    E vs C  : median    +84.6%  range [   +78.0%,    +93.9%]  C faster in 10/10  -> WIN for C
+    F vs C  : median    +22.8%  range [   +20.3%,    +30.3%]  C faster in 10/10  -> WIN for C
+    G vs C  : median    +66.6%  range [   +62.3%,    +78.7%]  C faster in 10/10  -> WIN for C
+    H vs C  : median    +90.4%  range [   +82.9%,   +105.5%]  C faster in 10/10  -> WIN for C
+    I vs C  : median    +22.9%  range [   +18.7%,    +28.7%]  C faster in 10/10  -> WIN for C
+  Lem vs C  : median    +92.4%  range [   +85.6%,    +96.9%]  C faster in 10/10  -> WIN for C
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median     +8.2%  [    +5.8%,    +18.1%]  F faster 0/10  WIN for D   per-run: +6.5 +7.2 +11.5 +5.8 +7.8 +17.0 +7.7 +8.6 +8.6 +18.1
+    F vs A  : median     -8.3%  [   -19.4%,     -0.7%]  F faster 10/10  WIN for F   per-run: -5.7 -5.8 -17.5 -8.1 -9.2 -3.4 -8.5 -19.4 -10.2 -0.7
+    F vs C  : median    +22.8%  [   +20.3%,    +30.3%]  F faster 0/10  WIN for C   per-run: +20.3 +21.1 +24.7 +22.6 +23.8 +30.3 +21.3 +22.2 +23.1 +27.7
+    F vs E  : median    -32.8%  [   -35.7%,    -28.4%]  F faster 10/10  WIN for F   per-run: -32.4 -32.7 -32.5 -35.5 -33.1 -32.8 -35.7 -33.8 -32.8 -28.4
+    E vs A  : median    +39.1%  [   +21.7%,    +43.8%]  E faster 0/10  WIN for A   per-run: +39.5 +40.0 +22.2 +42.5 +35.7 +43.8 +42.3 +21.7 +33.6 +38.7
+    D vs C  : median    +12.8%  [    +8.0%,    +15.9%]  D faster 0/10  WIN for C   per-run: +12.9 +13.0 +11.8 +15.9 +14.8 +11.4 +12.7 +12.5 +13.4 +8.0
+    D vs A  : median    -15.9%  [   -26.1%,    -11.5%]  D faster 10/10  WIN for D   per-run: -11.5 -12.1 -26.1 -13.1 -15.8 -17.4 -15.1 -25.8 -17.3 -16.0
+    B vs A  : median     +9.9%  [    -4.7%,    +23.9%]  B faster 2/10  WIN for A   per-run: +9.9 +13.4 -4.7 +23.9 +7.5 +10.2 +12.0 -4.3 +4.2 +10.0
+    C vs A  : median    -25.5%  [   -34.0%,    -21.6%]  C faster 10/10  WIN for C   per-run: -21.6 -22.2 -33.9 -25.1 -26.7 -25.8 -24.6 -34.0 -27.1 -22.2
+    I vs F  : median     -0.6%  [    -5.4%,     +6.1%]  I faster 6/10  TIE         per-run: -1.3 -0.7 +0.1 +1.3 +0.2 -2.7 +6.1 -0.6 -1.2 -5.4
+    H vs E  : median     +3.7%  [    -3.2%,    +12.2%]  H faster 3/10  TIE         per-run: +4.7 +6.3 -1.0 -3.2 +4.2 -2.3 +3.3 +4.2 +12.2 +3.2
+    H vs I  : median    +54.0%  [   +46.4%,    +68.9%]  H faster 0/10  WIN for I   per-run: +56.9 +59.0 +46.4 +48.3 +55.4 +49.4 +51.4 +58.3 +68.9 +52.5
+    I vs D  : median     +8.0%  [    +5.1%,    +14.2%]  I faster 0/10  WIN for D   per-run: +5.1 +6.5 +11.7 +7.1 +8.1 +13.8 +14.2 +8.0 +7.3 +11.7
+    G vs F  : median    +34.5%  [   +27.1%,    +47.7%]  G faster 0/10  WIN for F   per-run: +47.7 +47.5 +34.2 +33.2 +35.9 +30.3 +36.6 +34.8 +34.2 +27.1
+    F vs Lem: median    -35.6%  [   -38.0%,    -32.5%]  F faster 10/10  WIN for F   per-run: -35.2 -36.1 -35.3 -34.0 -37.0 -33.6 -37.0 -38.0 -35.9 -32.5
+    A vs Lem: median    -30.9%  [   -32.2%,    -21.5%]  A faster 10/10  WIN for A   per-run: -31.3 -32.2 -21.5 -28.1 -30.6 -31.2 -31.1 -23.0 -28.6 -32.1
+    D vs Lem: median    -41.5%  [   -43.2%,    -37.6%]  D faster 10/10  WIN for D   per-run: -39.2 -40.4 -42.0 -37.6 -41.6 -43.2 -41.5 -42.9 -41.0 -42.9
+    I vs Lem: median    -36.1%  [   -38.3%,    -33.1%]  I faster 10/10  WIN for I   per-run: -36.0 -36.5 -35.2 -33.1 -36.8 -35.3 -33.2 -38.3 -36.7 -36.2
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .    -9.0   +34.1   +18.9   -28.1    +9.1   -19.4   -29.7    +7.5   -30.9
+    B     +9.9       .   +45.4   +29.0   -21.3   +17.5   -12.9   -23.8   +17.8   -24.9
+    C    -25.5   -31.2       .   -11.3   -45.8   -18.6   -40.0   -47.5   -18.6   -48.0
+    D    -15.9   -22.5   +12.8       .   -39.0    -7.6   -32.6   -41.1    -7.4   -41.5
+    E    +39.1   +27.0   +84.6   +64.0       .   +48.8   +10.6    -3.6   +49.8    -4.4
+    F     -8.3   -14.9   +22.8    +8.2   -32.8       .   -25.7   -35.6    +0.6   -35.6
+    G    +24.2   +14.8   +66.6   +48.4    -9.6   +34.5       .   -11.6   +35.0   -13.7
+    H    +42.3   +31.2   +90.4   +69.7    +3.7   +55.3   +13.1       .   +54.0    -1.3
+    I     -7.0   -15.1   +22.9    +8.0   -33.2    -0.6   -25.9   -35.1       .   -36.1
+  Lem    +44.6   +33.1   +92.4   +71.0    +4.6   +55.3   +15.9    +1.4   +56.5       .
+
+==============================================================================
+cold_ser  (10 runs with all 10 variants)
+==============================================================================
+run-level drift: geometric mean across variants per run = 783, 785, 771, 772, 804, 777, 774, 785, 779, 783  (max/min = 1.04x)
+
+ var      median         min         max    range   description
+   A      655.81      638.28      680.82       7%   bsearch outer + general-n spine inner
+   B      684.09      665.22      705.37       6%   outer spine + general-n spine inner
+   C      612.31      587.44      632.33       8%   bsearch outer + compile-time n=4096 inner
+   D      647.64      634.30      674.09       6%   outer spine + compile-time n=4096 inner
+   E      836.37      812.57      850.59       5%   Shar outer + general-n spine inner
+   F      806.36      781.40      814.38       4%   Shar outer + compile-time n=4096 inner
+   G     1222.88     1196.00     1247.22       4%   Shar outer + Shar inner (no spine)
+   H      833.92      791.49      872.11      10%   Eytzinger outer + K&M prefetch + general-n inner
+   I      823.33      786.05      886.58      13%   Eytzinger outer + K&M prefetch + compile-time n=4096 inner
+ Lem      839.61      829.01      864.93       4%   Lemire reference (bsearch outer + simd_quad gap-16 inner)
+  (levels only: do not difference medians across variants; use the paired deltas below)
+
+ var  mean rank  fastest in   per-run winners: C C C C C C C C C C
+   C       1.00      10/10 
+   D       2.30       0/10 
+   A       2.70       0/10 
+   B       4.00       0/10 
+   F       5.30       0/10 
+   I       6.30       0/10 
+   E       7.70       0/10 
+ Lem       7.80       0/10 
+   H       7.90       0/10 
+   G      10.00       0/10 
+
+best by mean rank: C.  Paired delta of each variant vs C:
+    A vs C  : median     +7.1%  range [    +4.5%,    +10.0%]  C faster in 10/10  -> WIN for C
+    B vs C  : median    +11.2%  range [    +6.0%,    +16.9%]  C faster in 10/10  -> WIN for C
+    D vs C  : median     +6.5%  range [    +1.4%,    +11.4%]  C faster in 10/10  -> WIN for C
+    E vs C  : median    +35.6%  range [   +32.9%,    +43.8%]  C faster in 10/10  -> WIN for C
+    F vs C  : median    +30.1%  range [   +26.8%,    +37.5%]  C faster in 10/10  -> WIN for C
+    G vs C  : median    +96.9%  range [   +92.9%,   +107.8%]  C faster in 10/10  -> WIN for C
+    H vs C  : median    +37.4%  range [   +26.5%,    +42.0%]  C faster in 10/10  -> WIN for C
+    I vs C  : median    +35.3%  range [   +25.6%,    +40.8%]  C faster in 10/10  -> WIN for C
+  Lem vs C  : median    +36.5%  range [   +31.4%,    +43.5%]  C faster in 10/10  -> WIN for C
+
+paired deltas for the pairs quoted in the write-ups (X vs Y = X/Y - 1):
+    F vs D  : median    +23.3%  [   +20.8%,    +27.6%]  F faster 0/10  WIN for D   per-run: +22.2 +25.4 +27.6 +25.5 +20.8 +23.4 +20.9 +22.9 +24.0 +23.2
+    F vs A  : median    +22.5%  [   +19.6%,    +26.5%]  F faster 0/10  WIN for A   per-run: +24.7 +22.9 +24.3 +20.1 +19.6 +26.5 +20.9 +21.3 +22.2 +24.3
+    F vs C  : median    +30.1%  [   +26.8%,    +37.5%]  F faster 0/10  WIN for C   per-run: +33.1 +28.9 +36.8 +27.3 +29.3 +37.5 +30.0 +26.8 +31.4 +30.1
+    F vs E  : median     -3.9%  [    -7.4%,     -0.4%]  F faster 10/10  WIN for F   per-run: -1.4 -3.0 -0.4 -4.5 -3.4 -4.4 -7.4 -5.8 -3.5 -5.3
+    E vs A  : median    +26.6%  [   +23.9%,    +32.3%]  E faster 0/10  WIN for A   per-run: +26.4 +26.6 +24.8 +25.7 +23.9 +32.3 +30.5 +28.7 +26.6 +31.2
+    D vs C  : median     +6.5%  [    +1.4%,    +11.4%]  D faster 0/10  WIN for C   per-run: +8.9 +2.8 +7.2 +1.4 +7.0 +11.4 +7.5 +3.1 +5.9 +5.6
+    D vs A  : median     -1.2%  [    -4.3%,     +2.5%]  D faster 7/10  TIE         per-run: +2.0 -2.0 -2.5 -4.3 -1.0 +2.5 -0.1 -1.3 -1.5 +0.9
+    B vs A  : median     +4.0%  [    +1.3%,     +8.0%]  B faster 0/10  WIN for A   per-run: +8.0 +3.1 +6.0 +1.3 +1.9 +7.6 +2.9 +1.4 +5.0 +6.7
+    C vs A  : median     -6.7%  [    -9.1%,     -4.3%]  C faster 10/10  WIN for C   per-run: -6.3 -4.7 -9.1 -5.7 -7.5 -8.0 -7.0 -4.3 -7.0 -4.5
+    I vs F  : median     +1.7%  [    -1.3%,     +8.9%]  I faster 2/10  TIE         per-run: +1.3 +2.1 -0.8 -1.3 +8.9 +0.4 +5.2 +5.7 +1.0 +5.0
+    H vs E  : median     +0.5%  [    -5.1%,     +3.4%]  H faster 4/10  TIE         per-run: +1.0 +1.8 +0.4 -5.1 +3.4 -1.2 -1.7 -2.1 +0.5 +2.1
+    H vs I  : median     +1.4%  [    -1.6%,     +3.1%]  H faster 2/10  TIE         per-run: +1.1 +2.7 +1.6 +0.7 -1.6 +2.9 +0.9 -1.6 +3.1 +2.6
+    I vs D  : median    +26.9%  [   +23.8%,    +31.5%]  I faster 0/10  WIN for D   per-run: +23.8 +28.0 +26.6 +23.8 +31.5 +23.9 +27.2 +29.9 +25.3 +29.3
+    G vs F  : median    +51.3%  [   +47.8%,    +57.5%]  G faster 0/10  WIN for F   per-run: +47.8 +52.8 +51.2 +51.5 +51.2 +51.2 +57.5 +52.5 +48.5 +57.1
+    F vs Lem: median     -4.2%  [    -6.9%,     -1.8%]  F faster 10/10  WIN for F   per-run: -1.8 -4.2 -3.2 -6.1 -5.8 -4.2 -6.6 -3.5 -3.2 -6.9
+    A vs Lem: median    -21.9%  [   -25.1%,    -20.5%]  A faster 10/10  WIN for A   per-run: -21.2 -22.0 -22.2 -21.8 -21.3 -24.3 -22.7 -20.5 -20.7 -25.1
+    D vs Lem: median    -22.6%  [   -25.2%,    -19.6%]  D faster 10/10  WIN for D   per-run: -19.6 -23.6 -24.1 -25.2 -22.1 -22.4 -22.7 -21.5 -21.9 -24.5
+    I vs Lem: median     -2.2%  [    -7.3%,     +2.5%]  I faster 8/10  TIE         per-run: -0.5 -2.2 -4.0 -7.3 +2.5 -3.9 -1.7 +1.9 -2.2 -2.3
+
+median paired delta matrix (row vs column, %):
+             A       B       C       D       E       F       G       H       I     Lem
+    A        .    -3.9    +7.1    +1.2   -21.0   -18.4   -46.3   -21.8   -21.0   -21.9
+    B     +4.0       .   +11.2    +5.4   -18.6   -14.8   -44.0   -18.6   -16.6   -19.5
+    C     -6.7   -10.0       .    -6.1   -26.2   -23.1   -49.2   -27.2   -26.1   -26.7
+    D     -1.2    -5.2    +6.5       .   -22.6   -18.9   -47.0   -22.2   -21.2   -22.6
+    E    +26.6   +22.9   +35.6   +29.1       .    +4.1   -31.4    -0.4    +1.1    -0.8
+    F    +22.5   +17.4   +30.1   +23.3    -3.9       .   -33.9    -3.9    -1.6    -4.2
+    G    +86.4   +78.7   +96.9   +88.8   +45.8   +51.3       .   +46.1   +49.6   +45.7
+    H    +27.9   +22.9   +37.4   +28.5    +0.5    +4.0   -31.5       .    +1.4    +0.3
+    I    +26.6   +19.9   +35.3   +26.9    -1.1    +1.7   -33.2    -1.4       .    -2.2
+  Lem    +28.0   +24.2   +36.5   +29.1    +0.8    +4.4   -31.4    -0.3    +2.2       .
+

@@ -1,0 +1,85 @@
+# date: 2026-10-13T20:01:27+00:00
+# host: Linux 6.1.188-233.393.amzn2023.x86_64 x86_64
+# machine: ip-172-31-11-73.us-west-2.compute.internal
+# command: taskset -c 3 /home/ec2-user/QuadSearch/build_icx/bench 4000 5000
+# build: g++ -O3 -march=native -std=c++20 bench.cpp simd_quad_intel.c -o bench
+# compiler: g++ (GCC) 17.0.0 20260610 (experimental)
+# governor: unknown
+# note: AWS i4i.32xlarge (2 x Intel Xeon Platinum 8375C, Ice Lake-SP, 32C/64T per socket, 1 TB), Amazon Linux 2023, kernel 6.1.188-233.393.amzn2023.x86_64; pinned to core 3 of socket 0 (NUMA node 0, memory local by first touch); no cpufreq interface exposed (turbo under firmware control); -march=native = icelake-server (AVX-512 + VBMI2: zmm block check, no in-loop prefetch); g++ (GCC) 17.0.0 20260610; THP madvise, 4 KB pages
+# temp_before: unknown
+correctness: ok
+
+# cold column: thrash_llc() 512.0 MB before every cold pass (flush added 2026-10-11)
+# aligned rows: each 'nA' row repeats the warm and cold columns of the plain row above it on 64-byte-aligned copies of the same arrays and spines (added 2026-10-12); plain rows use std::vector storage, 16-byte aligned
+
+size   | warm ns/q:  linear  binary  simd   intel  intels | cold ns/q:  linear  binary  simd   intel  intels
+-------+------------------------------------------------+------------------------------------------------
+    8  |     3.7    15.3    4.5    3.0    3.0              |    13.0    21.0   13.9   10.2   10.5
+   8A  |     3.3    15.2    4.4    3.0    3.0              |    20.1    25.3   21.7   14.3   15.2
+   11  |     4.1    17.2    5.1    7.4    7.5              |    14.3    22.8   14.3   14.1   15.0
+  11A  |     3.9    17.3    5.4    7.3    7.1              |    22.1    25.4   22.3   19.5   19.5
+   16  |     5.6    19.6    4.6    3.0    3.0              |    14.8    25.5   13.7    9.6   10.6
+  16A  |     5.1    19.9    4.6    3.0    3.0              |    19.3    28.0   21.5   13.5   14.0
+   23  |     7.4    21.8   11.9   10.0    9.4              |    16.2    28.3   20.0   18.0   18.5
+  23A  |     7.0    22.3   11.7    9.8    9.1              |    19.4    28.8   22.2   21.8   22.6
+   32  |     5.3    24.1    5.6    4.3    3.7              |    22.0    30.8   16.6   15.1   13.9
+  32A  |     3.3    25.1    5.7    4.2    3.6              |    24.7    32.9   21.5   18.4   17.7
+   32* | intel_spine=3.67 intel_spine_pad=3.65  (warm)  | intel_spine=13.89 intel_spine_pad=15.05  (cold)
+   47  |     7.4    26.8   14.2   12.6   12.3              |    26.1    33.2   24.7   25.3   26.5
+  47A  |     7.6    27.4   14.3   12.6   11.5              |    33.7    36.2   29.4   26.4   26.2
+   47* | intel_spine=12.33 intel_spine_pad=12.25  (warm)  | intel_spine=26.50 intel_spine_pad=23.36  (cold)
+   64  |     6.2    29.4    7.2    5.4    5.4              |    26.7    37.4   21.4   20.1   20.4
+  64A  |     4.9    31.0    7.2    5.2    5.2              |    29.0    40.1   26.5   27.9   24.9
+   64* | intel_spine=5.38 intel_spine_pad=5.50  (warm)  | intel_spine=20.38 intel_spine_pad=23.34  (cold)
+   89  |     7.6    31.8   11.1   14.5   14.6              |    31.0    41.4   27.7   29.4   29.7
+  89A  |     7.9    33.0   11.1   14.5   14.1              |    34.4    43.4   32.6   35.0   32.2
+   89* | intel_spine=14.65 intel_spine_pad=14.67  (warm)  | intel_spine=29.66 intel_spine_pad=34.42  (cold)
+  128  |     8.6    35.7    8.3    7.2    6.2              |    35.0    47.6   29.7   28.0   29.4
+ 128A  |     6.9    37.0    8.3    7.1    6.1              |    35.9    50.3   32.8   31.1   43.5
+  128* | intel_spine=6.23 intel_spine_pad=6.89  (warm)  | intel_spine=29.45 intel_spine_pad=33.66  (cold)
+  177  |    10.9    37.7   12.1   11.5   10.3              |    41.7    52.2   44.3   36.0   39.1
+ 177A  |     9.4    38.7   12.1   11.5    9.8              |    42.3    55.0   52.1   40.1   44.1
+  177* | intel_spine=10.29 intel_spine_pad=9.62  (warm)  | intel_spine=39.14 intel_spine_pad=41.83  (cold)
+  256  |    13.7    42.1   10.3    8.7    7.4              |    50.0    63.4   54.8   44.9   45.0
+ 256A  |    11.9    42.9   10.3    8.7    7.0              |    49.1    67.0   54.8   46.7   43.9
+  256* | intel_spine=7.37 intel_spine_pad=6.84  (warm)  | intel_spine=44.95 intel_spine_pad=44.88  (cold)
+  256* | intel_spine=7.37 intel_spine_256=4.60  (warm)  | intel_spine=44.95 intel_spine_256=32.73  (cold)
+  333  |    17.5    43.5   13.1   11.7   10.1              |    63.1    69.5   68.0   65.2   53.7
+ 333A  |    17.6    44.2   13.1   11.4    9.7              |    63.0    72.4   70.4   62.4   50.3
+  333* | intel_spine=10.06 intel_spine_pad=10.82  (warm)  | intel_spine=53.66 intel_spine_pad=58.80  (cold)
+  512  |    22.5    47.7   11.9   10.4    8.9              |    82.7    90.4   89.7   80.5   62.7
+ 512A  |    20.5    48.2   11.9   10.3    8.6              |    76.9    88.8   81.0   74.3   51.3
+  512* | intel_spine=8.86 intel_spine_pad=9.63  (warm)  | intel_spine=62.74 intel_spine_pad=70.88  (cold)
+  512* | intel_spine=8.86 intel_spine_512=5.81  (warm)  | intel_spine=62.74 intel_spine_512=42.18  (cold)
+  617  |    30.9    48.4   16.4   14.7   12.4              |   100.7    96.1  110.5  101.8   74.1
+ 617A  |    26.5    48.8   16.4   14.7   12.0              |    90.9    96.6  102.9   95.1   59.3
+  617* | intel_spine=12.38 intel_spine_pad=13.28  (warm)  | intel_spine=74.12 intel_spine_pad=87.95  (cold)
+ 1001  |    40.4    52.5   16.2   14.5   12.2              |   146.3   123.0  140.8  130.7   75.6
+1001A  |    39.9    53.1   16.2   14.5   11.7              |   136.3   128.0  131.7  132.8   60.3
+ 1001* | intel_spine=12.21 intel_spine_pad=13.18  (warm)  | intel_spine=75.62 intel_spine_pad=95.24  (cold)
+ 1024  |    40.7    52.8   14.4   11.8    9.9              |   153.5   124.6  131.3  113.2   71.9
+1024A  |    39.0    53.2   14.4   11.7    9.6              |   133.4   124.2  126.8  112.2   55.6
+ 1024* | intel_spine=9.95 intel_spine_pad=9.74  (warm)  | intel_spine=71.88 intel_spine_pad=76.97  (cold)
+ 1024* | intel_spine=9.95 intel_spine_1024=6.55  (warm)  | intel_spine=71.88 intel_spine_1024=43.86  (cold)
+ 1234  |    49.0    53.5   16.0   16.5   13.6              |   178.4   133.2  160.5  151.0   89.3
+1234A  |    47.3    53.9   16.0   16.3   13.0              |   161.8   131.8  155.2  150.1   72.6
+ 1234* | intel_spine=13.60 intel_spine_pad=13.31  (warm)  | intel_spine=89.28 intel_spine_pad=95.39  (cold)
+ 1777  |    67.8    56.6   17.9   14.6   12.3              |   245.8   153.6  199.4  151.5   81.3
+1777A  |    66.1    57.1   17.8   14.5   11.9              |   230.3   151.7  186.8  155.7   70.1
+ 1777* | intel_spine=12.29 intel_spine_pad=13.31  (warm)  | intel_spine=81.34 intel_spine_pad=99.90  (cold)
+ 2048  |    78.3    57.8   15.9   14.4   12.0              |   276.9   164.2  179.2  151.9   84.2
+2048A  |    75.1    58.3   16.0   14.3   11.6              |   262.0   164.8  173.7  146.7   68.9
+ 2048* | intel_spine=11.97 intel_spine_pad=12.96  (warm)  | intel_spine=84.25 intel_spine_pad=100.28  (cold)
+ 2048* | intel_spine=11.97 intel_spine_2048=7.39  (warm)  | intel_spine=84.25 intel_spine_2048=56.19  (cold)
+ 2999  |   111.0    60.3   18.6   17.6   14.8              |   394.6   179.1  213.1  200.8  105.4
+2999A  |   109.5    60.7   18.6   17.4   14.0              |   372.5   186.9  217.4  202.4   77.3
+ 2999* | intel_spine=14.75 intel_spine_pad=13.40  (warm)  | intel_spine=105.35 intel_spine_pad=108.17  (cold)
+ 3967  |   150.4    63.0   18.8   17.7   14.9              |   502.2   194.5  234.2  215.7  110.2
+3967A  |   150.1    63.4   18.8   17.6   14.2              |   484.7   194.2  236.2  215.0   83.5
+ 3967* | intel_spine=14.91 intel_spine_pad=13.49  (warm)  | intel_spine=110.16 intel_spine_pad=115.76  (cold)
+ 4096  |   161.7    63.1   18.7   16.2   13.4              |   519.3   199.9  229.0  199.9  107.9
+4096A  |   150.5    63.5   18.6   16.1   12.8              |   498.8   201.4  229.8  192.2   76.6
+ 4096* | intel_spine=13.35 intel_spine_pad=13.20  (warm)  | intel_spine=107.85 intel_spine_pad=114.78  (cold)
+ 4096* | intel_spine=13.35 intel_spine_4096=8.59  (warm)  | intel_spine=107.85 intel_spine_4096=73.31  (cold)
+# exit: 0
+# temp_after: unknown
