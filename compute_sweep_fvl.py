@@ -12,7 +12,10 @@ Usage (from the repo root):
                 campaigns; the archived 2026-05-20 M4 campaign is sweep_fvl;
                 the five-variant campaigns since 2026-10-12 are sweep_fvl3;
                 sweep_ab1 is the six-variant Pi 5 kernel A/B of
-                bench_ab_pi5.cpp, whose pairs are preset below)
+                bench_ab_pi5.cpp, sweep_abi1 the Intel kernel A/B of
+                bench_ab_intel.cpp on Coffee Lake, layout1 the Pi 5 layout
+                A/B; those three prefixes have their variant order, pairs,
+                pair roles and ns size bands preset in PRESETS below)
     --pairs     override the pairs, 'B:A,B:A,...' (for a prefix without a preset)
     --dir       directory holding the cells (default HOST_runs)
     --runs      comma-separated run indices to use (default: every run found)
@@ -33,6 +36,10 @@ Examples:
         -> pi5_runs/sweep_fvl3_paired.txt and pi5_sweep_fvl3_data.py
     python3 compute_sweep_fvl.py pi5 --prefix sweep_ab1
         -> pi5_runs/sweep_ab1_paired.txt and pi5_sweep_ab1_data.py
+    python3 compute_sweep_fvl.py cfl --prefix sweep_abi1
+        -> cfl_runs/sweep_abi1_paired.txt and cfl_sweep_abi1_data.py
+    python3 compute_sweep_fvl.py pi5 --prefix layout1
+        -> pi5_runs/layout1_paired.txt and pi5_layout1_data.py
 
 Input
 -----
@@ -44,7 +51,8 @@ when both exist. A cell holds optional '# ...' header lines -- the Pi 5
 driver writes '# host:', '# date:', '# governor:', '# temp_c:' and
 '# command:'; the harness writes '# bench_sweep_f_vs_lem inner_n=... mode=...
 num_sets=... hot_reps=... [order_seed=... gap=... inner=...]',
-'# variants: ...' and '# timing order: ...' -- and one line
+'# variants: ...' and '# timing order: ...' (any '# bench_<harness> key=value ...'
+line is taken as the harness header) -- and one line
 
     RESULT inner_n=<N> mode=<hb|hs|cb|cs> F=<ns> Lem=<ns> [Lem2=<ns>] [Fb=<ns> LemS=<ns>]
 
@@ -52,8 +60,12 @@ num_sets=... hot_reps=... [order_seed=... gap=... inner=...]',
 the bsearch-outer + spine-inner and Shar-outer + Lemire-inner cross
 variants -- exist from the 2026-10-12 harness on). Cells of the Pi 5 kernel
 A/B harness bench_ab_pi5.cpp (prefix sweep_ab1) have the same shape with a
-'# bench_ab_pi5 ...' header and the columns F, Fcr, Fd1, Fa, G, Gnp; the
-preset table PRESETS below gives that prefix its pairs. A cell without
+'# bench_ab_pi5 ...' header and the columns F, Fcr, Fd1, Fa, G, Gnp; cells
+of the Intel kernel A/B harness bench_ab_intel.cpp (prefix sweep_abi1, Coffee
+Lake) a '# bench_ab_intel ...' header and the columns F, Ft, G, Gnp, Gt,
+LemS; cells of the Pi 5 layout A/B (prefix layout1) the columns F, Fa, Fv2,
+Fao, Fpool, Fapool. The preset table PRESETS below gives each of those
+prefixes its variant order, pairs, pair roles and ns bands. A cell without
 a RESULT line (for example one ending in '# FAILED exit 1'), or whose RESULT
 disagrees with its file name about inner_n or mode, is reported and skipped.
 Modes: hb = hot_bat, hs = hot_ser, cb = cold_bat, cs = cold_ser.
@@ -128,9 +140,16 @@ PAIR_ROLE = {
     "Gnp vs G": "kernel: no in-loop prefetch vs the shipped prefetch (identical code below 128; differs where the quaternary loop iterates)",
     "Gnp vs F": "kernel: prefetch-free plain kernel vs the spine kernel (threshold-7 contrast with the prefetch removed)",
 }
-# Campaign presets keyed by file prefix: the variant order, the pairs and a
-# title. Prefixes not listed here are F-vs-Lemire campaigns (sweep_fvl,
-# sweep_fvl2, sweep_fvl3) and use the canonical sets above.
+# Campaign presets keyed by file prefix: the variant order, the pairs, a
+# title, the size bands of the ns summary and, where a pair key means
+# something else than in PAIR_ROLE above (G vs F is "plain vs spine" in every
+# kernel A/B, but the kernels differ), that campaign's pair roles ("roles",
+# overlaid on PAIR_ROLE for that prefix only). Prefixes not listed here are
+# F-vs-Lemire campaigns (sweep_fvl, sweep_fvl2, sweep_fvl3) and use the
+# canonical sets above. A band is (lo, hi) or (lo, hi, name); a named band is
+# reported as "lo-hi (name)" and may overlap the others.
+AB_BANDS = ((1, 7), (8, 15), (16, 31), (32, 63), (64, 127), (128, 255), (256, 511),
+            (512, 1023), (1024, 2047), (2048, 4096), (4097, 1 << 30))
 PRESETS = {
     "sweep_ab1": {
         "variants": ("F", "Fcr", "Fd1", "Fa", "G", "Gnp"),
@@ -140,10 +159,77 @@ PRESETS = {
         # ranges: sweeps run at n < 32 and in tails; Fd1 differs at 64..127;
         # G/Gnp vs F is the threshold-7 contrast at 128..255 and the spine's
         # value from 256; the quaternary loop (and the prefetch) runs from 128.
-        "bands": ((1, 7), (8, 15), (16, 31), (32, 63), (64, 127), (128, 255), (256, 511),
-                  (512, 1023), (1024, 2047), (2048, 4096), (4097, 1 << 30)),
+        "bands": AB_BANDS,
+    },
+    # Intel kernel A/B on Coffee Lake (bench_ab_intel.cpp, 2026-10-13): the
+    # Shar outer fixed, six inner variants on the sweep_fvl3 arrays and
+    # targets. Ft / Gt replace the scalar sweep of the partial last block by
+    # a vector membership test of the array's last 32 elements (they differ
+    # from F / G only where the tail path runs: n % 32 != 0 and pos above the
+    # last full block's maximum); Gnp is the kernel of
+    # cfl_runs/prefetch_ab_variant.diff (the same code as G below n = 128,
+    # where the quaternary loop does not iterate); LemS is the sweep_fvl3
+    # LemS, so F vs LemS is that campaign's inner contrast in the same run.
+    # The named bands are the sizes where the cfl sweep_fvl3 square had
+    # Lemire's gap-16 inner ahead of the spine inner hot (48-62: one
+    # 32-element block plus a 16-30-element scalar tail against three gap-16
+    # blocks; cfl_runs/cfl_findings.md), where the tail variants should act.
+    "sweep_abi1": {
+        "variants": ("F", "Ft", "G", "Gnp", "Gt", "LemS"),
+        "pairs": (("Ft", "F"), ("Gt", "G"), ("Gnp", "G"), ("G", "F"), ("F", "LemS"), ("Ft", "LemS")),
+        "roles": {
+            "Ft vs F": "inner tail: vectorised last-32 window vs scalar sweep, spine inner",
+            "Gt vs G": "inner tail, plain kernel",
+            "Gnp vs G": "the plain kernel's in-loop prefetch removed",
+            "G vs F": "plain kernel vs spine inner",
+            "F vs LemS": "inner: spine vs Lemire (2026-04-27), Shar outer",
+            "Ft vs LemS": "inner: tail-variant spine vs Lemire, Shar outer",
+        },
+        "title": "Coffee Lake kernel A/B sweep",
+        "bands": AB_BANDS + ((48, 62, "cfl hot-loss band"), (81, 95, "cfl hot-loss band"),
+                             (112, 124, "cfl hot-loss band"), (210, 217, "cfl hot-loss band")),
+    },
+    # Pi 5 layout A/B (2026-10-13): one spine kernel on six placements of the
+    # same arrays and spines, to split the sweep_ab1 Fa result (line-aligned
+    # copies 4-13 ns slower hot from n = 32, not understood above 256) into
+    # alignment and heap position. F = the harness's std::vector storage
+    # (first allocation pass); Fa = aligned_alloc copies made in a second
+    # pass (the sweep_ab1 Fa); Fv2 = std::vector copies made in the second
+    # pass; Fao = second-pass copies at residue 16 (the std::vector
+    # alignment), where Fa's sit; Fpool = one arena per set at the vectors'
+    # residues; Fapool = that arena line-aligned; Fmir (added after the
+    # 2026-10-13 review) = F's whole first-pass layout mirrored offset for
+    # offset into one page-aligned arena per set, so residues, strides, holes
+    # and the spine placement are F's exactly (the pure position control; the
+    # review found that F's spines sit far from their arrays at 7 of the 26
+    # sizes, which every other copy variant changes). Fv2's copies are steered
+    # to the originals' residues mod 64 copy by copy (shim chunks), so Fv2 vs F
+    # is glibc second-pass position with spines adjacent. Below one line (1-31)
+    # a padded copy of a tiny array is footprint, not alignment (methodology
+    # lesson 7), hence the named band.
+    "layout1": {
+        "variants": ("F", "Fa", "Fv2", "Fao", "Fpool", "Fapool", "Fmir"),
+        "pairs": (("Fa", "F"), ("Fmir", "F"), ("Fv2", "F"), ("Fpool", "F"), ("Fmir", "Fpool"),
+                  ("Fao", "Fa"), ("Fapool", "Fpool"), ("Fapool", "Fa")),
+        "roles": {
+            "Fa vs F": "aligned_alloc copies, second pass (the sweep_ab1 Fa): alignment, position, footprint and spine placement at once",
+            "Fmir vs F": "F's first-pass layout mirrored into a page-aligned arena: position only, spine placement preserved",
+            "Fv2 vs F": "glibc second-pass copies at the originals' residues: position only, spines adjacent",
+            "Fpool vs F": "arena at the vectors' residues, tightly packed: position only, spines adjacent",
+            "Fmir vs Fpool": "F's placement (holes, clustered spines) against tight packing at the same residues",
+            "Fao vs Fa": "residue-16 copies in the second pass, footprint-equal to Fa: alignment only",
+            "Fapool vs Fpool": "alignment only, inside one arena per set",
+            "Fapool vs Fa": "arena vs glibc, both line-aligned",
+        },
+        "title": "Pi 5 layout A/B sweep",
+        "bands": ((1, 31, "footprint"), (32, 127), (128, 511), (512, 1023), (1024, 2048), (2049, 4096),
+                  (4097, 1 << 30)),
     },
 }
+# The same layout experiment run with the pre-removal Pi 5 kernel (blob f7c140b8,
+# with the in-loop prefetch) to test whether the sweep_ab1 Fa hot penalty was the
+# prefetch's doing: same variants, pairs and bands, its own prefix.
+PRESETS["layout1pf"] = dict(PRESETS["layout1"], title="Pi 5 layout A/B sweep, kernel with the in-loop prefetch")
 DEFAULT_TITLE = "F-vs-Lemire sweep"
 # Size bands for the absolute-delta summary (inclusive bounds).
 NS_BANDS = ((1, 32), (33, 128), (129, 265), (266, 512), (513, 1024), (1025, 2048), (2049, 4096), (4097, 1 << 30))
@@ -155,6 +241,7 @@ HOST_LABEL = {
     "emr": "Intel Emerald Rapids",
     "gv4": "AWS Graviton 4 (Neoverse V2)",
     "cfl": "Intel Coffee Lake (i9-9980HK, 2019 MacBook Pro)",
+    "icx": "Intel Ice Lake-SP (Xeon Platinum 8375C, AWS i4i.32xlarge)",
 }
 HOST_GAP = {"pi5": 32, "m4": 64, "m1": 64, "skx": 32, "emr": 32, "gv4": 32, "cfl": 32}
 DESIGN_MAX = 4096
@@ -249,7 +336,9 @@ def parse_cell(lines):
             continue
         if line.startswith("#"):
             body = line.lstrip("#").strip()
-            if body.startswith(("bench_sweep", "bench_ab")):
+            if body.startswith("bench_"):
+                # the harness's own header line ('# bench_sweep_f_vs_lem ...',
+                # '# bench_ab_pi5 ...', '# bench_ab_intel ...', '# bench_layout_pi5 ...')
                 cell["harness"] = dict(KV_RE.findall(body))
             elif body.startswith("FAILED"):
                 cell["failed"] = body
@@ -320,6 +409,15 @@ def band_summary(band, pair):
             "lo": band["sizes"][0], "hi": band["sizes"][-1],
             "median_min": min(meds), "median_max": max(meds),
             "sign_min": min(ks), "sign_max": max(ks), "n_min": min(ns), "n_max": max(ns)}
+
+
+def band_label(band):
+    """'lo-hi' ('>= lo' for an open band), plus ' (name)' for a named (lo, hi, name) band."""
+    lo, hi = band[0], band[1]
+    label = f"{lo}-{hi}" if hi < (1 << 30) else f">= {lo}"
+    if len(band) > 2 and band[2]:
+        label += f" ({band[2]})"
+    return label
 
 
 def fmt_band(s, mode):
@@ -416,6 +514,8 @@ def main(argv=None):
     canonical_pairs = tuple(preset.get("pairs", CANONICAL_PAIRS))
     title = preset.get("title", DEFAULT_TITLE)
     ns_bands = tuple(preset.get("bands", NS_BANDS))
+    roles = dict(PAIR_ROLE)
+    roles.update(preset.get("roles", {}))
     if args.pairs:
         try:
             canonical_pairs = tuple(tuple(p.split(":")) for p in args.pairs.split(",") if p.strip())
@@ -567,7 +667,7 @@ def main(argv=None):
     w(f"variants: {', '.join(variants)}" + (" -- " + "; ".join(f"{k} = {v}" for k, v in variant_desc.items())
                                            if variant_desc else ""))
     w(f"pairs: " + ", ".join(f"{pair_key(p)} (= {p[0]}/{p[1]} - 1"
-                             + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")"
+                             + (f"; {roles[pair_key(p)]}" if pair_key(p) in roles else "") + ")"
                              for p in pairs))
     if harness_fields:
         w("harness header: " + "; ".join(f"{k}={'/'.join(sorted(v))}" if len(v) <= 6 else f"{k}: {len(v)} values"
@@ -640,7 +740,7 @@ def main(argv=None):
         b, a = p
         w("=" * 100)
         w(f"paired: {pair_key(p)}  (delta = {b}/{a} - 1 per run; negative = {b} faster"
-          + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")")
+          + (f"; {roles[pair_key(p)]}" if pair_key(p) in roles else "") + ")")
         w(f"cell = median delta, sign count ('-k/n' = {b} faster in k of n paired runs, '+k/n' = {b} slower), verdict")
         w("=" * 100)
         w(f"{'n':>5}  " + "  ".join(f"{MODE_NAMES[m]:^26}" for m in MODES))
@@ -694,9 +794,12 @@ def main(argv=None):
     w("=" * 100)
     for p in pairs:
         b, a = p
-        w(f"{pair_key(p)}  ({b} - {a} in ns" + (f"; {PAIR_ROLE[pair_key(p)]}" if pair_key(p) in PAIR_ROLE else "") + ")")
-        w(f"  {'band':>11}  " + "  ".join(f"{MODE_NAMES[m]:^30}" for m in MODES))
-        for lo, hi in ns_bands:
+        w(f"{pair_key(p)}  ({b} - {a} in ns" + (f"; {roles[pair_key(p)]}" if pair_key(p) in roles else "") + ")")
+        # 11 = the column width of the archived reports; a named band widens it.
+        lw = max([11] + [len(band_label(bd)) for bd in ns_bands])
+        w(f"  {'band':>{lw}}  " + "  ".join(f"{MODE_NAMES[m]:^30}" for m in MODES))
+        for bd in ns_bands:
+            lo, hi = bd[0], bd[1]
             band_sizes = [N for N in sizes if lo <= N <= hi]
             if not band_sizes:
                 continue
@@ -708,8 +811,7 @@ def main(argv=None):
                     row.append(f"{'-':^30}")
                 else:
                     row.append(f"{statistics.median(xs):>+7.1f} [{min(xs):>+7.1f} .. {max(xs):>+7.1f}]".ljust(30))
-            label = f"{lo}-{hi}" if hi < (1 << 30) else f">= {lo}"
-            w(f"  {label:>11}  " + "  ".join(row) + f"   ({len(band_sizes)} sizes)")
+            w(f"  {band_label(bd):>{lw}}  " + "  ".join(row) + f"   ({len(band_sizes)} sizes)")
         w("")
 
     # level-ratio vs paired sign check
@@ -774,7 +876,7 @@ def main(argv=None):
     if data_path != "-":
         meta["title"] = title
         write_data(data_path, host, prefix, gap, variants, pairs, runs, sizes, args.min_runs,
-                   results, bands, missing, meta)
+                   results, bands, missing, meta, roles)
         print(f"wrote {data_path}")
     print(f"{len(used)} cells used, {len(missing)} missing, {len(problems)} unusable; "
           f"{len(sizes)} sizes, {len(runs)} runs, variants {', '.join(variants)}")
@@ -824,7 +926,9 @@ Schema (every N in SIZES has an entry; a value that could not be computed is Non
 '''
 
 
-def write_data(path, host, prefix, gap, variants, pairs, runs, sizes, min_runs, results, bands, missing, meta):
+def write_data(path, host, prefix, gap, variants, pairs, runs, sizes, min_runs, results, bands, missing, meta,
+               roles=None):
+    roles = PAIR_ROLE if roles is None else roles
     L = []
     w = L.append
     w(DATA_DOC.format(host=host, prefix=prefix, generated=meta["generated"], command=meta["command"]))
@@ -838,7 +942,7 @@ def write_data(path, host, prefix, gap, variants, pairs, runs, sizes, min_runs, 
     w(f"VARIANTS = {variants!r}")
     w(f"VARIANT_DESC = {meta['variant_descriptions']!r}")
     w(f"PAIRS = {[pair_key(p) for p in pairs]!r}")
-    w(f"PAIR_ROLES = {{{', '.join(f'{pair_key(p)!r}: {PAIR_ROLE[pair_key(p)]!r}' for p in pairs if pair_key(p) in PAIR_ROLE)}}}")
+    w(f"PAIR_ROLES = {{{', '.join(f'{pair_key(p)!r}: {roles[pair_key(p)]!r}' for p in pairs if pair_key(p) in roles)}}}")
     w(f"RUNS = {runs!r}")
     w(f"SIZES = {sizes!r}")
     w(f"MIN_RUNS = {min_runs}")

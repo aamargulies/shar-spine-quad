@@ -91,6 +91,7 @@ HOST_LABEL = {
     "emr": "Intel Emerald Rapids",
     "gv4": "AWS Graviton 4 (Neoverse V2)",
     "cfl": "Intel Coffee Lake (i9-9980HK, 2019 MacBook Pro)",
+    "icx": "Intel Ice Lake-SP (Xeon Platinum 8375C, AWS i4i.32xlarge)",
 }
 # plot.py's display names for the columns.
 DISPLAY = {

@@ -18,9 +18,10 @@ sweep_fvl2; the archived M4 campaign is sweep_fvl), and writes
                                  markers, TIE and n/a cells hollow; negative =
                                  the first-named variant of the pair is faster
     bench_HOST_PREFIX_delta_ns.png
-                                 for the Pi 5 kernel A/B (prefix sweep_ab1): the
-                                 same paired deltas in ns, where a kernel-side
-                                 cost that does not scale with n is a flat line
+                                 for the kernel and layout A/Bs (prefixes
+                                 sweep_ab1, sweep_abi1, layout1): the same paired
+                                 deltas in ns, where a kernel-side cost that does
+                                 not scale with n is a flat line
     bench_HOST_PREFIX_factorial.png
                                  only when the outer x inner cross variants are
                                  present: the four single-factor pairs (Fb vs F
@@ -66,9 +67,57 @@ PAIR_COLORS = {"Lem vs F": "#2a78d6", "Lem2 vs F": "#eb6834", "Lem2 vs Lem": "#1
 PAIR_MARKERS = {"Lem vs F": "o", "Lem2 vs F": "s", "Lem2 vs Lem": "^",
                 "Fb vs F": "D", "Lem vs LemS": "d", "Fb vs Lem": "v", "F vs LemS": "P",
                 "Fcr vs F": "s", "Fd1 vs F": "^", "Fa vs F": "D", "G vs F": "v", "Gnp vs G": "P", "Gnp vs F": "d"}
+# Per-prefix palettes for the campaigns whose variant sets would collide in
+# the flat tables above (sweep_abi1 has both G and LemS, one hue there; the
+# layout1 variants are new): the same hues, reassigned, with the markers
+# keeping the series apart within a figure. main() applies them for that
+# prefix only, so the archived campaigns' figures do not change.
+PRESET_COLORS = {
+    "sweep_abi1": {"F": "#2a78d6", "Ft": "#eb6834", "G": "#8c6d31", "Gnp": "#d35fb7", "Gt": "#199e70", "LemS": "#8e44ad"},
+    "layout1": {"F": "#2a78d6", "Fa": "#8e44ad", "Fv2": "#eb6834", "Fao": "#199e70", "Fpool": "#8c6d31", "Fapool": "#d35fb7",
+                "Fmir": "#0e7c7b"},
+}
+PRESET_MARKERS = {
+    "sweep_abi1": {"F": "o", "Ft": "s", "G": "v", "Gnp": "P", "Gt": "^", "LemS": "D"},
+    "layout1": {"F": "o", "Fa": "D", "Fv2": "s", "Fao": "^", "Fpool": "v", "Fapool": "P", "Fmir": "X"},
+}
+PRESET_PAIR_COLORS = {
+    "sweep_abi1": {"Ft vs F": "#eb6834", "Gt vs G": "#199e70", "Gnp vs G": "#d35fb7", "G vs F": "#8c6d31",
+                   "F vs LemS": "#7f8c1d", "Ft vs LemS": "#0e7c7b"},
+    "layout1": {"Fa vs F": "#8e44ad", "Fv2 vs F": "#eb6834", "Fao vs Fa": "#199e70", "Fapool vs Fpool": "#d35fb7",
+                "Fpool vs F": "#8c6d31", "Fapool vs Fa": "#0e7c7b", "Fmir vs F": "#1f5f3f", "Fmir vs Fpool": "#b5651d"},
+}
+PRESET_PAIR_MARKERS = {
+    "sweep_abi1": {"Ft vs F": "s", "Gt vs G": "^", "Gnp vs G": "P", "G vs F": "v", "F vs LemS": "o", "Ft vs LemS": "d"},
+    "layout1": {"Fa vs F": "D", "Fv2 vs F": "s", "Fao vs Fa": "^", "Fapool vs Fpool": "P", "Fpool vs F": "v",
+                "Fapool vs Fa": "d", "Fmir vs F": "X", "Fmir vs Fpool": "*"},
+}
+# Fallback variant descriptions per prefix; the harness's '# variants:' line
+# (VARIANT_DESC in the data module) wins when the cells carry it.
+PRESET_DESC = {
+    "sweep_abi1": {
+        "F": "Shar outer + simd_quad_intel_spine as shipped",
+        "Ft": "F with the vector tail (last-32-element membership test instead of the scalar tail sweep)",
+        "G": "Shar outer + plain simd_quad_intel as shipped (AVX2 path: in-loop prefetch kept)",
+        "Gnp": "G without the in-loop prefetch (cfl_runs/prefetch_ab_variant.diff)",
+        "Gt": "G with the vector tail",
+        "LemS": "Shar outer + simd_quad (Lemire, 2026-04-27)",
+    },
+    "layout1": {
+        "F": "Shar outer + spine inner on the harness's std::vector storage (first allocation pass)",
+        "Fa": "F on aligned_alloc line-aligned copies made in a second pass (the sweep_ab1 Fa)",
+        "Fv2": "F on glibc second-pass copies steered to the originals' residues (position only, spines adjacent)",
+        "Fao": "F on residue-16 second-pass copies, footprint-equal to Fa (alignment only)",
+        "Fpool": "F on one arena per set at the vectors' residues, tightly packed (position only, spines adjacent)",
+        "Fapool": "F on one line-aligned arena per set (alignment only, inside the arena)",
+        "Fmir": "F's first-pass layout mirrored into a page-aligned arena per set (position only, spine placement preserved)",
+    },
+}
 # Prefixes whose paired deltas are also drawn in ns (a kernel-side cost that
 # does not scale with n is a flat line there), as bench_HOST_PREFIX_delta_ns.png.
-NS_DELTA_PREFIXES = {"sweep_ab1"}
+for _d in (PRESET_COLORS, PRESET_MARKERS, PRESET_PAIR_COLORS, PRESET_PAIR_MARKERS, PRESET_DESC):
+    _d["layout1pf"] = _d["layout1"]   # the prefetch-kernel repeat of the layout experiment draws like layout1
+NS_DELTA_PREFIXES = {"sweep_ab1", "sweep_abi1", "layout1", "layout1pf"}
 # The single-factor contrasts of the {Shar, bsearch} outer x {spine, Lemire}
 # inner square (Fb = bsearch + spine, LemS = Shar + Lemire). Everything else
 # in PAIRS goes to the _delta figure.
@@ -299,12 +348,19 @@ def main(argv=None):
     d = load_module(data_path)
     if not d.SIZES:
         sys.exit(f"{data_path} holds no sizes")
+    for table, override in ((COLORS, PRESET_COLORS), (MARKERS, PRESET_MARKERS), (PAIR_COLORS, PRESET_PAIR_COLORS),
+                            (PAIR_MARKERS, PRESET_PAIR_MARKERS), (DEFAULT_DESC, PRESET_DESC)):
+        table.update(override.get(args.prefix, {}))
 
     base = os.path.join(args.outdir, f"bench_{args.host}_{args.prefix}")
     plot_levels(d, base + ".png", args.dpi)
     print(f"wrote {base}.png")
+    # The outer x inner figure needs the whole square; a campaign that has only
+    # one of its pairs (sweep_abi1: F vs LemS) keeps that pair in the delta figure.
     factorial = [p for p in FACTORIAL_PAIRS if p in d.PAIRS]
-    delta_pairs = [p for p in d.PAIRS if p not in FACTORIAL_PAIRS]
+    if len(factorial) < len(FACTORIAL_PAIRS):
+        factorial = []
+    delta_pairs = [p for p in d.PAIRS if p not in factorial]
     plot_deltas(d, base + "_delta.png", args.dpi, delta_pairs)
     print(f"wrote {base}_delta.png")
     if args.prefix in NS_DELTA_PREFIXES and delta_pairs:

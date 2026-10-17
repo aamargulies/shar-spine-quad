@@ -187,6 +187,7 @@ Lem vs F
    3963      37.7%     24.1 WIN(F)            47.5%     53.5 WIN(F)           +29.4  yes
    4096      49.5%     28.6 WIN(F)            61.2%     62.7 WIN(F)           +34.1  yes
   median of B - A by band: 1-32: +30.1 ns (32); 33-128: +25.7 ns (42); 129-265: +26.1 ns (22); 266-512: +28.3 ns (20); 513-1024: +31.9 ns (21); 1025-2048: +32.6 ns (21); 2049-4096: +33.6 ns (21); all sizes +29.9 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -370,6 +371,7 @@ Lem vs F
    3963      49.1%     31.7 WIN(F)            64.0%     71.7 WIN(F)           +40.0  yes
    4096      56.1%     33.3 WIN(F)            74.1%     78.4 WIN(F)           +45.1  yes
   median of B - A by band: 1-32: +31.8 ns (32); 33-128: +31.0 ns (42); 129-265: +31.5 ns (22); 266-512: +33.0 ns (20); 513-1024: +35.9 ns (21); 1025-2048: +37.8 ns (21); 2049-4096: +39.8 ns (21); all sizes +33.3 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -553,6 +555,7 @@ Lem vs F
    3963       4.8%     24.6 WIN(F)             8.3%     53.7 WIN(F)           +29.1  yes
    4096      -0.0%     -0.2 TIE                1.9%     14.0 TIE              +14.3  yes
   median of B - A by band: 1-32: +17.2 ns (32); 33-128: +18.4 ns (42); 129-265: +15.7 ns (22); 266-512: +22.4 ns (20); 513-1024: +34.3 ns (21); 1025-2048: +20.0 ns (21); 2049-4096: +20.8 ns (21); all sizes +18.8 ns
+  verdicts: agree 132, WIN<->TIE 47, opposite winners 0 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -736,6 +739,7 @@ Lem vs F
    3963       9.4%     45.3 WIN(F)             7.0%     48.3 WIN(F)            +3.0  yes
    4096      -2.4%    -13.0 TIE               -0.7%     -4.8 TIE               +8.2  yes
   median of B - A by band: 1-32: +13.3 ns (32); 33-128: +3.4 ns (42); 129-265: -2.3 ns (22); 266-512: -0.9 ns (20); 513-1024: +2.5 ns (21); 1025-2048: +13.3 ns (21); 2049-4096: +5.1 ns (21); all sizes +4.5 ns
+  verdicts: agree 136, WIN<->TIE 43, opposite winners 0 (of 179 sizes)
 
 ==============================================================================================================
 Lem2 vs F
@@ -922,6 +926,7 @@ Lem2 vs F
    3963      39.2%     25.7 WIN(F)            48.1%     54.0 WIN(F)           +28.3  yes
    4096      46.2%     27.7 WIN(F)            61.1%     63.0 WIN(F)           +35.3  yes
   median of B - A by band: 1-32: +29.0 ns (32); 33-128: +25.9 ns (42); 129-265: +26.1 ns (22); 266-512: +28.2 ns (20); 513-1024: +31.5 ns (21); 1025-2048: +32.2 ns (21); 2049-4096: +33.6 ns (21); all sizes +29.7 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -1105,6 +1110,7 @@ Lem2 vs F
    3963      47.7%     30.6 WIN(F)            61.1%     67.8 WIN(F)           +37.2  yes
    4096      57.0%     34.4 WIN(F)            72.3%     76.1 WIN(F)           +41.6  yes
   median of B - A by band: 1-32: +31.7 ns (32); 33-128: +30.8 ns (42); 129-265: +31.1 ns (22); 266-512: +32.9 ns (20); 513-1024: +35.9 ns (21); 1025-2048: +37.3 ns (21); 2049-4096: +39.4 ns (21); all sizes +33.0 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -1288,6 +1294,7 @@ Lem2 vs F
    3963       5.9%     30.2 WIN(F)             9.5%     62.9 WIN(F)           +32.7  yes
    4096       0.7%      3.8 TIE                2.0%     14.5 TIE              +10.7  yes
   median of B - A by band: 1-32: +14.1 ns (32); 33-128: +15.6 ns (42); 129-265: +14.8 ns (22); 266-512: +18.5 ns (20); 513-1024: +36.9 ns (21); 1025-2048: +24.7 ns (21); 2049-4096: +16.0 ns (21); all sizes +17.4 ns
+  verdicts: agree 125, WIN<->TIE 53, opposite winners 1 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -1471,6 +1478,7 @@ Lem2 vs F
    3963       5.4%     27.3 WIN(F)             5.1%     34.8 WIN(F)            +7.5  yes
    4096      -2.5%    -13.0 TIE                0.4%      2.8 TIE              +15.9  yes
   median of B - A by band: 1-32: +10.4 ns (32); 33-128: -0.3 ns (42); 129-265: -1.8 ns (22); 266-512: -0.7 ns (20); 513-1024: +1.7 ns (21); 1025-2048: +9.8 ns (21); 2049-4096: +11.5 ns (21); all sizes +3.9 ns
+  verdicts: agree 140, WIN<->TIE 39, opposite winners 0 (of 179 sizes)
 
 ==============================================================================================================
 Lem2 vs Lem
@@ -1657,6 +1665,7 @@ Lem2 vs Lem
    3963       0.4%      0.3 TIE               -0.3%     -0.5 TIE               -0.9  yes
    4096       1.5%      1.3 TIE                0.4%      0.7 TIE               -0.6  yes
   median of B - A by band: 1-32: -0.8 ns (32); 33-128: +0.3 ns (42); 129-265: +0.2 ns (22); 266-512: -0.2 ns (20); 513-1024: -0.3 ns (21); 1025-2048: -0.4 ns (21); 2049-4096: -0.5 ns (21); all sizes -0.1 ns
+  verdicts: agree 177, WIN<->TIE 2, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -1840,6 +1849,7 @@ Lem2 vs Lem
    3963      -2.0%     -2.0 TIE               -1.3%     -2.3 TIE               -0.3  yes
    4096       1.5%      1.6 TIE                0.5%      0.9 TIE               -0.7  yes
   median of B - A by band: 1-32: -0.1 ns (32); 33-128: -0.0 ns (42); 129-265: -0.2 ns (22); 266-512: -0.1 ns (20); 513-1024: -0.1 ns (21); 1025-2048: -0.2 ns (21); 2049-4096: -0.1 ns (21); all sizes -0.1 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -2023,6 +2033,7 @@ Lem2 vs Lem
    3963      -1.3%     -6.7 TIE               -1.7%    -11.8 TIE               -5.1  yes
    4096      -0.5%     -2.6 TIE                0.9%      6.5 TIE               +9.1  yes
   median of B - A by band: 1-32: -5.7 ns (32); 33-128: -0.1 ns (42); 129-265: -0.0 ns (22); 266-512: -1.4 ns (20); 513-1024: +1.6 ns (21); 1025-2048: +5.6 ns (21); 2049-4096: +0.7 ns (21); all sizes -0.8 ns
+  verdicts: agree 158, WIN<->TIE 21, opposite winners 0 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -2206,6 +2217,7 @@ Lem2 vs Lem
    3963      -1.8%     -9.6 TIE               -0.6%     -4.3 TIE               +5.3  yes
    4096       1.6%      8.5 TIE                1.9%     13.9 TIE               +5.4  yes
   median of B - A by band: 1-32: -2.6 ns (32); 33-128: -1.8 ns (42); 129-265: +1.2 ns (22); 266-512: -1.2 ns (20); 513-1024: -1.8 ns (21); 1025-2048: -3.1 ns (21); 2049-4096: +3.5 ns (21); all sizes -1.4 ns
+  verdicts: agree 165, WIN<->TIE 14, opposite winners 0 (of 179 sizes)
 
 ==============================================================================================================
 Fb vs F   (outer: bsearch vs Shar, spine inner)
@@ -2392,6 +2404,7 @@ Fb vs F   (outer: bsearch vs Shar, spine inner)
    3963      35.9%     23.0 WIN(F)            38.1%     42.8 WIN(F)           +19.8  yes
    4096      32.2%     19.1 WIN(F)            40.2%     41.3 WIN(F)           +22.2  yes
   median of B - A by band: 1-32: +29.8 ns (32); 33-128: +25.9 ns (42); 129-265: +23.7 ns (22); 266-512: +23.1 ns (20); 513-1024: +22.4 ns (21); 1025-2048: +22.7 ns (21); 2049-4096: +21.4 ns (21); all sizes +23.6 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -2575,6 +2588,7 @@ Fb vs F   (outer: bsearch vs Shar, spine inner)
    3963      51.0%     33.3 WIN(F)            59.2%     65.9 WIN(F)           +32.6  yes
    4096      54.2%     32.6 WIN(F)            58.5%     62.0 WIN(F)           +29.5  yes
   median of B - A by band: 1-32: +30.3 ns (32); 33-128: +31.8 ns (42); 129-265: +32.4 ns (22); 266-512: +32.2 ns (20); 513-1024: +32.3 ns (21); 1025-2048: +32.2 ns (21); 2049-4096: +32.1 ns (21); all sizes +31.9 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -2758,6 +2772,7 @@ Fb vs F   (outer: bsearch vs Shar, spine inner)
    3963     -12.7%    -62.3 WIN(Fb)           -8.4%    -55.2 WIN(Fb)           +7.1  yes
    4096     -17.9%    -98.0 WIN(Fb)          -15.9%   -113.4 WIN(Fb)          -15.4  yes
   median of B - A by band: 1-32: +14.8 ns (32); 33-128: +12.3 ns (42); 129-265: +6.2 ns (22); 266-512: -5.4 ns (20); 513-1024: -3.2 ns (21); 1025-2048: -14.4 ns (21); 2049-4096: -11.9 ns (21); all sizes +2.8 ns
+  verdicts: agree 127, WIN<->TIE 52, opposite winners 0 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -2941,6 +2956,7 @@ Fb vs F   (outer: bsearch vs Shar, spine inner)
    3963      -9.1%    -46.1 WIN(Fb)           -6.9%    -46.5 WIN(Fb)           -0.4  yes
    4096     -11.8%    -61.5 WIN(Fb)          -11.3%    -82.3 WIN(Fb)          -20.8  yes
   median of B - A by band: 1-32: +11.0 ns (32); 33-128: +0.1 ns (42); 129-265: -5.8 ns (22); 266-512: -6.3 ns (20); 513-1024: -12.1 ns (21); 1025-2048: -10.1 ns (21); 2049-4096: -14.2 ns (21); all sizes -3.2 ns
+  verdicts: agree 163, WIN<->TIE 16, opposite winners 0 (of 179 sizes)
 
 ==============================================================================================================
 Lem vs LemS   (outer: bsearch vs Shar, Lemire inner)
@@ -3127,6 +3143,7 @@ Lem vs LemS   (outer: bsearch vs Shar, Lemire inner)
    3963      39.2%     24.9 WIN(LemS)         40.6%     47.6 WIN(LemS)        +22.7  yes
    4096      42.1%     25.4 WIN(LemS)         44.1%     50.3 WIN(LemS)        +24.9  yes
   median of B - A by band: 1-32: +29.5 ns (32); 33-128: +26.2 ns (42); 129-265: +26.2 ns (22); 266-512: +26.5 ns (20); 513-1024: +28.1 ns (21); 1025-2048: +27.0 ns (21); 2049-4096: +25.8 ns (21); all sizes +26.8 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -3310,6 +3327,7 @@ Lem vs LemS   (outer: bsearch vs Shar, Lemire inner)
    3963      49.8%     32.5 WIN(LemS)         55.9%     65.6 WIN(LemS)        +33.1  yes
    4096      50.9%     31.5 WIN(LemS)         55.4%     64.8 WIN(LemS)        +33.4  yes
   median of B - A by band: 1-32: +31.1 ns (32); 33-128: +31.2 ns (42); 129-265: +32.0 ns (22); 266-512: +31.3 ns (20); 513-1024: +32.0 ns (21); 1025-2048: +32.1 ns (21); 2049-4096: +32.1 ns (21); all sizes +31.7 ns
+  verdicts: agree 179, WIN<->TIE 0, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -3493,6 +3511,7 @@ Lem vs LemS   (outer: bsearch vs Shar, Lemire inner)
    3963      -9.6%    -56.6 WIN(Lem)          -9.2%    -74.1 WIN(Lem)         -17.5  yes
    4096     -12.0%    -73.0 WIN(Lem)         -11.1%    -88.9 WIN(Lem)         -15.8  yes
   median of B - A by band: 1-32: +16.2 ns (32); 33-128: +7.0 ns (42); 129-265: -1.4 ns (22); 266-512: +0.1 ns (20); 513-1024: -7.9 ns (21); 1025-2048: -12.0 ns (21); 2049-4096: -18.9 ns (21); all sizes +1.2 ns
+  verdicts: agree 143, WIN<->TIE 36, opposite winners 0 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -3676,6 +3695,7 @@ Lem vs LemS   (outer: bsearch vs Shar, Lemire inner)
    3963      -8.1%    -48.3 WIN(Lem)          -9.2%    -72.3 WIN(Lem)         -24.0  yes
    4096     -13.1%    -78.8 WIN(Lem)         -12.8%   -105.0 WIN(Lem)         -26.2  yes
   median of B - A by band: 1-32: +13.7 ns (32); 33-128: +2.7 ns (42); 129-265: -0.6 ns (22); 266-512: -5.0 ns (20); 513-1024: -7.0 ns (21); 1025-2048: -14.6 ns (21); 2049-4096: -22.3 ns (21); all sizes -1.2 ns
+  verdicts: agree 144, WIN<->TIE 35, opposite winners 0 (of 179 sizes)
 
 ==============================================================================================================
 Fb vs Lem   (inner: spine vs Lemire, bsearch outer)
@@ -3862,6 +3882,7 @@ Fb vs Lem   (inner: spine vs Lemire, bsearch outer)
    3963      -1.9%     -1.6 TIE               -6.8%    -11.3 WIN(Fb)           -9.6  no
    4096      -9.5%     -8.3 WIN(Fb)          -13.4%    -22.3 WIN(Fb)          -14.0  yes
   median of B - A by band: 1-32: -0.2 ns (32); 33-128: -0.7 ns (42); 129-265: -2.6 ns (22); 266-512: -4.9 ns (20); 513-1024: -9.1 ns (21); 1025-2048: -10.0 ns (21); 2049-4096: -12.5 ns (21); all sizes -3.5 ns
+  verdicts: agree 173, WIN<->TIE 6, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -4045,6 +4066,7 @@ Fb vs Lem   (inner: spine vs Lemire, bsearch outer)
    3963      -0.9%     -0.9 TIE               -3.2%     -5.8 WIN(Fb)           -5.0  no
    4096      -2.8%     -2.6 TIE               -7.0%    -12.7 WIN(Fb)          -10.1  no
   median of B - A by band: 1-32: -1.8 ns (32); 33-128: +0.7 ns (42); 129-265: +0.7 ns (22); 266-512: -1.2 ns (20); 513-1024: -3.5 ns (21); 1025-2048: -5.5 ns (21); 2049-4096: -7.4 ns (21); all sizes -2.1 ns
+  verdicts: agree 152, WIN<->TIE 27, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -4228,6 +4250,7 @@ Fb vs Lem   (inner: spine vs Lemire, bsearch outer)
    3963     -18.1%    -98.0 WIN(Fb)          -16.0%   -115.4 WIN(Fb)          -17.4  yes
    4096     -19.1%   -104.3 WIN(Fb)          -18.6%   -138.9 WIN(Fb)          -34.6  yes
   median of B - A by band: 1-32: -4.5 ns (32); 33-128: -6.0 ns (42); 129-265: -6.0 ns (22); 266-512: -27.6 ns (20); 513-1024: -40.4 ns (21); 1025-2048: -33.9 ns (21); 2049-4096: -34.1 ns (21); all sizes -13.4 ns
+  verdicts: agree 158, WIN<->TIE 21, opposite winners 0 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -4411,6 +4434,7 @@ Fb vs Lem   (inner: spine vs Lemire, bsearch outer)
    3963     -16.0%    -85.0 WIN(Fb)          -12.5%    -90.4 WIN(Fb)           -5.4  yes
    4096     -10.0%    -50.6 WIN(Fb)          -10.4%    -74.4 WIN(Fb)          -23.8  yes
   median of B - A by band: 1-32: +1.1 ns (32); 33-128: -0.2 ns (42); 129-265: -0.8 ns (22); 266-512: -2.2 ns (20); 513-1024: -19.6 ns (21); 1025-2048: -24.5 ns (21); 2049-4096: -23.7 ns (21); all sizes -4.5 ns
+  verdicts: agree 149, WIN<->TIE 30, opposite winners 0 (of 179 sizes)
 
 ==============================================================================================================
 F vs LemS   (inner: spine vs Lemire, Shar outer)
@@ -4597,6 +4621,7 @@ F vs LemS   (inner: spine vs Lemire, Shar outer)
    3963      -2.0%     -1.3 TIE               -6.4%     -7.6 WIN(F)            -6.3  no
    4096      -4.6%     -2.9 WIN(F)           -10.8%    -12.6 WIN(F)            -9.7  yes
   median of B - A by band: 1-32: -0.5 ns (32); 33-128: +0.4 ns (42); 129-265: +0.2 ns (22); 266-512: -2.1 ns (20); 513-1024: -4.1 ns (21); 1025-2048: -5.8 ns (21); 2049-4096: -7.4 ns (21); all sizes -2.0 ns
+  verdicts: agree 162, WIN<->TIE 17, opposite winners 0 (of 179 sizes)
 
   hot_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -4780,6 +4805,7 @@ F vs LemS   (inner: spine vs Lemire, Shar outer)
    3963       1.8%      1.1 TIE               -5.0%     -6.0 WIN(F)            -7.1  no
    4096      -5.6%     -3.6 WIN(F)            -9.8%    -11.4 WIN(F)            -7.8  yes
   median of B - A by band: 1-32: -0.7 ns (32); 33-128: +0.2 ns (42); 129-265: +0.3 ns (22); 266-512: -1.8 ns (20); 513-1024: -3.9 ns (21); 1025-2048: -5.7 ns (21); 2049-4096: -7.8 ns (21); all sizes -1.8 ns
+  verdicts: agree 159, WIN<->TIE 20, opposite winners 0 (of 179 sizes)
 
   cold_bat
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -4963,6 +4989,7 @@ F vs LemS   (inner: spine vs Lemire, Shar outer)
    3963     -15.6%    -92.3 WIN(F)           -16.8%   -132.8 WIN(F)           -40.5  yes
    4096     -11.5%    -69.1 WIN(F)           -12.9%   -107.3 WIN(F)           -38.2  yes
   median of B - A by band: 1-32: -2.2 ns (32); 33-128: -7.0 ns (42); 129-265: -15.3 ns (22); 266-512: -23.2 ns (20); 513-1024: -40.3 ns (21); 1025-2048: -34.2 ns (21); 2049-4096: -33.2 ns (21); all sizes -15.8 ns
+  verdicts: agree 158, WIN<->TIE 21, opposite winners 0 (of 179 sizes)
 
   cold_ser
       n       A %     A ns A verdict          B %     B ns B verdict       B-A ns  agree
@@ -5146,6 +5173,11 @@ F vs LemS   (inner: spine vs Lemire, Shar outer)
    3963     -13.7%    -78.9 WIN(F)           -13.9%   -111.9 WIN(F)           -33.0  yes
    4096     -11.9%    -71.4 WIN(F)           -11.2%    -93.4 WIN(F)           -22.0  yes
   median of B - A by band: 1-32: +0.1 ns (32); 33-128: +2.5 ns (42); 129-265: +2.3 ns (22); 266-512: -9.4 ns (20); 513-1024: -12.5 ns (21); 1025-2048: -26.4 ns (21); 2049-4096: -24.6 ns (21); all sizes -6.0 ns
+  verdicts: agree 156, WIN<->TIE 23, opposite winners 0 (of 179 sizes)
+
+==============================================================================================================
+all pairs and modes: 5012 compared cells; verdicts agree 4488, WIN<->TIE flips 523, opposite winners 1
+  opposite winner: Lem2 vs F, cold_bat, n=161: WIN(Lem2)     -3.7% in A, WIN(F)      3.6% in B
 
 ==============================================================================================================
 levels (median ns/query) of the shared variants in A and B, and B/A - 1 in percent

@@ -65,6 +65,8 @@ def main(argv=None):
     w("Per cell: the pair's median paired delta in A and in B (percent, ns, verdict), then B - A in ns and "
       "whether the verdicts agree. Negative delta = the first-named variant of the pair faster.")
     w("")
+    totals = {"yes": 0, "no": 0, "flip": 0}
+    opposite = []   # (pair, mode, N, verdict A, median A, verdict B, median B)
     for pair in pairs:
         w("=" * 110)
         w(f"{pair}" + (f"   ({A.PAIR_ROLES[pair]})" if getattr(A, 'PAIR_ROLES', {}).get(pair) else ""))
@@ -73,6 +75,7 @@ def main(argv=None):
             w(f"  {MODE_NAMES[mode]}")
             w(f"  {'n':>5}  {'A %':>8} {'A ns':>8} {'A verdict':<12}  {'B %':>8} {'B ns':>8} {'B verdict':<12}  {'B-A ns':>8}  agree")
             diffs = []
+            tally = {"yes": 0, "no": 0, "flip": 0}
             for N in sizes:
                 sa = A.PAIRED.get(N, {}).get(mode, {}).get(pair)
                 sb = B.PAIRED.get(N, {}).get(mode, {}).get(pair)
@@ -81,6 +84,10 @@ def main(argv=None):
                 d = sb["median_ns"] - sa["median_ns"]
                 diffs.append((N, d))
                 agree = "yes" if sa["verdict"] == sb["verdict"] else ("flip" if sa["verdict"].startswith("WIN") and sb["verdict"].startswith("WIN") else "no")
+                tally[agree] += 1
+                if agree == "flip":
+                    opposite.append((pair, mode, N, sa["verdict"], sa["median"], sb["verdict"], sb["median"]))
+                totals[agree] += 1
                 w(f"  {N:>5}  {fmt(sa['median'])}% {fmt(sa['median_ns'])} {sa['verdict']:<12}  "
                   f"{fmt(sb['median'])}% {fmt(sb['median_ns'])} {sb['verdict']:<12}  {d:>+8.1f}  {agree}")
             if diffs:
@@ -91,7 +98,21 @@ def main(argv=None):
                         label = f"{lo}-{hi}" if hi < (1 << 30) else f">={lo}"
                         parts.append(f"{label}: {statistics.median(xs):+.1f} ns ({len(xs)})")
                 w(f"  median of B - A by band: " + "; ".join(parts) + f"; all sizes {statistics.median(d for _, d in diffs):+.1f} ns")
+            # The 'agree' column has three values: yes (same verdict), no (WIN in one
+            # campaign, TIE in the other) and flip (WIN(X) in one, WIN(Y) in the
+            # other -- an opposite winner). Count all three so that a tally of the
+            # 'no' rows alone is never mistaken for the number of disagreements.
+            w(f"  verdicts: agree {tally['yes']}, WIN<->TIE {tally['no']}, opposite winners {tally['flip']} (of {sum(tally.values())} sizes)")
             w("")
+    w("=" * 110)
+    w(f"all pairs and modes: {sum(totals.values())} compared cells; verdicts agree {totals['yes']}, "
+      f"WIN<->TIE flips {totals['no']}, opposite winners {totals['flip']}")
+    if opposite:
+        for pair, mode, N, va, ma, vb, mb in opposite:
+            w(f"  opposite winner: {pair}, {MODE_NAMES[mode]}, n={N}: {va} {fmt(ma)}% in A, {vb} {fmt(mb)}% in B")
+    else:
+        w("  no cell has WIN(X) in one campaign and WIN(Y) in the other")
+    w("")
     # levels of the variants shared by both, for context
     shared_vars = [v for v in A.VARIANTS if v in B.VARIANTS]
     w("=" * 110)

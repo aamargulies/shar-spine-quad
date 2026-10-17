@@ -22,6 +22,10 @@
 //   H.   Eytzinger layout + K&M prefetch  +  general-n spine inner
 //   I.   Eytzinger layout + K&M prefetch  +  compile-time-n=4096 spine inner
 //   Lem. std::lower_bound over keys       +  Lemire's simd_quad (gap 16, no spine)
+//   Aa..Fa (only when built with -DQUADSEARCH_TWOLEVEL_ALIGNED=<bytes>):
+//        the outer search of A..F  +  the same inner kernel reading <bytes>-
+//        aligned copies of carr and spine -- the aligned-layout A/B; each
+//        Xa vs X pair isolates the alignment (see struct Container).
 //
 // The difference between A and B isolates the outer-spine win; the
 // difference between A and C isolates the compile-time-n-inner win; D
@@ -116,7 +120,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <limits>
+#include <memory>
 #include <random>
 #include <set>
 #include <vector>
@@ -242,7 +248,15 @@ using clock_type = std::chrono::steady_clock;
 // a 260 MB L3 (top EMR SKUs 320 MB), so the previous 256 MB did not
 // guarantee eviction there. 512 MB covers every current single-socket L3.
 // The sweep also flushes the TLBs, so cold queries pay page walks too.
-static constexpr size_t kThrashBytes = 512u * 1024u * 1024u;
+// -DQUADSEARCH_THRASH_BYTES='(1ull<<20)' shrinks the flush for a functional
+// check (the same override bench.cpp has); a build with a non-default size
+// prints a "# thrash_bytes:" line so its output can never pass for a
+// campaign run. The default is the 512 MB every archived run used.
+#ifndef QUADSEARCH_THRASH_BYTES
+#define QUADSEARCH_THRASH_BYTES (512ull * 1024ull * 1024ull)
+#endif
+static constexpr size_t kThrashBytes = QUADSEARCH_THRASH_BYTES;
+static_assert(kThrashBytes >= 64, "QUADSEARCH_THRASH_BYTES must cover at least one cache line");
 static void thrash_llc() {
     static std::vector<uint8_t> scratch;
     if (scratch.empty()) scratch.assign(kThrashBytes, 0);
@@ -271,10 +285,61 @@ static void thrash_llc() {
 #ifndef QUADSEARCH_DESCRIPTOR_ALIGN
 #define QUADSEARCH_DESCRIPTOR_ALIGN 16
 #endif
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+// Aligned-layout A/B (2026-10-13). -DQUADSEARCH_TWOLEVEL_ALIGNED=<bytes> gives
+// every container a copy of carr and of spine aligned to <bytes> (64 = one
+// line on the gap-32 hosts, 128 on Apple), size rounded up to the alignment,
+// and six twin variants Aa..Fa = A..F with the inner kernel reading the copies
+// instead of the std::vector arrays. The copies are allocated in a second
+// pass after every set and its targets exist (make_aligned_copies), so the
+// plain arrays keep the heap layout the archived runs measured -- allocating
+// them between the vectors moves the plain arrays' line offsets (review of
+// 2026-10-12, bench_ab_pi5.cpp). A "# layout:" line records the residue
+// mod 64 of the plain pointers and of the copies. Without the macro nothing
+// changes: same struct, same ten variants, same output byte for byte.
+static constexpr size_t kAlignedTwins = QUADSEARCH_TWOLEVEL_ALIGNED;
+static_assert(kAlignedTwins >= 16 && (kAlignedTwins & (kAlignedTwins - 1)) == 0,
+              "QUADSEARCH_TWOLEVEL_ALIGNED must be a power of two >= 16");
+#if QUADSEARCH_DESCRIPTOR_ALIGN != 64
+#warning "aligned twins without -DQUADSEARCH_DESCRIPTOR_ALIGN=64: the 64-byte descriptor straddles two lines in three of four containers"
+#endif
+struct FreeDeleter {
+    void operator()(void *p) const { std::free(p); }
+};
+using AlignedBuf = std::unique_ptr<uint16_t, FreeDeleter>;
+// Copy of v at kAlignedTwins alignment, size rounded up to the alignment
+// (aligned_alloc needs a multiple of it; the padding is zero-filled and never
+// read, every variant takes the cardinality from the plain vector). Exits on
+// failure, as bench_ab_pi5.cpp does.
+static AlignedBuf aligned_copy(const std::vector<uint16_t> &v) {
+    if (v.empty()) return AlignedBuf();
+    size_t bytes = v.size() * sizeof(uint16_t);
+    size_t rounded = (bytes + kAlignedTwins - 1) / kAlignedTwins * kAlignedTwins;
+    void *p = std::aligned_alloc(kAlignedTwins, rounded);
+    if (!p) {
+        std::fprintf(stderr, "aligned_alloc(%zu, %zu) failed\n", kAlignedTwins, rounded);
+        std::exit(1);
+    }
+    if (((uintptr_t)p & (kAlignedTwins - 1)) != 0) {
+        std::fprintf(stderr, "aligned_alloc returned a misaligned pointer\n");
+        std::exit(1);
+    }
+    std::memset(p, 0, rounded);
+    std::memcpy(p, v.data(), bytes);
+    return AlignedBuf((uint16_t *)p);
+}
+#endif
 struct alignas(QUADSEARCH_DESCRIPTOR_ALIGN) Container {
     std::vector<uint16_t> carr;
     std::vector<uint16_t> spine;
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+    AlignedBuf carr_al;    // kAlignedTwins-aligned copy of carr (read by Aa..Fa)
+    AlignedBuf spine_al;   // kAlignedTwins-aligned copy of spine (read by Aa..Fa)
+#endif
 };
+#if defined(QUADSEARCH_TWOLEVEL_ALIGNED) && QUADSEARCH_DESCRIPTOR_ALIGN == 64
+static_assert(sizeof(Container) == 64, "descriptor must stay one 64-byte line: 24 + 24 + 8 + 8");
+#endif
 
 // A Roaring-style container set: parallel arrays of keys (high16) and
 // containers, sorted by key.
@@ -362,6 +427,44 @@ static ContainerSet make_set(std::mt19937 &rng, int num_containers,
                     s.keys_eytz.data() + s.eytz_off, s.eytz_to_sorted.data());
     return s;
 }
+
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+// Second pass for the aligned twins: copies of every carr and spine, made
+// after all sets and targets exist so the plain arrays keep the heap layout
+// of the archived runs. Each copy is checked byte for byte against its
+// source. Prints the "# layout:" line: residue mod 64 (0/16/32/48) of the
+// plain carr pointers, the plain spine pointers and the copies (carr_al and
+// spine_al together), and how many sets' descriptor arrays start on a
+// 64-byte line (all of them with -DQUADSEARCH_DESCRIPTOR_ALIGN=64).
+static void make_aligned_copies(std::vector<ContainerSet> &sets) {
+    unsigned hc[4] = {0, 0, 0, 0}, hs[4] = {0, 0, 0, 0}, ha[4] = {0, 0, 0, 0};
+    size_t desc_lined = 0;
+    for (auto &s : sets) {
+        if (((uintptr_t)s.containers.data() & 63u) == 0) desc_lined++;
+        for (auto &c : s.containers) {
+            c.carr_al = aligned_copy(c.carr);
+            c.spine_al = aligned_copy(c.spine);
+            if ((!c.carr.empty() &&
+                 std::memcmp(c.carr_al.get(), c.carr.data(), c.carr.size() * sizeof(uint16_t)) != 0) ||
+                (!c.spine.empty() &&
+                 std::memcmp(c.spine_al.get(), c.spine.data(), c.spine.size() * sizeof(uint16_t)) != 0)) {
+                std::fprintf(stderr, "aligned copy differs from its source\n");
+                std::exit(1);
+            }
+            hc[((uintptr_t)c.carr.data() >> 4) & 3u]++;
+            if (!c.spine.empty()) hs[((uintptr_t)c.spine.data() >> 4) & 3u]++;
+            if (c.carr_al) ha[((uintptr_t)c.carr_al.get() >> 4) & 3u]++;
+            if (c.spine_al) ha[((uintptr_t)c.spine_al.get() >> 4) & 3u]++;
+        }
+    }
+    std::printf("# layout: plain carr residue mod 64 (0/16/32/48) %u/%u/%u/%u; plain spine %u/%u/%u/%u; "
+                "aligned copies (carr_al+spine_al, %zu-B) %u/%u/%u/%u; descriptors %zu B, "
+                "%zu/%zu sets with a line-aligned descriptor array\n",
+                hc[0], hc[1], hc[2], hc[3], hs[0], hs[1], hs[2], hs[3],
+                kAlignedTwins, ha[0], ha[1], ha[2], ha[3],
+                sizeof(Container), desc_lined, sets.size());
+}
+#endif
 
 // Outer-search variants.
 static inline int find_container_bsearch(const ContainerSet &s,
@@ -584,6 +687,54 @@ static bool lookup_Lemire(const ContainerSet &s, uint32_t v) {
     return simd_quad(c.carr.data(), (int32_t)c.carr.size(), (uint16_t)v);
 }
 
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+// Aligned twins: the outer search of A..F unchanged, the inner kernel on the
+// aligned copies. The cardinality still comes from the plain vector (its
+// begin/end pointers share the descriptor with the copy pointers; with
+// -DQUADSEARCH_DESCRIPTOR_ALIGN=64 the whole descriptor is one line), so
+// the only difference from the plain variant is the address of the array
+// and spine lines the kernel reads.
+static bool lookup_Aa(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_bsearch(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return inner_spine(c.carr_al.get(), c.spine_al.get(),
+                       (int32_t)c.carr.size(), (uint16_t)v);
+}
+static bool lookup_Ba(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_spine(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return inner_spine(c.carr_al.get(), c.spine_al.get(),
+                       (int32_t)c.carr.size(), (uint16_t)v);
+}
+static bool lookup_Ca(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_bsearch(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return inner_spine_4096(c.carr_al.get(), c.spine_al.get(), (uint16_t)v);
+}
+static bool lookup_Da(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_spine(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return inner_spine_4096(c.carr_al.get(), c.spine_al.get(), (uint16_t)v);
+}
+static bool lookup_Ea(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_shar(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return inner_spine(c.carr_al.get(), c.spine_al.get(),
+                       (int32_t)c.carr.size(), (uint16_t)v);
+}
+static bool lookup_Fa(const ContainerSet &s, uint32_t v) {
+    int idx = find_container_shar(s, (uint16_t)(v >> 16));
+    if (idx < 0) return false;
+    const auto &c = s.containers[idx];
+    return inner_spine_4096(c.carr_al.get(), c.spine_al.get(), (uint16_t)v);
+}
+#endif
+
 // Hot + batched: reuse the same set for hot_reps independent queries.
 // Queries are independent (no dep chain between them), so the OoO engine
 // can keep several in flight. Measures throughput with a hot *outer*:
@@ -715,13 +866,21 @@ int main(int argc, char **argv) {
     constexpr int inner_n        = 4096;
 
     std::printf("two-level spine micro-bench\n");
-    std::printf("num_sets=%d hot_reps=%d num_containers=%d inner_n=%d mode=%s order_seed=%u gap=%d desc_align=%d desc_size=%zu\n",
+    std::printf("num_sets=%d hot_reps=%d num_containers=%d inner_n=%d mode=%s order_seed=%u gap=%d desc_align=%d desc_size=%zu",
                 num_sets, hot_reps, num_containers, inner_n, mode, order_seed, kGap,
                 (int)QUADSEARCH_DESCRIPTOR_ALIGN, sizeof(Container));
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+    std::printf(" aligned_twins=%zu", kAlignedTwins);
+#endif
+    std::printf("\n");
     std::printf("per set: %d B of keys + %d B of container data + %d B of spines\n",
                 num_containers * 2,
                 num_containers * inner_n * 2,
                 num_containers * (inner_n / kGap) * 2);
+    if (kThrashBytes != 512ull * 1024ull * 1024ull) {
+        std::printf("# thrash_bytes: %zu (NOT the 512 MB campaign flush: functional check only)\n",
+                    kThrashBytes);
+    }
 
     std::mt19937 rng(0xB17F17);
     std::vector<ContainerSet> sets;
@@ -748,6 +907,10 @@ int main(int argc, char **argv) {
         }
         targets.push_back(std::move(ts));
     }
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+    // Second pass, after every set and its targets: the aligned copies.
+    make_aligned_copies(sets);
+#endif
 
     // Correctness spot-check: every lookup must agree on a sample of
     // targets across a handful of sets.
@@ -772,8 +935,38 @@ int main(int argc, char **argv) {
                              si, t, rA, rB, rC, rD, rE, rF, rG, rH, rI, rL);
                 return 1;
             }
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+            bool rAa = lookup_Aa(sets[si], t);
+            bool rBa = lookup_Ba(sets[si], t);
+            bool rCa = lookup_Ca(sets[si], t);
+            bool rDa = lookup_Da(sets[si], t);
+            bool rEa = lookup_Ea(sets[si], t);
+            bool rFa = lookup_Fa(sets[si], t);
+            if (rA != rAa || rA != rBa || rA != rCa || rA != rDa || rA != rEa || rA != rFa) {
+                std::fprintf(stderr,
+                             "MISMATCH set=%d t=%u A=%d Aa=%d Ba=%d Ca=%d Da=%d Ea=%d Fa=%d\n",
+                             si, t, rA, rAa, rBa, rCa, rDa, rEa, rFa);
+                return 1;
+            }
+#endif
         }
     }
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+    // The twins read new data (the copies), so they are also cross-checked
+    // against A over every target of every set, hits and misses alike.
+    for (int si = 0; si < num_sets; si++) {
+        for (size_t k = 0; k < targets[si].size(); k++) {
+            uint32_t t = targets[si][k];
+            bool rA = lookup_A(sets[si], t);
+            if (lookup_Aa(sets[si], t) != rA || lookup_Ba(sets[si], t) != rA
+                || lookup_Ca(sets[si], t) != rA || lookup_Da(sets[si], t) != rA
+                || lookup_Ea(sets[si], t) != rA || lookup_Fa(sets[si], t) != rA) {
+                std::fprintf(stderr, "MISMATCH (aligned twin vs A) set=%d k=%zu t=%u\n", si, k, t);
+                return 1;
+            }
+        }
+    }
+#endif
     std::printf("correctness: ok\n\n");
 
     struct Row { const char *var; const char *desc;
@@ -790,7 +983,17 @@ int main(int argc, char **argv) {
     bool run_hb = mode[0]=='a' || (mode[0]=='h' && mode[1]=='b');
     bool run_hs = mode[0]=='a' || (mode[0]=='h' && mode[1]=='s');
     auto NaN = std::numeric_limits<double>::quiet_NaN();
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+    constexpr int NVAR = 16;    // A..I, Lem, then the six aligned twins Aa..Fa
+    constexpr int NPLAIN = 10;  // index of the first twin; twin i pairs with result[i]
+    static char twin_desc[6][64];
+    for (int i = 0; i < 6; i++) {
+        std::snprintf(twin_desc[i], sizeof twin_desc[i],
+                      "%c with the inner kernel on %zu-B-aligned copies", 'A' + i, kAlignedTwins);
+    }
+#else
     constexpr int NVAR = 10;
+#endif
     Row result[NVAR] = {
         {"A",   "bsearch outer + general-n spine inner",                 NaN, NaN, NaN, NaN},
         {"B",   "two-level spine + general-n spine inner",               NaN, NaN, NaN, NaN},
@@ -802,10 +1005,21 @@ int main(int argc, char **argv) {
         {"H",   "Eytzinger outer + K&M PF + general-n spine inner",      NaN, NaN, NaN, NaN},
         {"I",   "Eytzinger outer + K&M PF + compile-time n=4096 inner",  NaN, NaN, NaN, NaN},
         {"Lem", "Lemire reference (bsearch outer + simd_quad inner)",    NaN, NaN, NaN, NaN},
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+        {"Aa",  twin_desc[0], NaN, NaN, NaN, NaN},
+        {"Ba",  twin_desc[1], NaN, NaN, NaN, NaN},
+        {"Ca",  twin_desc[2], NaN, NaN, NaN, NaN},
+        {"Da",  twin_desc[3], NaN, NaN, NaN, NaN},
+        {"Ea",  twin_desc[4], NaN, NaN, NaN, NaN},
+        {"Fa",  twin_desc[5], NaN, NaN, NaN, NaN},
+#endif
     };
     auto lookups = std::array<bool(*)(const ContainerSet&, uint32_t), NVAR>{
         lookup_A, lookup_B, lookup_C, lookup_D,
         lookup_E, lookup_F, lookup_G, lookup_H, lookup_I, lookup_Lemire,
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+        lookup_Aa, lookup_Ba, lookup_Ca, lookup_Da, lookup_Ea, lookup_Fa,
+#endif
     };
     // Per-pass timing order: canonical, or shuffled from order_seed (with a
     // per-mode salt so the four passes get different orders).
@@ -828,6 +1042,11 @@ int main(int argc, char **argv) {
     // set and all "vs A" hot deltas inherit the bias (A was always first).
     if (run_hb || run_hs) {
         (void)bench_hot_batched(sets, targets, hot_reps, lookup_A);
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+        // The copies get the same single first touch the plain arrays got
+        // (any twin would do; all six read the same copies).
+        (void)bench_hot_batched(sets, targets, hot_reps, lookup_Fa);
+#endif
     }
     if (run_hb) {
         auto ord = make_order(1);
@@ -918,5 +1137,18 @@ int main(int argc, char **argv) {
     std::printf("  F   vs Lem: %+7.1f%%  %+7.1f%%  %+7.1f%%  %+7.1f%%\n",
                 dv(rF.hb, rLem.hb), dv(rF.hs, rLem.hs),
                 dv(rF.cb, rLem.cb), dv(rF.cs, rLem.cs));
+
+#ifdef QUADSEARCH_TWOLEVEL_ALIGNED
+    std::printf("\ndeltas of the aligned twins vs their plain variant "
+                "(Xa vs X: the alignment A/B, same outer, same kernel):\n");
+    for (int i = 0; i < NVAR - NPLAIN; i++) {
+        auto &r = result[NPLAIN + i];
+        auto &b = result[i];
+        std::printf("  %-3s vs %-3s: %+7.1f%%  %+7.1f%%  %+7.1f%%  %+7.1f%%\n",
+                    r.var, b.var,
+                    dv(r.hb, b.hb), dv(r.hs, b.hs),
+                    dv(r.cb, b.cb), dv(r.cs, b.cs));
+    }
+#endif
     return 0;
 }

@@ -31,6 +31,14 @@ A difference is called a WIN only when the sign count is at least 80% of
 the runs and the median paired delta is at least 3%; anything else is a
 TIE.  With N=5 a two-sided sign test cannot reach p < 0.0625, so even a
 5/5 result is suggestive rather than conclusive; use 10 runs where you can.
+
+Variants are detected from the run files: the canonical A..I, Lem first (in
+that order, those present in every run), then any further rows present in
+every run in the order the first run prints them -- the aligned twins
+Aa..Fa of a bench_twolevel built with -DQUADSEARCH_TWOLEVEL_ALIGNED=<bytes>
+(header token aligned_twins=<bytes>).  For every twin Xa whose plain X is
+present the pair (Xa, X) is added to the quoted pairs; for the archived
+runs (no twins) the output is unchanged.
 """
 import argparse
 import glob
@@ -63,16 +71,22 @@ DEFAULT_PAIRS = [
     ("I", "F"), ("H", "E"), ("H", "I"), ("I", "D"), ("G", "F"),
     ("F", "Lem"), ("A", "Lem"), ("D", "Lem"), ("I", "Lem"),
 ]
+# A result row: variant token (A..I, Lem, or a twin such as Fa), description,
+# four cells. Only result rows start with an upper-case letter and end in
+# four decimals/nans; the per-run delta lines are indented.
 ROW_RE = re.compile(
-    r"^([A-I]|Lem)\s+\S.*?\s+"
+    r"^([A-Z][A-Za-z]*)\s+(\S.*?)\s+"
     r"(\d+\.\d+|nan)\s+(\d+\.\d+|nan)\s+(\d+\.\d+|nan)\s+(\d+\.\d+|nan)\s*$")
 HDR_RE = re.compile(r"^num_sets=(\d+)\s+hot_reps=(\d+).*?mode=(\w+)(?:\s+order_seed=(\d+))?(?:\s+gap=(\d+))?")
+TWINS_RE = re.compile(r"\baligned_twins=(\d+)")
 
 
 def parse_run(path):
-    """Return (meta, {var: {mode: value-or-None}}) for one run file."""
+    """Return (meta, {var: {mode: value-or-None}}, {var: description}) for one
+    run file; the variant dict keeps the order of the rows in the file."""
     meta = {"file": os.path.basename(path)}
     cells = {}
+    descs = {}
     with open(path) as fh:
         for line in fh:
             h = HDR_RE.match(line)
@@ -82,6 +96,9 @@ def parse_run(path):
                     meta["order_seed"] = int(h.group(4))
                 if h.group(5) is not None:
                     meta["gap"] = int(h.group(5))
+                t = TWINS_RE.search(line)
+                if t:
+                    meta["aligned_twins"] = int(t.group(1))
                 continue
             if line.startswith("# "):
                 k, _, v = line[2:].partition(":")
@@ -90,9 +107,10 @@ def parse_run(path):
             m = ROW_RE.match(line)
             if m:
                 v = m.group(1)
-                vals = [None if m.group(i) == "nan" else float(m.group(i)) for i in (2, 3, 4, 5)]
+                vals = [None if m.group(i) == "nan" else float(m.group(i)) for i in (3, 4, 5, 6)]
                 cells[v] = dict(zip(MODES, vals))
-    return meta, cells
+                descs[v] = m.group(2)
+    return meta, cells, descs
 
 
 def fmt(x, w=10, p=2):
@@ -120,22 +138,47 @@ def main():
     if not files:
         sys.exit(f"no run files match {pattern}")
     runs = [parse_run(f) for f in files]
-    runs = [(m, c) for m, c in runs if c]
+    runs = [(m, c, d) for m, c, d in runs if c]
     N = len(runs)
+    if N == 0:
+        sys.exit(f"no result rows in the files matching {pattern}")
     out_path = args.out or f"{args.host}_runs/twolevel_paired.txt"
 
+    # Variants present in every run: the canonical ones first, then any
+    # extra rows (the aligned twins Aa..Fa) in the order the first run
+    # prints them. Descriptions of extras come from the run file.
+    variants = [v for v in VARIANTS if all(v in c for _, c, _ in runs)]
+    extras = [v for v in runs[0][1] if v not in VARIANTS and all(v in c for _, c, _ in runs)]
+    variants += extras
+    file_desc = runs[0][2]
+    # A variant missing from some runs is dropped (as before); say so on
+    # stderr, since a glob that pools twin and non-twin runs loses the twins.
+    seen = {}
+    for _, c, _ in runs:
+        for v in c:
+            seen[v] = seen.get(v, 0) + 1
+    for v, k in seen.items():
+        if v not in variants:
+            print(f"warning: variant {v} present in {k} of {N} runs only; dropped", file=sys.stderr)
+
+    def desc_of(v):
+        return DESC.get(v) or file_desc.get(v, "")
+
     pairs = list(DEFAULT_PAIRS)
+    # Aligned-layout A/B: each twin against its plain variant (Xa vs X).
+    for v in extras:
+        if len(v) >= 2 and v.endswith("a") and v[:-1] in variants:
+            pairs.append((v, v[:-1]))
     for p in args.pairs or []:
         x, y = p.split("/")
         pairs.append((x, y))
 
-    variants = [v for v in VARIANTS if all(v in c for _, c in runs)]
     lines = []
     w = lines.append
 
     w(f"Paired aggregation of {N} bench_twolevel runs for host '{args.host}'")
     w(f"pattern: {pattern}")
-    for m, _ in runs:
+    for m, _, _ in runs:
         extra = " ".join(f"{k}={v}" for k, v in m.items() if k not in ("file", "notes"))
         notes = m.get("notes", {})
         note_s = ("  " + "; ".join(f"{k}: {v}" for k, v in notes.items())) if notes else ""
@@ -149,7 +192,7 @@ def main():
         name = MODE_NAMES[mode]
         # per-run values, skipping runs where this mode was not measured
         per_run = []  # list of {var: value}
-        for _, c in runs:
+        for _, c, _ in runs:
             vals = {v: c[v][mode] for v in variants}
             if all(x is not None for x in vals.values()):
                 per_run.append(vals)
@@ -174,7 +217,7 @@ def main():
         for v in variants:
             xs = [r[v] for r in per_run]
             med = statistics.median(xs)
-            w(f"{v:>4}  {fmt(med)}  {fmt(min(xs))}  {fmt(max(xs))}  {(max(xs)/min(xs)-1)*100:>6.0f}%   {DESC[v]}")
+            w(f"{v:>4}  {fmt(med)}  {fmt(min(xs))}  {fmt(max(xs))}  {(max(xs)/min(xs)-1)*100:>6.0f}%   {desc_of(v)}")
         w("  (levels only: do not difference medians across variants; use the paired deltas below)")
         w("")
 
