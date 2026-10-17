@@ -1,0 +1,638 @@
+Paired A/B of two interleaved series of main-bench runs on host 'cfl' (Intel Coffee Lake (i9-9980HK, 2019 MacBook Pro))
+A = shipped: cfl_runs/rebench_flushed_pfab_run*.txt  (10 file(s), 10 usable)
+B = np: cfl_runs/rebench_flushed_pfab_np_run*.txt  (15 file(s), 15 usable)
+series tags (rebench_flushed<tag>_run<r>.txt, over the usable files): A = pfab; B = pfab_np
+paired runs (10), run r of A with run r of B:
+  run1: rebench_flushed_pfab_run1.txt  <->  rebench_flushed_pfab_np_run1.txt
+  run2: rebench_flushed_pfab_run2.txt  <->  rebench_flushed_pfab_np_run2.txt
+  run8: rebench_flushed_pfab_run8.txt  <->  rebench_flushed_pfab_np_run8.txt
+  run9: rebench_flushed_pfab_run9.txt  <->  rebench_flushed_pfab_np_run9.txt
+  run10: rebench_flushed_pfab_run10.txt  <->  rebench_flushed_pfab_np_run10.txt
+  run11: rebench_flushed_pfab_run11.txt  <->  rebench_flushed_pfab_np_run11.txt
+  run12: rebench_flushed_pfab_run12.txt  <->  rebench_flushed_pfab_np_run12.txt
+  run13: rebench_flushed_pfab_run13.txt  <->  rebench_flushed_pfab_np_run13.txt
+  run14: rebench_flushed_pfab_run14.txt  <->  rebench_flushed_pfab_np_run14.txt
+  run15: rebench_flushed_pfab_run15.txt  <->  rebench_flushed_pfab_np_run15.txt
+unpaired B runs (no usable A run of the same index): run3 (rebench_flushed_pfab_np_run3.txt), run4 (rebench_flushed_pfab_np_run4.txt), run5 (rebench_flushed_pfab_np_run5.txt), run6 (rebench_flushed_pfab_np_run6.txt), run7 (rebench_flushed_pfab_np_run7.txt)
+date A: 2026-10-13T09:00:32-07:00 .. 2026-10-13T10:36:12-07:00 (10 distinct)
+date B: 2026-10-13T09:04:42-07:00 .. 2026-10-13T10:40:22-07:00 (10 distinct)
+host (both): Linux 7.2.10-1-t2-resolute x86_64
+machine (both): mb2019
+command A: taskset -c 15 ./bench 4000 5000
+command B: taskset -c 15 ./bench_np 4000 5000
+build A: g++ -O3 -march=native -std=c++20 bench.cpp simd_quad_intel.c -o bench
+build B: g++ -O3 -march=native -std=c++20 bench.cpp simd_quad_intel_np.c -o bench_np
+compiler (both): g++ (GCC) 17.0.0 20260824 (experimental)
+governor (both): performance
+note A: prefetch A/B run (A = shipped kernel, in-loop _mm_prefetch kept), interleaved with the bench_np run of the same index; intel_pstate no_turbo=1 (2.4 GHz base clock); -march=native = skylake (AVX2, no AVX-512); prefetch A/B run (A = shipped kernel, in-loop _mm_prefetch kept), interleaved with the bench_np run of the same index; intel_pstate no_turbo=1 (2.4 GHz base clock); -march=native = skylake (AVX2, no AVX-512); pairs 11-15 replace the lost pairs 3-7
+note B: prefetch A/B run (B = simd_quad_intel_np.c: the plain kernel's in-loop _mm_prefetch removed, cfl_runs/prefetch_ab_variant.diff), interleaved with the bench run of the same index; intel_pstate no_turbo=1 (2.4 GHz base clock); -march=native = skylake (AVX2, no AVX-512); prefetch A/B run (B = simd_quad_intel_np.c: the plain kernel's in-loop _mm_prefetch removed, cfl_runs/prefetch_ab_variant.diff), interleaved with the bench run of the same index; intel_pstate no_turbo=1 (2.4 GHz base clock); -march=native = skylake (AVX2, no AVX-512); pairs 11-15 replace the lost pairs 3-7
+two binaries (the build lines differ in: A 'simd_quad_intel.c bench' vs B 'simd_quad_intel_np.c bench_np'): besides the factor under test, a recompiled translation unit lays out every one of its functions afresh (code addresses, loop and branch-target alignment), so cells whose code the factor cannot reach are identical-code gauges of what this A/B's sign counts and WIN rule do on no effect at all (methodology lesson 7).
+factor under test (--factor): B = the plain kernel's in-loop _mm_prefetch removed (cfl_runs/prefetch_ab_variant.diff)
+effect set (--effect): intel:>=128, intelA:>=128 -> warm: 28 effect cells, 215 identical-code gauge cells; cold: 28 effect cells, 215 identical-code gauge cells. The overview marks a gauge WIN '~', the per-cell tables flag each row 'eff'/'gau', and the gauge and effect sections below compare the two.
+temperature (temp_before/temp_after): shipped 45.0..61.0 C; np 45.0..53.0 C
+harness note: aligned rows: each 'nA' row repeats the warm and cold columns of the plain row above it on 64-byte-aligned copies of the same arrays and spines (added 2026-10-12); plain rows use std::vector storage, 16-byte aligned
+harness note: cold column: thrash_llc() 512.0 MB before every cold pass (flush added 2026-10-11)
+exit statuses: A 0; B 0
+columns A: linear binary simd intel intels; columns B: linear binary simd intel intels
+sizes: 22 (8..4096); compared cell names (16): simd, intel, simdA, binary, intelA, intels, linear, binaryA, intelsA, linearA, intel_spine_256, intel_spine_512, intel_spine_pad, intel_spine_1024, intel_spine_2048, intel_spine_4096
+
+Deltas are B/A - 1 in percent (np/shipped - 1); negative means B (np) is faster. Levels are ns/query, medians over the paired runs.
+WIN(X) = X faster in >= 80% of the paired runs (ceil(0.8 n)) AND |median paired delta| >= 3%; otherwise TIE; n/a = fewer than 3 paired runs.
+A WIN on an identical-code (gauge) cell is what the rule does on no effect; an effect cell's WIN is evidence of the factor when its |median| clears the gauge's largest |median| at the same size (column '> gauge' of the effect table).
+
+====================================================================================================
+run-level drift: per run, the geometric mean (ns) over the cells every paired run of both series has, per series; and B/A over the same cells (the whole-run A/B)
+====================================================================================================
+  warm  A (shipped): run1: 35.05, run2: 35.05, run8: 35.06, run9: 35.05, run10: 35.05, run11: 35.06, run12: 35.05, run13: 35.06, run14: 35.06, run15: 35.05  (max/min = 1.00x over 243 shared cells)
+        B (np): run1: 34.88, run2: 34.87, run8: 34.87, run9: 34.87, run10: 34.88, run11: 34.88, run12: 34.88, run13: 34.87, run14: 34.87, run15: 34.87  (max/min = 1.00x)
+        B/A - 1: run1: -0.5%, run2: -0.5%, run8: -0.5%, run9: -0.5%, run10: -0.5%, run11: -0.5%, run12: -0.5%, run13: -0.5%, run14: -0.5%, run15: -0.5%  (median -0.5%)
+  cold  A (shipped): run1: 72.17, run2: 72.26, run8: 72.31, run9: 72.95, run10: 73.53, run11: 75.15, run12: 72.50, run13: 75.29, run14: 74.37, run15: 73.72  (max/min = 1.04x over 243 shared cells)
+        B (np): run1: 70.95, run2: 74.05, run8: 73.00, run9: 73.08, run10: 73.72, run11: 72.22, run12: 74.64, run13: 74.31, run14: 73.80, run15: 72.96  (max/min = 1.05x)
+        B/A - 1: run1: -1.7%, run2: +2.5%, run8: +0.9%, run9: +0.2%, run10: +0.3%, run11: -3.9%, run12: +2.9%, run13: -1.3%, run14: -0.8%, run15: -1.0%  (median -0.3%)
+
+====================================================================================================
+gauge, warm: the 215 cells outside --effect (identical code in both binaries) -- what the sign counts and the WIN rule do on no effect at all
+====================================================================================================
+  verdicts: WIN(np) 4, WIN(shipped) 10, TIE 201, n/a 0 -> WIN rate 6.5% of 215 judged cells
+  |median delta| (nearest-rank percentiles): p50 0.0%, p90 2.0%, max 7.0% (intel n=89, +7.0%); unanimous sign (every paired run agrees): 47 cells, 14 of them with |median| >= 3% (= the WINs)
+  per size band:        band cells  WIN  unan  |med| p50    p90    max  max cell
+                         <32    40    4    10       0.0%   2.0%   5.4%  intelsA n=8
+                      32-127    44    9    18       0.0%   4.6%   7.0%  intel n=89
+                     128-511    37    1    11       0.0%   1.6%   4.1%  intels n=128
+                    512-2047    56    0     6       0.0%   0.3%   1.3%  intels n=512
+                      >=2048    38    0     2       0.0%   0.3%   0.4%  intels n=2048
+  per size:                n cells  WIN  unan  |med| p50    p90    max  max cell
+                           8    10    2     2       0.0%   4.6%   5.4%  intelsA n=8
+                          11    10    2     4       0.0%   3.3%   3.8%  intels n=11
+                          16    10    0     0       0.0%   0.0%   0.0%  simd n=16
+                          23    10    0     4       0.0%   1.6%   2.0%  intels n=23
+                          32    11    2     4       0.0%   5.3%   6.0%  intel_spine_pad n=32
+                          47    11    3     5       0.6%   3.7%   3.9%  intel n=47
+                          64    11    0     4       0.0%   2.3%   2.7%  intel n=64
+                          89    11    4     5       0.0%   5.2%   7.0%  intel n=89
+                         128     9    1     3       0.0%   4.1%   4.1%  intels n=128
+                         177     9    0     2       0.0%   1.6%   1.6%  intels n=177
+                         256    10    0     3       0.0%   1.4%   2.4%  intels n=256
+                         333     9    0     3       0.0%   1.2%   1.2%  intels n=333
+                         512    10    0     2       0.0%   0.4%   1.3%  intels n=512
+                         617     9    0     0       0.0%   0.1%   0.1%  linear n=617
+                        1001     9    0     0       0.0%   0.1%   0.1%  linear n=1001
+                        1024    10    0     3       0.0%   0.4%   0.8%  intels n=1024
+                        1234     9    0     0       0.0%   0.3%   0.3%  intelsA n=1234
+                        1777     9    0     1       0.0%   0.4%   0.4%  intels n=1777
+                        2048    10    0     0       0.0%   0.1%   0.4%  intels n=2048
+                        2999     9    0     0       0.0%   0.3%   0.3%  linearA n=2999
+                        3967     9    0     0       0.0%   0.3%   0.3%  intelsA n=3967
+                        4096    10    0     2       0.0%   0.3%   0.3%  intelsA n=4096
+
+====================================================================================================
+effect, warm: the 28 cells --effect names (the factor can reach them), each against the gauge at the same size
+====================================================================================================
+  '> gauge' = the cell is a WIN and its |median| exceeds the largest gauge |median| at that size
+      n cell                 A ns     B ns    delta   sign        ns verdict       gauge@n: max |med| (cell)    gauge WINs  > gauge
+    128 intel               20.45    20.00   -2.20% -10/10  -0.45 ns TIE           -4.1% (intels)                      1/9  -
+    128 intelA              19.70    19.60   -0.51% -10/10  -0.10 ns TIE           -4.1% (intels)                      1/9  -
+    177 intel               26.00    26.00   +0.00%   0/10  +0.00 ns TIE           -1.6% (intels)                      0/9  -
+    177 intelA              25.50    25.20   -1.18% -10/10  -0.30 ns TIE           -1.6% (intels)                      0/9  -
+    256 intel               21.90    21.80   -0.46% -10/10  -0.10 ns TIE           -2.4% (intels)                     0/10  -
+    256 intelA              21.60    21.30   -1.39% -10/10  -0.30 ns TIE           -2.4% (intels)                     0/10  -
+    333 intel               27.70    26.30   -5.05% -10/10  -1.40 ns WIN(np)       -1.2% (intels)                      0/9  yes
+    333 intelA              27.50    25.80   -6.18% -10/10  -1.70 ns WIN(np)       -1.2% (intels)                      0/9  yes
+    512 intel               26.10    24.50   -6.13% -10/10  -1.60 ns WIN(np)       -1.3% (intels)                     0/10  yes
+    512 intelA              25.90    24.00   -7.34% -10/10  -1.90 ns WIN(np)       -1.3% (intels)                     0/10  yes
+    617 intel               33.50    31.40   -6.27% -10/10  -2.10 ns WIN(np)       -0.1% (linear)                      0/9  yes
+    617 intelA              33.30    30.80   -7.23% -10/10  -2.40 ns WIN(np)       -0.1% (linear)                      0/9  yes
+   1001 intel               33.10    31.00   -6.49% -10/10  -2.15 ns WIN(np)       +0.1% (linear)                      0/9  yes
+   1001 intelA              32.90    30.50   -7.45% -10/10  -2.45 ns WIN(np)       +0.1% (linear)                      0/9  yes
+   1024 intel               28.10    27.10   -3.56% -10/10  -1.00 ns WIN(np)       -0.8% (intels)                     0/10  yes
+   1024 intelA              27.90    26.60   -4.49% -10/10  -1.25 ns WIN(np)       -0.8% (intels)                     0/10  yes
+   1234 intel               36.50    34.70   -4.93% -10/10  -1.80 ns WIN(np)       -0.3% (intelsA)                     0/9  yes
+   1234 intelA              36.20    33.95   -6.09% -10/10  -2.20 ns WIN(np)       -0.3% (intelsA)                     0/9  yes
+   1777 intel               33.30    31.20   -6.31% -10/10  -2.10 ns WIN(np)       -0.4% (intels)                      0/9  yes
+   1777 intelA              33.10    30.60   -7.41% -10/10  -2.45 ns WIN(np)       -0.4% (intels)                      0/9  yes
+   2048 intel               33.00    30.80   -6.67% -10/10  -2.20 ns WIN(np)       -0.4% (intels)                     0/10  yes
+   2048 intelA              32.70    30.20   -7.36% -10/10  -2.40 ns WIN(np)       -0.4% (intels)                     0/10  yes
+   2999 intel               39.80    38.10   -4.27% -10/10  -1.70 ns WIN(np)       +0.3% (linearA)                     0/9  yes
+   2999 intelA              39.00    37.10   -4.63% -10/10  -1.80 ns WIN(np)       +0.3% (linearA)                     0/9  yes
+   3967 intel               39.70    38.00   -4.28% -10/10  -1.70 ns WIN(np)       +0.3% (intelsA)                     0/9  yes
+   3967 intelA              39.10    37.25   -4.61% -10/10  -1.80 ns WIN(np)       +0.3% (intelsA)                     0/9  yes
+   4096 intel               36.10    34.30   -4.99% -10/10  -1.80 ns WIN(np)       -0.3% (intelsA)                    0/10  yes
+   4096 intelA              35.80    33.60   -5.88% -10/10  -2.10 ns WIN(np)       -0.3% (intelsA)                    0/10  yes
+  verdicts: WIN(np) 22, WIN(shipped) 0, TIE 6, n/a 0; 22 of the 22 WINs clear the gauge's largest |median| at their size
+
+====================================================================================================
+gauge, cold: the 215 cells outside --effect (identical code in both binaries) -- what the sign counts and the WIN rule do on no effect at all
+====================================================================================================
+  verdicts: WIN(np) 3, WIN(shipped) 12, TIE 200, n/a 0 -> WIN rate 7.0% of 215 judged cells
+  |median delta| (nearest-rank percentiles): p50 0.9%, p90 3.4%, max 8.6% (simd n=512, -8.6%); unanimous sign (every paired run agrees): 0 cells, 0 of them with |median| >= 3% (= the WINs)
+  per size band:        band cells  WIN  unan  |med| p50    p90    max  max cell
+                         <32    40    3     0       0.6%   2.6%   6.4%  intels n=8
+                      32-127    44    5     0       1.1%   3.6%   7.1%  intelsA n=64
+                     128-511    37    0     0       0.9%   3.0%   6.9%  intels n=256
+                    512-2047    56    3     0       1.2%   3.7%   8.6%  simd n=512
+                      >=2048    38    4     0       0.7%   3.1%   4.8%  intels n=2048
+  per size:                n cells  WIN  unan  |med| p50    p90    max  max cell
+                           8    10    1     0       1.0%   2.3%   6.4%  intels n=8
+                          11    10    1     0       0.5%   1.4%   3.7%  intelA n=11
+                          16    10    1     0       0.5%   3.5%   5.1%  intels n=16
+                          23    10    0     0       0.5%   1.8%   2.6%  intelsA n=23
+                          32    11    0     0       1.2%   3.4%   4.0%  intel_spine_pad n=32
+                          47    11    3     0       1.6%   4.1%   5.1%  intel n=47
+                          64    11    2     0       1.6%   3.2%   7.1%  intelsA n=64
+                          89    11    0     0       0.6%   1.3%   1.4%  intelsA n=89
+                         128     9    0     0       0.4%   1.6%   1.6%  intelsA n=128
+                         177     9    0     0       0.8%   3.3%   3.3%  intels n=177
+                         256    10    0     0       1.3%   3.4%   6.9%  intels n=256
+                         333     9    0     0       1.0%   2.2%   2.2%  intel_spine_pad n=333
+                         512    10    0     0       2.8%   7.4%   8.6%  simd n=512
+                         617     9    0     0       1.1%   3.7%   3.7%  intels n=617
+                        1001     9    0     0       0.7%   3.5%   3.5%  simd n=1001
+                        1024    10    0     0       0.6%   2.4%   3.1%  intels n=1024
+                        1234     9    2     0       2.1%   6.8%   6.8%  simd n=1234
+                        1777     9    1     0       1.2%   3.2%   3.2%  intels n=1777
+                        2048    10    4     0       1.6%   4.6%   4.8%  intels n=2048
+                        2999     9    0     0       0.7%   1.6%   1.6%  linear n=2999
+                        3967     9    0     0       0.5%   1.6%   1.6%  linearA n=3967
+                        4096    10    0     0       0.7%   1.4%   2.0%  intel_spine_pad n=4096
+
+====================================================================================================
+effect, cold: the 28 cells --effect names (the factor can reach them), each against the gauge at the same size
+====================================================================================================
+  '> gauge' = the cell is a WIN and its |median| exceeds the largest gauge |median| at that size
+      n cell                 A ns     B ns    delta   sign        ns verdict       gauge@n: max |med| (cell)    gauge WINs  > gauge
+    128 intel               35.50    35.70   +0.14%  +5/10  +0.05 ns TIE           -1.6% (intelsA)                     0/9  -
+    128 intelA              31.20    30.55   -0.49%  -7/10  -0.15 ns TIE           -1.6% (intelsA)                     0/9  -
+    177 intel               45.75    45.50   -1.29%  -7/10  -0.60 ns TIE           -3.3% (intels)                      0/9  -
+    177 intelA              43.35    43.35   -0.34%  -5/10  -0.15 ns TIE           -3.3% (intels)                      0/9  -
+    256 intel               47.75    48.90   +3.08%  +7/10  +1.45 ns TIE           +6.9% (intels)                     0/10  -
+    256 intelA              48.20    48.35   -0.91%  -6/10  -0.45 ns TIE           +6.9% (intels)                     0/10  -
+    333 intel               64.35    64.60   -2.66%  -7/10  -1.75 ns TIE           -2.2% (intel_spine_pad)             0/9  -
+    333 intelA              73.25    68.40   -5.99%  -9/10  -4.25 ns WIN(np)       -2.2% (intel_spine_pad)             0/9  yes
+    512 intel               82.60    71.50  -11.13%  -8/10  -9.20 ns WIN(np)       -8.6% (simd)                       0/10  yes
+    512 intelA              76.20    74.60   -4.21%  -8/10  -3.30 ns WIN(np)       -8.6% (simd)                       0/10  no
+    617 intel              111.00   105.50   -8.19%  -7/10  -9.00 ns TIE           -3.7% (intels)                      0/9  -
+    617 intelA             112.40   106.90   -3.48%  -7/10  -3.85 ns TIE           -3.7% (intels)                      0/9  -
+   1001 intel              120.30   122.75   -2.04%  -6/10  -2.40 ns TIE           +3.5% (simd)                        0/9  -
+   1001 intelA             130.30   119.75   -3.34%  -7/10  -4.20 ns TIE           +3.5% (simd)                        0/9  -
+   1024 intel              110.25   107.30   -0.70%  -6/10  -0.75 ns TIE           +3.1% (intels)                     0/10  -
+   1024 intelA             106.35   102.95   -2.91%  -7/10  -3.05 ns TIE           +3.1% (intels)                     0/10  -
+   1234 intel              166.35   142.50  -12.15%  -9/10 -21.70 ns WIN(np)       +6.8% (simd)                        2/9  yes
+   1234 intelA             164.00   135.20  -18.11%  -9/10 -29.30 ns WIN(np)       +6.8% (simd)                        2/9  yes
+   1777 intel              153.45   151.30   -2.56%  -6/10  -3.95 ns TIE           +3.2% (intels)                      1/9  -
+   1777 intelA             151.80   146.25   -4.48%  -7/10  -6.85 ns TIE           +3.2% (intels)                      1/9  -
+   2048 intel              155.80   158.90   +0.32%  +6/10  +0.50 ns TIE           +4.8% (intels)                     4/10  -
+   2048 intelA             151.05   147.25   -3.64%  -6/10  -5.45 ns TIE           +4.8% (intels)                     4/10  -
+   2999 intel              221.45   213.25   -4.06% -10/10  -9.05 ns WIN(np)       -1.6% (linear)                      0/9  yes
+   2999 intelA             213.25   209.00   -1.10%  -8/10  -2.35 ns TIE           -1.6% (linear)                      0/9  -
+   3967 intel              225.40   218.45   -2.88%  -7/10  -6.45 ns TIE           +1.6% (linearA)                     0/9  -
+   3967 intelA             223.95   217.85   -3.10%  -9/10  -6.95 ns WIN(np)       +1.6% (linearA)                     0/9  yes
+   4096 intel              220.25   197.20  -10.37% -10/10 -22.85 ns WIN(np)       +2.0% (intel_spine_pad)            0/10  yes
+   4096 intelA             217.70   195.00  -10.93%  -9/10 -23.80 ns WIN(np)       +2.0% (intel_spine_pad)            0/10  yes
+  verdicts: WIN(np) 9, WIN(shipped) 0, TIE 19, n/a 0; 8 of the 9 WINs clear the gauge's largest |median| at their size
+
+====================================================================================================
+overview, warm: median paired delta % per (size, cell), B/A - 1; '*' marks a WIN on an effect cell, '~' a WIN on an identical-code gauge cell, '?' a cell below --min-runs
+====================================================================================================
+    n      simd    intel    simdA   binary   intelA   intels   linear  binaryA  intelsA  linearA intel_spine_256 intel_spine_512 intel_spine_pad intel_spine_1024 intel_spine_2048 intel_spine_4096
+    8     +0.0     +0.0     +0.0     +0.0     +0.7     +4.6~    +0.0     +0.0     +5.4~    +0.0                -               -               -                -                -                -
+   11     +0.0     -1.4     +0.0     +0.0     -0.9     +3.8~    +0.0     +0.0     +3.3~    +0.0                -               -               -                -                -                -
+   16     +0.0     +0.0     +0.0     +0.0     +0.0     +0.0     +0.0     +0.0     +0.0     +0.0                -               -               -                -                -                -
+   23     +0.0     +1.2     +0.0     +0.0     +0.8     +2.0     +0.0     +0.0     +1.6     +0.0                -               -               -                -                -                -
+   32     +0.0     +0.0     +0.0     +0.0     +0.6     -5.3~    +0.0     +0.0     -2.9     +0.0                -               -           -6.0~                -                -                -
+   47     +0.0     +3.9~    +0.0     +0.0     +3.7~    -2.1     +0.0     +0.0     -1.1     -0.6                -               -           -3.7~                -                -                -
+   64     +0.0     +2.7     +0.0     +0.1     +2.3     +0.0     +0.0     +0.0     +1.0     +0.0                -               -           +1.5                 -                -                -
+   89     +0.0     +7.0~    +0.0     +0.0     -2.3     +5.2~    +0.0     +0.0     +4.3~    +0.0                -               -           +4.6~                -                -                -
+  128     +0.0     -2.2     +0.0     +0.0     -0.5     -4.1~    +0.4     +0.0     -2.6     +0.0                -               -           -0.6                 -                -                -
+  177     +0.0     +0.0     +0.0     +0.0     -1.2     -1.6     +0.3     +0.0     -1.2     +0.0                -               -           -0.1                 -                -                -
+  256     +0.0     -0.5     +0.0     +0.0     -1.4     -2.4     +0.0     +0.0     -1.4     +0.0            -0.0                -           -0.7                 -                -                -
+  333     +0.0     -5.1*    +0.0     +0.0     -6.2*    -1.2     +0.0     +0.0     -0.6     +0.0                -               -           -0.1                 -                -                -
+  512     +0.0     -6.1*    +0.0     +0.0     -7.3*    -1.3     +0.0     +0.1     -0.4     +0.0                -           -0.1            -0.2                 -                -                -
+  617     +0.0     -6.3*    +0.0     +0.0     -7.2*    +0.0     -0.1     +0.0     +0.0     +0.0                -               -           +0.0                 -                -                -
+ 1001     +0.0     -6.5*    +0.0     +0.0     -7.4*    +0.0     +0.1     +0.0     +0.0     +0.0                -               -           +0.0                 -                -                -
+ 1024     +0.0     -3.6*    +0.0     +0.0     -4.5*    -0.8     +0.0     +0.0     -0.4     +0.1                -               -           -0.2             +0.0                 -                -
+ 1234     +0.0     -4.9*    +0.0     +0.0     -6.1*    -0.3     +0.1     +0.0     -0.3     +0.0                -               -           +0.0                 -                -                -
+ 1777     +0.0     -6.3*    +0.0     +0.0     -7.4*    -0.4     -0.0     +0.0     +0.0     -0.2                -               -           +0.0                 -                -                -
+ 2048     +0.0     -6.7*    +0.1     +0.0     -7.4*    -0.4     -0.1     +0.0     +0.0     -0.1                -               -           -0.0                 -            +0.0                 -
+ 2999     +0.0     -4.3*    +0.0     +0.0     -4.6*    +0.0     +0.1     +0.0     +0.0     +0.3                -               -           +0.0                 -                -                -
+ 3967     +0.0     -4.3*    +0.0     +0.0     -4.6*    -0.3     +0.1     +0.0     +0.3     -0.0                -               -           -0.0                 -                -                -
+ 4096     +0.0     -5.0*    +0.1     +0.0     -5.9*    -0.3     +0.1     +0.0     -0.3     +0.1                -               -           -0.0                 -                -            +0.0 
+  warm verdicts over 243 cells: WIN(np) 26, WIN(shipped) 10, TIE 207, n/a 0
+        effect cells (28): WIN(np) 22, WIN(shipped) 0, TIE 6, n/a 0; gauge cells (215): WIN(np) 4, WIN(shipped) 10, TIE 201, n/a 0
+
+====================================================================================================
+overview, cold: median paired delta % per (size, cell), B/A - 1; '*' marks a WIN on an effect cell, '~' a WIN on an identical-code gauge cell, '?' a cell below --min-runs
+====================================================================================================
+    n      simd    intel    simdA   binary   intelA   intels   linear  binaryA  intelsA  linearA intel_spine_256 intel_spine_512 intel_spine_pad intel_spine_1024 intel_spine_2048 intel_spine_4096
+    8     -0.2     +2.3     -2.0     -0.1     +0.3     +6.4~    +0.6     +1.1     +1.9     +1.0                -               -               -                -                -                -
+   11     +0.9     +1.4     -1.0     +0.1     -3.7~    +1.0     -0.4     -0.5     -0.0     -0.4                -               -               -                -                -                -
+   16     +0.5     -0.6     +1.0     +0.2     +3.5     +5.1~    +0.0     +0.4     -1.3     +0.4                -               -               -                -                -                -
+   23     -1.1     -0.5     -0.2     +1.4     +0.3     +1.8     +0.2     -0.6     +2.6     -0.2                -               -               -                -                -                -
+   32     -0.5     -0.2     -0.7     +0.2     +1.2     -3.4     -1.8     +0.5     +1.7     +1.6                -               -           -4.0                 -                -                -
+   47     +1.3     +5.1~    +0.4     +1.6     +4.1~    +2.1     +1.1     -0.8     -3.6~    -0.8                -               -           -2.4                 -                -                -
+   64     +2.2     +1.7     +0.2     -0.1     +2.6     -0.4     +1.6     -0.2     +7.1~    +0.5                -               -           -3.2~                -                -                -
+   89     +0.6     +0.0     -0.6     -0.4     +1.2     -0.8     +1.3     +0.6     +1.4     +0.9                -               -           +0.5                 -                -                -
+  128     -0.8     +0.1     -0.3     -0.2     -0.5     -0.0     -0.1     +0.4     -1.6     +0.8                -               -           -1.6                 -                -                -
+  177     -0.2     -1.3     -0.3     -1.4     -0.3     -3.3     -1.0     +0.8     +0.6     -0.1                -               -           +2.6                 -                -                -
+  256     +3.4     +3.1     -1.4     +0.9     -0.9     +6.9     -0.2     -0.1     -2.0     +1.1            -3.0                -           -1.3                 -                -                -
+  333     -1.0     -2.7     -1.8     -1.3     -6.0*    -0.4     -0.6     -0.2     +0.1     -1.4                -               -           -2.2                 -                -                -
+  512     -8.6    -11.1*    +2.9     -2.8     -4.2*    -7.4     -3.4     +0.6     +0.1     +0.1                -           -2.8            +0.3                 -                -                -
+  617     -3.6     -8.2     +0.6     -2.6     -3.5     -3.7     -1.5     -0.9     +1.0     +0.0                -               -           +1.1                 -                -                -
+ 1001     +3.5     -2.0     -2.1     +0.7     -3.3     +2.5     +0.6     +0.5     +0.1     -0.0                -               -           +0.7                 -                -                -
+ 1024     +2.4     -0.7     -0.6     +1.5     -2.9     +3.1     +1.7     -0.5     -0.3     +0.0                -               -           +1.7             +0.2                 -                -
+ 1234     +6.8    -12.1*    -2.1     +3.2~   -18.1*    +5.7~    +4.5     -0.3     -1.5     -0.9                -               -           +0.2                 -                -                -
+ 1777     +3.0     -2.6     -1.1     +0.3     -4.5     +3.2~    +1.2     +0.2     +2.1     -0.5                -               -           +1.6                 -                -                -
+ 2048     +3.1~    +0.3     -0.4     +3.8~    -3.6     +4.8~    +4.6~    +0.8     +1.0     -1.6                -               -           +0.7                 -            +1.8                 -
+ 2999     -0.3     -4.1*    -0.7     -0.7     -1.1     -1.3     -1.6     +0.1     +1.0     -0.5                -               -           -0.3                 -                -                -
+ 3967     +0.2     -2.9     -0.3     +0.5     -3.1*    +0.6     +0.5     +1.2     +0.3     +1.6                -               -           +0.1                 -                -                -
+ 4096     -0.1    -10.4*    -0.1     +0.9    -10.9*    +1.1     +1.3     +0.1     +1.4     +0.6                -               -           +2.0                 -                -            -0.7 
+  cold verdicts over 243 cells: WIN(np) 12, WIN(shipped) 12, TIE 219, n/a 0
+        effect cells (28): WIN(np) 9, WIN(shipped) 0, TIE 19, n/a 0; gauge cells (215): WIN(np) 3, WIN(shipped) 12, TIE 200, n/a 0
+
+====================================================================================================
+paired: simd  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     20.90    20.90    +0.00%   0/10     +0.00 ns TIE              26.50    26.35    -0.19%  -5/10     -0.05 ns TIE         
+   11 gau     23.50    23.50    +0.00%   0/10     +0.00 ns TIE              27.55    27.85    +0.91%  +8/10     +0.25 ns TIE         
+   16 gau     17.10    17.10    +0.00%   0/10     +0.00 ns TIE              19.95    19.90    +0.50%  +5/10     +0.10 ns TIE         
+   23 gau     27.60    27.60    +0.00%   0/10     +0.00 ns TIE              31.90    31.45    -1.11%  -6/10     -0.35 ns TIE         
+   32 gau     18.40    18.40    +0.00%   0/10     +0.00 ns TIE              28.05    28.00    -0.52%  -5/10     -0.15 ns TIE         
+   47 gau     30.60    30.60    +0.00%   0/10     +0.00 ns TIE              41.40    43.45    +1.31%  +7/10     +0.65 ns TIE         
+   64 gau     20.40    20.40    +0.00%   0/10     +0.00 ns TIE              29.65    30.00    +2.24%  +6/10     +0.65 ns TIE         
+   89 gau     26.10    26.10    +0.00%   0/10     +0.00 ns TIE              39.10    39.05    +0.63%  +7/10     +0.25 ns TIE         
+  128 gau     22.00    22.00    +0.00%   0/10     +0.00 ns TIE              38.00    37.90    -0.78%  -7/10     -0.30 ns TIE         
+  177 gau     27.60    27.60    +0.00%   0/10     +0.00 ns TIE              49.85    49.65    -0.20%  -5/10     -0.10 ns TIE         
+  256 gau     24.90    24.90    +0.00%   0/10     +0.00 ns TIE              53.30    54.25    +3.37%  +7/10     +1.75 ns TIE         
+  333 gau     29.20    29.20    +0.00%   0/10     +0.00 ns TIE              65.75    67.40    -0.99%  -6/10     -0.65 ns TIE         
+  512 gau     27.35    27.30    +0.00%   0/10     +0.00 ns TIE              83.10    75.30    -8.63%  -6/10     -7.30 ns TIE         
+  617 gau     34.50    34.50    +0.00%   0/10     +0.00 ns TIE             110.30   110.35    -3.55%  -5/10     -3.75 ns TIE         
+ 1001 gau     34.20    34.20    +0.00%   0/10     +0.00 ns TIE             119.85   127.25    +3.50%  +7/10     +4.00 ns TIE         
+ 1024 gau     30.70    30.70    +0.00%   0/10     +0.00 ns TIE             114.95   117.60    +2.40%  +6/10     +2.75 ns TIE         
+ 1234 gau     33.90    33.90    +0.00%   0/10     +0.00 ns TIE             134.65   136.70    +6.76%  +7/10     +8.70 ns TIE         
+ 1777 gau     36.60    36.60    +0.00%   0/10     +0.00 ns TIE             187.35   191.25    +3.02%  +7/10     +5.55 ns TIE         
+ 2048 gau     33.90    33.90    +0.00%   0/10     +0.00 ns TIE             158.55   166.25    +3.06%  +9/10     +4.85 ns WIN(shipped)
+ 2999 gau     38.90    38.90    +0.00%   0/10     +0.00 ns TIE             222.80   222.70    -0.33%  -7/10     -0.75 ns TIE         
+ 3967 gau     39.10    39.10    +0.00%   0/10     +0.00 ns TIE             228.10   227.75    +0.15%  +5/10     +0.35 ns TIE         
+ 4096 gau     38.90    38.90    +0.00%   0/10     +0.00 ns TIE             228.00   229.25    -0.07%  -5/10     -0.15 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 22; cold: WIN(np) 0, WIN(shipped) 1, TIE 21
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 1, TIE 21
+
+====================================================================================================
+paired: intel  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: n >= 128 (identical-code gauge below)  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     15.50    15.50    +0.00%   0/10     +0.00 ns TIE              17.70    17.95    +2.26%  +8/10     +0.40 ns TIE         
+   11 gau     21.20    20.90    -1.42% -10/10     -0.30 ns TIE              26.00    26.25    +1.35%  +7/10     +0.35 ns TIE         
+   16 gau     13.60    13.60    +0.00%   0/10     +0.00 ns TIE              17.50    17.25    -0.56%  -5/10     -0.10 ns TIE         
+   23 gau     24.90    25.20    +1.20% +10/10     +0.30 ns TIE              31.80    31.60    -0.48%  -6/10     -0.15 ns TIE         
+   32 gau     17.60    17.60    +0.00%   0/10     +0.00 ns TIE              25.70    25.35    -0.20%  -5/10     -0.05 ns TIE         
+   47 gau     27.90    29.00    +3.94% +10/10     +1.10 ns WIN(shipped)     37.20    39.30    +5.08%  +8/10     +1.85 ns WIN(shipped)
+   64 gau     18.60    19.10    +2.69% +10/10     +0.50 ns TIE              32.70    34.10    +1.74%  +7/10     +0.55 ns TIE         
+   89 gau     31.30    33.50    +7.03% +10/10     +2.20 ns WIN(shipped)     48.65    48.30    +0.00%   0/10     +0.00 ns TIE         
+  128 eff     20.45    20.00    -2.20% -10/10     -0.45 ns TIE              35.50    35.70    +0.14%  +5/10     +0.05 ns TIE         
+  177 eff     26.00    26.00    +0.00%   0/10     +0.00 ns TIE              45.75    45.50    -1.29%  -7/10     -0.60 ns TIE         
+  256 eff     21.90    21.80    -0.46% -10/10     -0.10 ns TIE              47.75    48.90    +3.08%  +7/10     +1.45 ns TIE         
+  333 eff     27.70    26.30    -5.05% -10/10     -1.40 ns WIN(np)          64.35    64.60    -2.66%  -7/10     -1.75 ns TIE         
+  512 eff     26.10    24.50    -6.13% -10/10     -1.60 ns WIN(np)          82.60    71.50   -11.13%  -8/10     -9.20 ns WIN(np)     
+  617 eff     33.50    31.40    -6.27% -10/10     -2.10 ns WIN(np)         111.00   105.50    -8.19%  -7/10     -9.00 ns TIE         
+ 1001 eff     33.10    31.00    -6.49% -10/10     -2.15 ns WIN(np)         120.30   122.75    -2.04%  -6/10     -2.40 ns TIE         
+ 1024 eff     28.10    27.10    -3.56% -10/10     -1.00 ns WIN(np)         110.25   107.30    -0.70%  -6/10     -0.75 ns TIE         
+ 1234 eff     36.50    34.70    -4.93% -10/10     -1.80 ns WIN(np)         166.35   142.50   -12.15%  -9/10    -21.70 ns WIN(np)     
+ 1777 eff     33.30    31.20    -6.31% -10/10     -2.10 ns WIN(np)         153.45   151.30    -2.56%  -6/10     -3.95 ns TIE         
+ 2048 eff     33.00    30.80    -6.67% -10/10     -2.20 ns WIN(np)         155.80   158.90    +0.32%  +6/10     +0.50 ns TIE         
+ 2999 eff     39.80    38.10    -4.27% -10/10     -1.70 ns WIN(np)         221.45   213.25    -4.06% -10/10     -9.05 ns WIN(np)     
+ 3967 eff     39.70    38.00    -4.28% -10/10     -1.70 ns WIN(np)         225.40   218.45    -2.88%  -7/10     -6.45 ns TIE         
+ 4096 eff     36.10    34.30    -4.99% -10/10     -1.80 ns WIN(np)         220.25   197.20   -10.37% -10/10    -22.85 ns WIN(np)     
+  verdicts: warm: WIN(np) 11, WIN(shipped) 2, TIE 9; cold: WIN(np) 4, WIN(shipped) 1, TIE 17
+  of which:  warm: effect WIN(np) 11, WIN(shipped) 0, TIE 3 | gauge WIN(np) 0, WIN(shipped) 2, TIE 6; cold: effect WIN(np) 4, WIN(shipped) 0, TIE 10 | gauge WIN(np) 0, WIN(shipped) 1, TIE 7
+
+====================================================================================================
+paired: simdA  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     20.90    20.90    +0.00%   0/10     +0.00 ns TIE              27.70    27.10    -1.98%  -6/10     -0.55 ns TIE         
+   11 gau     23.50    23.50    +0.00%   0/10     +0.00 ns TIE              29.90    29.60    -1.00%  -6/10     -0.30 ns TIE         
+   16 gau     17.10    17.10    +0.00%   0/10     +0.00 ns TIE              20.55    20.70    +0.97%  +6/10     +0.20 ns TIE         
+   23 gau     27.60    27.60    +0.00%   0/10     +0.00 ns TIE              30.80    30.60    -0.15%  -5/10     -0.05 ns TIE         
+   32 gau     18.40    18.40    +0.00%   0/10     +0.00 ns TIE              27.70    27.35    -0.70%  -6/10     -0.20 ns TIE         
+   47 gau     30.60    30.60    +0.00%   0/10     +0.00 ns TIE              37.55    37.60    +0.40%  +5/10     +0.15 ns TIE         
+   64 gau     20.40    20.40    +0.00%   0/10     +0.00 ns TIE              25.45    25.45    +0.20%  +5/10     +0.05 ns TIE         
+   89 gau     26.10    26.10    +0.00%   0/10     +0.00 ns TIE              35.20    35.15    -0.57%  -7/10     -0.20 ns TIE         
+  128 gau     22.00    22.00    +0.00%   0/10     +0.00 ns TIE              31.45    31.30    -0.32%  -6/10     -0.10 ns TIE         
+  177 gau     27.60    27.60    +0.00%   0/10     +0.00 ns TIE              50.25    49.75    -0.31%  -6/10     -0.15 ns TIE         
+  256 gau     24.90    24.90    +0.00%   0/10     +0.00 ns TIE              59.00    58.80    -1.42%  -6/10     -0.85 ns TIE         
+  333 gau     29.20    29.20    +0.00%   0/10     +0.00 ns TIE              73.80    73.75    -1.80%  -6/10     -1.30 ns TIE         
+  512 gau     27.30    27.40    +0.00%   0/10     +0.00 ns TIE              76.50    78.75    +2.94%  +6/10     +2.25 ns TIE         
+  617 gau     34.50    34.50    +0.00%   0/10     +0.00 ns TIE             112.25   111.85    +0.58%  +6/10     +0.65 ns TIE         
+ 1001 gau     34.15    34.20    +0.00%   0/10     +0.00 ns TIE             128.00   123.05    -2.12%  -6/10     -2.55 ns TIE         
+ 1024 gau     30.70    30.80    +0.00%   0/10     +0.00 ns TIE             113.35   112.40    -0.62%  -6/10     -0.70 ns TIE         
+ 1234 gau     33.90    33.80    +0.00%   0/10     +0.00 ns TIE             131.30   129.70    -2.09%  -7/10     -2.75 ns TIE         
+ 1777 gau     36.50    36.50    +0.00%   0/10     +0.00 ns TIE             183.55   187.05    -1.06%  -5/10     -1.95 ns TIE         
+ 2048 gau     33.90    34.00    +0.15%  +5/10     +0.05 ns TIE             153.50   155.35    -0.41%  -6/10     -0.65 ns TIE         
+ 2999 gau     38.85    39.00    +0.00%   0/10     +0.00 ns TIE             217.15   216.20    -0.72%  -6/10     -1.55 ns TIE         
+ 3967 gau     39.10    39.10    +0.00%   0/10     +0.00 ns TIE             226.00   225.25    -0.26%  -6/10     -0.60 ns TIE         
+ 4096 gau     38.90    39.00    +0.13%  +5/10     +0.05 ns TIE             225.95   226.60    -0.06%  -5/10     -0.15 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 22; cold: WIN(np) 0, WIN(shipped) 0, TIE 22
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22
+
+====================================================================================================
+paired: binary  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     33.30    33.30    +0.00%   0/10     +0.00 ns TIE              40.30    40.40    -0.12%  -5/10     -0.05 ns TIE         
+   11 gau     35.80    35.80    +0.00%   0/10     +0.00 ns TIE              42.70    42.80    +0.12%  +5/10     +0.05 ns TIE         
+   16 gau     41.90    41.90    +0.00%   0/10     +0.00 ns TIE              47.70    47.65    +0.21%  +5/10     +0.10 ns TIE         
+   23 gau     44.30    44.30    +0.00%   0/10     +0.00 ns TIE              51.40    51.90    +1.37%  +7/10     +0.70 ns TIE         
+   32 gau     50.10    50.10    +0.00%   0/10     +0.00 ns TIE              61.70    62.20    +0.25%  +5/10     +0.15 ns TIE         
+   47 gau     52.40    52.40    +0.00%   0/10     +0.00 ns TIE              63.85    65.60    +1.56%  +8/10     +1.00 ns TIE         
+   64 gau     58.40    58.40    +0.09%  +5/10     +0.05 ns TIE              70.95    70.90    -0.14%  -5/10     -0.10 ns TIE         
+   89 gau     59.70    59.70    +0.00%   0/10     +0.00 ns TIE              74.70    73.95    -0.40%  -6/10     -0.30 ns TIE         
+  128 gau     67.60    67.60    +0.00%   0/10     +0.00 ns TIE              86.30    86.10    -0.17%  -5/10     -0.15 ns TIE         
+  177 gau     70.70    70.70    +0.00%   0/10     +0.00 ns TIE              91.80    90.75    -1.42%  -7/10     -1.30 ns TIE         
+  256 gau     78.20    78.20    +0.00%   0/10     +0.00 ns TIE             102.20   102.95    +0.94%  +6/10     +0.95 ns TIE         
+  333 gau     81.10    81.10    +0.00%   0/10     +0.00 ns TIE             110.25   111.00    -1.34%  -6/10     -1.50 ns TIE         
+  512 gau     88.45    88.50    +0.00%   0/10     +0.00 ns TIE             131.40   125.65    -2.79%  -7/10     -3.70 ns TIE         
+  617 gau     89.40    89.40    +0.00%   0/10     +0.00 ns TIE             138.85   138.40    -2.60%  -6/10     -3.55 ns TIE         
+ 1001 gau     96.80    96.80    +0.00%   0/10     +0.00 ns TIE             164.05   167.70    +0.69%  +5/10     +1.10 ns TIE         
+ 1024 gau     97.00    97.00    +0.00%   0/10     +0.00 ns TIE             164.55   166.75    +1.48%  +7/10     +2.45 ns TIE         
+ 1234 gau     98.30    98.30    +0.00%   0/10     +0.00 ns TIE             178.80   181.45    +3.16%  +8/10     +5.40 ns WIN(shipped)
+ 1777 gau    103.70   103.70    +0.00%   0/10     +0.00 ns TIE             205.00   205.10    +0.27%  +6/10     +0.55 ns TIE         
+ 2048 gau    105.30   105.30    +0.00%   0/10     +0.00 ns TIE             211.70   219.65    +3.79%  +9/10     +7.95 ns WIN(shipped)
+ 2999 gau    110.20   110.20    +0.00%   0/10     +0.00 ns TIE             244.90   243.15    -0.66%  -8/10     -1.60 ns TIE         
+ 3967 gau    113.20   113.20    +0.00%   0/10     +0.00 ns TIE             262.80   263.45    +0.53%  +6/10     +1.40 ns TIE         
+ 4096 gau    113.50   113.50    +0.00%   0/10     +0.00 ns TIE             267.35   269.30    +0.90%  +7/10     +2.40 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 22; cold: WIN(np) 0, WIN(shipped) 2, TIE 20
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 2, TIE 20
+
+====================================================================================================
+paired: intelA  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: n >= 128 (identical-code gauge below)  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     14.70    14.80    +0.68%  +6/10     +0.10 ns TIE              17.80    18.00    +0.28%  +5/10     +0.05 ns TIE         
+   11 gau     21.20    21.00    -0.94% -10/10     -0.20 ns TIE              27.20    26.30    -3.70%  -9/10     -1.00 ns WIN(np)     
+   16 gau     13.10    13.10    +0.00%   0/10     +0.00 ns TIE              17.70    18.10    +3.46%  +7/10     +0.60 ns TIE         
+   23 gau     24.30    24.50    +0.82% +10/10     +0.20 ns TIE              31.05    30.90    +0.33%  +5/10     +0.10 ns TIE         
+   32 gau     16.50    16.60    +0.61% +10/10     +0.10 ns TIE              24.45    24.90    +1.20%  +6/10     +0.30 ns TIE         
+   47 gau     26.80    27.80    +3.73% +10/10     +1.00 ns WIN(shipped)     33.15    34.35    +4.06%  +8/10     +1.35 ns WIN(shipped)
+   64 gau     17.70    18.10    +2.26% +10/10     +0.40 ns TIE              23.70    23.80    +2.55%  +6/10     +0.60 ns TIE         
+   89 gau     31.10    30.40    -2.25% -10/10     -0.70 ns TIE              39.30    39.60    +1.16%  +7/10     +0.45 ns TIE         
+  128 eff     19.70    19.60    -0.51% -10/10     -0.10 ns TIE              31.20    30.55    -0.49%  -7/10     -0.15 ns TIE         
+  177 eff     25.50    25.20    -1.18% -10/10     -0.30 ns TIE              43.35    43.35    -0.34%  -5/10     -0.15 ns TIE         
+  256 eff     21.60    21.30    -1.39% -10/10     -0.30 ns TIE              48.20    48.35    -0.91%  -6/10     -0.45 ns TIE         
+  333 eff     27.50    25.80    -6.18% -10/10     -1.70 ns WIN(np)          73.25    68.40    -5.99%  -9/10     -4.25 ns WIN(np)     
+  512 eff     25.90    24.00    -7.34% -10/10     -1.90 ns WIN(np)          76.20    74.60    -4.21%  -8/10     -3.30 ns WIN(np)     
+  617 eff     33.30    30.80    -7.23% -10/10     -2.40 ns WIN(np)         112.40   106.90    -3.48%  -7/10     -3.85 ns TIE         
+ 1001 eff     32.90    30.50    -7.45% -10/10     -2.45 ns WIN(np)         130.30   119.75    -3.34%  -7/10     -4.20 ns TIE         
+ 1024 eff     27.90    26.60    -4.49% -10/10     -1.25 ns WIN(np)         106.35   102.95    -2.91%  -7/10     -3.05 ns TIE         
+ 1234 eff     36.20    33.95    -6.09% -10/10     -2.20 ns WIN(np)         164.00   135.20   -18.11%  -9/10    -29.30 ns WIN(np)     
+ 1777 eff     33.10    30.60    -7.41% -10/10     -2.45 ns WIN(np)         151.80   146.25    -4.48%  -7/10     -6.85 ns TIE         
+ 2048 eff     32.70    30.20    -7.36% -10/10     -2.40 ns WIN(np)         151.05   147.25    -3.64%  -6/10     -5.45 ns TIE         
+ 2999 eff     39.00    37.10    -4.63% -10/10     -1.80 ns WIN(np)         213.25   209.00    -1.10%  -8/10     -2.35 ns TIE         
+ 3967 eff     39.10    37.25    -4.61% -10/10     -1.80 ns WIN(np)         223.95   217.85    -3.10%  -9/10     -6.95 ns WIN(np)     
+ 4096 eff     35.80    33.60    -5.88% -10/10     -2.10 ns WIN(np)         217.70   195.00   -10.93%  -9/10    -23.80 ns WIN(np)     
+  verdicts: warm: WIN(np) 11, WIN(shipped) 1, TIE 10; cold: WIN(np) 6, WIN(shipped) 1, TIE 15
+  of which:  warm: effect WIN(np) 11, WIN(shipped) 0, TIE 3 | gauge WIN(np) 0, WIN(shipped) 1, TIE 7; cold: effect WIN(np) 5, WIN(shipped) 0, TIE 9 | gauge WIN(np) 1, WIN(shipped) 1, TIE 6
+
+====================================================================================================
+paired: intels  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     15.10    15.80    +4.64% +10/10     +0.70 ns WIN(shipped)     17.55    18.65    +6.39%  +9/10     +1.10 ns WIN(shipped)
+   11 gau     21.10    21.90    +3.79% +10/10     +0.80 ns WIN(shipped)     25.45    25.65    +0.99%  +7/10     +0.25 ns TIE         
+   16 gau     15.10    15.10    +0.00%   0/10     +0.00 ns TIE              17.60    18.10    +5.07%  +8/10     +0.90 ns WIN(shipped)
+   23 gau     25.20    25.70    +1.98% +10/10     +0.50 ns TIE              30.65    31.25    +1.79%  +6/10     +0.55 ns TIE         
+   32 gau     17.10    16.20    -5.26% -10/10     -0.90 ns WIN(np)          23.55    22.85    -3.39%  -7/10     -0.80 ns TIE         
+   47 gau     28.00    27.40    -2.14% -10/10     -0.60 ns TIE              33.75    34.50    +2.06%  +6/10     +0.70 ns TIE         
+   64 gau     19.60    19.60    +0.00%   0/10     +0.00 ns TIE              35.10    35.60    -0.44%  -6/10     -0.15 ns TIE         
+   89 gau     32.60    34.30    +5.21% +10/10     +1.70 ns WIN(shipped)     50.20    49.15    -0.84%  -7/10     -0.40 ns TIE         
+  128 gau     19.40    18.60    -4.12% -10/10     -0.80 ns WIN(np)          37.25    36.95    -0.05%  -5/10     +0.00 ns TIE         
+  177 gau     25.00    24.60    -1.60% -10/10     -0.40 ns TIE              48.80    48.15    -3.26%  -6/10     -1.60 ns TIE         
+  256 gau     20.80    20.30    -2.40% -10/10     -0.50 ns TIE              47.30    49.25    +6.86%  +7/10     +3.15 ns TIE         
+  333 gau     24.80    24.50    -1.21% -10/10     -0.30 ns TIE              58.40    59.60    -0.38%  -5/10     -0.20 ns TIE         
+  512 gau     23.10    22.80    -1.30% -10/10     -0.30 ns TIE              69.75    62.20    -7.39%  -6/10     -5.20 ns TIE         
+  617 gau     28.45    28.40    +0.00%   0/10     +0.00 ns TIE              77.20    78.25    -3.71%  -5/10     -3.05 ns TIE         
+ 1001 gau     28.00    28.00    +0.00%   0/10     +0.00 ns TIE              88.45    95.45    +2.48%  +6/10     +2.10 ns TIE         
+ 1024 gau     25.20    25.00    -0.79% -10/10     -0.20 ns TIE              85.20    87.25    +3.12%  +7/10     +2.60 ns TIE         
+ 1234 gau     30.60    30.50    -0.33%  -6/10     -0.10 ns TIE              97.85   101.70    +5.74%  +8/10     +5.60 ns WIN(shipped)
+ 1777 gau     28.30    28.20    -0.35% -10/10     -0.10 ns TIE             107.55   109.50    +3.22%  +8/10     +3.40 ns WIN(shipped)
+ 2048 gau     27.90    27.80    -0.36%  -7/10     -0.10 ns TIE             105.60   111.60    +4.78%  +8/10     +5.10 ns WIN(shipped)
+ 2999 gau     33.40    33.40    +0.00%   0/10     +0.00 ns TIE             127.95   127.25    -1.28%  -9/10     -1.65 ns TIE         
+ 3967 gau     33.40    33.30    -0.30%  -6/10     -0.10 ns TIE             130.85   131.45    +0.57%  +7/10     +0.75 ns TIE         
+ 4096 gau     30.30    30.20    -0.33% -10/10     -0.10 ns TIE             128.90   129.50    +1.05%  +7/10     +1.35 ns TIE         
+  verdicts: warm: WIN(np) 2, WIN(shipped) 3, TIE 17; cold: WIN(np) 0, WIN(shipped) 5, TIE 17
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 2, WIN(shipped) 3, TIE 17; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 5, TIE 17
+
+====================================================================================================
+paired: linear  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     18.80    18.80    +0.00%   0/10     +0.00 ns TIE              24.60    24.65    +0.62%  +5/10     +0.15 ns TIE         
+   11 gau     21.60    21.60    +0.00%   0/10     +0.00 ns TIE              26.35    26.30    -0.38%  -6/10     -0.10 ns TIE         
+   16 gau     23.80    23.80    +0.00%   0/10     +0.00 ns TIE              27.10    27.20    +0.00%   0/10     +0.00 ns TIE         
+   23 gau     28.10    28.10    +0.00%   0/10     +0.00 ns TIE              31.80    31.90    +0.16%  +5/10     +0.05 ns TIE         
+   32 gau     20.80    20.80    +0.00%   0/10     +0.00 ns TIE              41.30    40.65    -1.81%  -6/10     -0.75 ns TIE         
+   47 gau     26.55    26.50    +0.00%   0/10     +0.00 ns TIE              46.90    48.35    +1.07%  +6/10     +0.50 ns TIE         
+   64 gau     22.30    22.30    +0.00%   0/10     +0.00 ns TIE              44.05    44.75    +1.58%  +7/10     +0.70 ns TIE         
+   89 gau     26.30    26.30    +0.00%   0/10     +0.00 ns TIE              47.20    47.70    +1.28%  +6/10     +0.60 ns TIE         
+  128 gau     26.45    26.50    +0.38%  +7/10     +0.10 ns TIE              50.50    50.60    -0.10%  -5/10     -0.05 ns TIE         
+  177 gau     30.70    30.80    +0.33%  +6/10     +0.10 ns TIE              58.80    58.00    -1.02%  -6/10     -0.60 ns TIE         
+  256 gau     34.15    34.20    +0.00%   0/10     +0.00 ns TIE              62.15    62.45    -0.16%  -5/10     -0.10 ns TIE         
+  333 gau     40.40    40.40    +0.00%   0/10     +0.00 ns TIE              71.00    70.55    -0.64%  -6/10     -0.45 ns TIE         
+  512 gau     47.90    47.90    +0.00%   0/10     +0.00 ns TIE              88.15    84.00    -3.39%  -7/10     -3.00 ns TIE         
+  617 gau     59.90    59.90    -0.08%  -5/10     -0.05 ns TIE             103.95   102.40    -1.46%  -6/10     -1.50 ns TIE         
+ 1001 gau     83.80    83.90    +0.12%  +6/10     +0.10 ns TIE             141.65   145.25    +0.61%  +7/10     +0.85 ns TIE         
+ 1024 gau     76.30    76.30    +0.00%   0/10     +0.00 ns TIE             144.60   147.15    +1.70%  +7/10     +2.40 ns TIE         
+ 1234 gau    103.80   104.00    +0.10%  +9/10     +0.10 ns TIE             176.90   178.30    +4.47%  +7/10     +7.75 ns TIE         
+ 1777 gau    129.75   129.70    -0.04%  -5/10     -0.05 ns TIE             239.20   240.70    +1.22%  +6/10     +2.90 ns TIE         
+ 2048 gau    143.65   143.65    -0.07%  -5/10     -0.10 ns TIE             272.05   283.30    +4.65%  +9/10    +12.70 ns WIN(shipped)
+ 2999 gau    205.05   205.15    +0.07%  +6/10     +0.15 ns TIE             410.55   405.35    -1.65%  -7/10     -6.65 ns TIE         
+ 3967 gau    252.85   252.85    +0.08%  +6/10     +0.20 ns TIE             519.15   524.50    +0.51%  +7/10     +2.65 ns TIE         
+ 4096 gau    253.70   253.90    +0.08%  +9/10     +0.20 ns TIE             529.25   534.80    +1.29%  +7/10     +6.80 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 22; cold: WIN(np) 0, WIN(shipped) 1, TIE 21
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 1, TIE 21
+
+====================================================================================================
+paired: binaryA  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     33.90    33.90    +0.00%   0/10     +0.00 ns TIE              40.05    40.35    +1.11%  +8/10     +0.45 ns TIE         
+   11 gau     36.00    36.00    +0.00%   0/10     +0.00 ns TIE              43.05    43.00    -0.46%  -6/10     -0.20 ns TIE         
+   16 gau     41.95    41.90    +0.00%   0/10     +0.00 ns TIE              48.00    48.20    +0.42%  +7/10     +0.20 ns TIE         
+   23 gau     44.50    44.50    +0.00%   0/10     +0.00 ns TIE              51.25    50.80    -0.59%  -6/10     -0.30 ns TIE         
+   32 gau     50.20    50.20    +0.00%   0/10     +0.00 ns TIE              62.25    62.85    +0.48%  +6/10     +0.30 ns TIE         
+   47 gau     52.50    52.50    +0.00%   0/10     +0.00 ns TIE              60.40    60.00    -0.83%  -7/10     -0.50 ns TIE         
+   64 gau     58.10    58.10    +0.00%   0/10     +0.00 ns TIE              65.60    65.50    -0.23%  -6/10     -0.15 ns TIE         
+   89 gau     59.70    59.70    +0.00%   0/10     +0.00 ns TIE              69.50    70.15    +0.58%  +7/10     +0.40 ns TIE         
+  128 gau     65.70    65.70    +0.00%   0/10     +0.00 ns TIE              79.90    79.70    +0.38%  +6/10     +0.30 ns TIE         
+  177 gau     67.60    67.60    +0.00%   0/10     +0.00 ns TIE              87.25    87.75    +0.76%  +7/10     +0.65 ns TIE         
+  256 gau     76.40    76.40    +0.00%   0/10     +0.00 ns TIE              99.60    99.90    -0.10%  -5/10     -0.10 ns TIE         
+  333 gau     79.60    79.60    +0.00%   0/10     +0.00 ns TIE             110.85   110.15    -0.18%  -5/10     -0.20 ns TIE         
+  512 gau     88.20    88.20    +0.06%  +5/10     +0.05 ns TIE             126.45   128.15    +0.55%  +6/10     +0.70 ns TIE         
+  617 gau     89.00    89.00    +0.00%   0/10     +0.00 ns TIE             140.10   138.45    -0.93%  -6/10     -1.30 ns TIE         
+ 1001 gau     96.50    96.50    +0.00%   0/10     +0.00 ns TIE             166.10   163.95    +0.47%  +6/10     +0.75 ns TIE         
+ 1024 gau     96.50    96.50    +0.00%   0/10     +0.00 ns TIE             162.00   161.70    -0.47%  -6/10     -0.75 ns TIE         
+ 1234 gau     97.70    97.70    +0.00%   0/10     +0.00 ns TIE             175.10   175.65    -0.27%  -5/10     -0.45 ns TIE         
+ 1777 gau    103.10   103.10    +0.00%   0/10     +0.00 ns TIE             201.80   202.25    +0.23%  +5/10     +0.45 ns TIE         
+ 2048 gau    104.50   104.50    +0.00%   0/10     +0.00 ns TIE             207.95   207.05    +0.80%  +7/10     +1.65 ns TIE         
+ 2999 gau    109.90   109.90    +0.00%   0/10     +0.00 ns TIE             242.30   243.35    +0.12%  +6/10     +0.30 ns TIE         
+ 3967 gau    112.50   112.60    +0.04%  +5/10     +0.05 ns TIE             262.55   265.85    +1.20%  +7/10     +3.15 ns TIE         
+ 4096 gau    112.85   112.90    +0.00%   0/10     +0.00 ns TIE             267.35   268.55    +0.07%  +5/10     +0.20 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 22; cold: WIN(np) 0, WIN(shipped) 0, TIE 22
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22
+
+====================================================================================================
+paired: intelsA  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     14.80    15.60    +5.44% +10/10     +0.80 ns WIN(shipped)     18.10    18.40    +1.95%  +7/10     +0.35 ns TIE         
+   11 gau     21.00    21.70    +3.33% +10/10     +0.70 ns WIN(shipped)     27.35    27.55    -0.00%  -5/10     +0.00 ns TIE         
+   16 gau     14.80    14.80    +0.00%   0/10     +0.00 ns TIE              19.10    18.65    -1.32%  -8/10     -0.25 ns TIE         
+   23 gau     25.00    25.40    +1.60% +10/10     +0.40 ns TIE              30.60    31.35    +2.58%  +9/10     +0.80 ns TIE         
+   32 gau     17.00    16.50    -2.94% -10/10     -0.50 ns TIE              23.65    23.65    +1.66%  +7/10     +0.40 ns TIE         
+   47 gau     27.50    27.20    -1.09% -10/10     -0.30 ns TIE              33.95    32.30    -3.63%  -9/10     -1.20 ns WIN(np)     
+   64 gau     19.40    19.60    +1.03% +10/10     +0.20 ns TIE              24.90    26.20    +7.09%  +8/10     +1.75 ns WIN(shipped)
+   89 gau     32.30    33.70    +4.33% +10/10     +1.40 ns WIN(shipped)     40.40    40.95    +1.37%  +6/10     +0.55 ns TIE         
+  128 gau     19.50    19.00    -2.56% -10/10     -0.50 ns TIE              46.20    45.65    -1.62%  -6/10     -0.75 ns TIE         
+  177 gau     24.90    24.60    -1.20% -10/10     -0.30 ns TIE              51.90    50.80    +0.56%  +5/10     +0.30 ns TIE         
+  256 gau     20.80    20.50    -1.44% -10/10     -0.30 ns TIE              48.50    49.10    -1.95%  -6/10     -0.95 ns TIE         
+  333 gau     24.55    24.40    -0.61% -10/10     -0.15 ns TIE              55.30    56.70    +0.06%  +5/10     +0.05 ns TIE         
+  512 gau     22.90    22.80    -0.44%  -8/10     -0.10 ns TIE              49.45    51.75    +0.09%  +5/10     +0.05 ns TIE         
+  617 gau     27.80    27.80    +0.00%   0/10     +0.00 ns TIE              59.95    59.15    +0.96%  +6/10     +0.55 ns TIE         
+ 1001 gau     27.50    27.50    +0.00%   0/10     +0.00 ns TIE              63.35    63.10    +0.08%  +5/10     +0.05 ns TIE         
+ 1024 gau     24.70    24.60    -0.40% -10/10     -0.10 ns TIE              59.35    59.35    -0.30%  -5/10     -0.15 ns TIE         
+ 1234 gau     29.90    29.80    -0.33%  -9/10     -0.10 ns TIE              71.35    69.45    -1.47%  -8/10     -1.05 ns TIE         
+ 1777 gau     27.70    27.70    +0.00%   0/10     +0.00 ns TIE              69.70    71.55    +2.13%  +6/10     +1.50 ns TIE         
+ 2048 gau     27.30    27.30    +0.00%   0/10     +0.00 ns TIE              71.60    72.45    +0.98%  +7/10     +0.70 ns TIE         
+ 2999 gau     32.50    32.50    +0.00%   0/10     +0.00 ns TIE              85.25    86.30    +0.99%  +7/10     +0.85 ns TIE         
+ 3967 gau     32.70    32.80    +0.31%  +7/10     +0.10 ns TIE              91.40    92.05    +0.27%  +5/10     +0.25 ns TIE         
+ 4096 gau     29.70    29.60    -0.34% -10/10     -0.10 ns TIE              86.10    86.95    +1.40%  +7/10     +1.20 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 3, TIE 19; cold: WIN(np) 1, WIN(shipped) 1, TIE 20
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 3, TIE 19; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 1, WIN(shipped) 1, TIE 20
+
+====================================================================================================
+paired: linearA  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+    8 gau     18.70    18.70    +0.00%   0/10     +0.00 ns TIE              26.05    26.30    +0.96%  +7/10     +0.25 ns TIE         
+   11 gau     21.40    21.40    +0.00%   0/10     +0.00 ns TIE              27.95    27.90    -0.36%  -6/10     -0.10 ns TIE         
+   16 gau     23.50    23.45    +0.00%   0/10     +0.00 ns TIE              28.50    28.60    +0.35%  +6/10     +0.10 ns TIE         
+   23 gau     27.40    27.40    +0.00%   0/10     +0.00 ns TIE              31.85    31.80    -0.16%  -5/10     -0.05 ns TIE         
+   32 gau     16.60    16.60    +0.00%   0/10     +0.00 ns TIE              40.05    40.50    +1.62%  +6/10     +0.65 ns TIE         
+   47 gau     27.05    27.00    -0.56%  -6/10     -0.15 ns TIE              42.05    41.50    -0.84%  -6/10     -0.35 ns TIE         
+   64 gau     18.00    18.00    +0.00%   0/10     +0.00 ns TIE              37.70    37.80    +0.53%  +5/10     +0.20 ns TIE         
+   89 gau     27.55    27.50    +0.00%   0/10     +0.00 ns TIE              43.45    43.80    +0.91%  +6/10     +0.40 ns TIE         
+  128 gau     23.60    23.65    +0.00%   0/10     +0.00 ns TIE              44.10    44.45    +0.79%  +7/10     +0.35 ns TIE         
+  177 gau     28.00    28.00    +0.00%   0/10     +0.00 ns TIE              50.80    50.50    -0.10%  -5/10     -0.05 ns TIE         
+  256 gau     31.80    31.80    +0.00%   0/10     +0.00 ns TIE              57.05    57.50    +1.06%  +6/10     +0.60 ns TIE         
+  333 gau     40.70    40.70    +0.00%   0/10     +0.00 ns TIE              68.50    67.80    -1.44%  -6/10     -1.00 ns TIE         
+  512 gau     44.90    44.90    +0.00%   0/10     +0.00 ns TIE              84.15    84.20    +0.06%  +5/10     +0.05 ns TIE         
+  617 gau     54.80    54.75    +0.00%   0/10     +0.00 ns TIE              99.45    99.65    +0.00%   0/10     +0.00 ns TIE         
+ 1001 gau     76.20    76.10    +0.00%   0/10     +0.00 ns TIE             143.75   141.60    -0.04%  -5/10     -0.05 ns TIE         
+ 1024 gau     84.00    84.10    +0.06%  +5/10     +0.05 ns TIE             141.45   141.85    +0.04%  +5/10     +0.05 ns TIE         
+ 1234 gau    102.15   102.20    +0.05%  +5/10     +0.05 ns TIE             168.90   167.75    -0.95%  -7/10     -1.60 ns TIE         
+ 1777 gau    128.80   128.70    -0.16%  -6/10     -0.20 ns TIE             231.05   234.30    -0.45%  -6/10     -1.05 ns TIE         
+ 2048 gau    141.80   141.90    -0.07%  -5/10     -0.10 ns TIE             265.40   259.35    -1.60%  -8/10     -4.25 ns TIE         
+ 2999 gau    197.45   197.75    +0.28%  +6/10     +0.55 ns TIE             396.40   395.65    -0.54%  -7/10     -2.15 ns TIE         
+ 3967 gau    252.65   252.40    -0.00%  -5/10     -0.00 ns TIE             518.90   523.60    +1.65%  +7/10     +8.60 ns TIE         
+ 4096 gau    252.20   252.20    +0.12%  +5/10     +0.30 ns TIE             524.30   527.35    +0.58%  +6/10     +3.05 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 22; cold: WIN(np) 0, WIN(shipped) 0, TIE 22
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 22
+
+====================================================================================================
+paired: intel_spine_256  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+  256 gau     15.91    15.91    -0.03%  -5/10     -0.00 ns TIE              42.52    41.12    -3.00%  -6/10     -1.22 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 1; cold: WIN(np) 0, WIN(shipped) 0, TIE 1
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1
+
+====================================================================================================
+paired: intel_spine_512  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+  512 gau     19.19    19.18    -0.05%  -6/10     -0.01 ns TIE              46.17    44.41    -2.85%  -7/10     -1.31 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 1; cold: WIN(np) 0, WIN(shipped) 0, TIE 1
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1
+
+====================================================================================================
+paired: intel_spine_pad  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+   32 gau     17.73    16.67    -6.03% -10/10     -1.07 ns WIN(np)          26.73    26.73    -3.97%  -7/10     -1.06 ns TIE         
+   47 gau     28.48    27.44    -3.65% -10/10     -1.04 ns WIN(np)          41.60    40.77    -2.45%  -8/10     -1.00 ns TIE         
+   64 gau     19.52    19.82    +1.54% +10/10     +0.30 ns TIE              53.39    50.99    -3.22%  -9/10     -1.71 ns WIN(np)     
+   89 gau     32.61    34.12    +4.60% +10/10     +1.50 ns WIN(shipped)     65.51    65.31    +0.52%  +6/10     +0.34 ns TIE         
+  128 gau     19.86    19.74    -0.60% -10/10     -0.12 ns TIE              54.64    53.58    -1.56%  -8/10     -0.85 ns TIE         
+  177 gau     23.70    23.68    -0.08%  -8/10     -0.02 ns TIE              60.46    61.62    +2.60%  +8/10     +1.58 ns TIE         
+  256 gau     19.78    19.65    -0.66% -10/10     -0.13 ns TIE              62.17    60.79    -1.33%  -7/10     -0.82 ns TIE         
+  333 gau     25.63    25.60    -0.12% -10/10     -0.03 ns TIE              78.22    77.34    -2.20%  -7/10     -1.73 ns TIE         
+  512 gau     23.97    23.92    -0.21% -10/10     -0.05 ns TIE              80.23    79.22    +0.32%  +5/10     +0.26 ns TIE         
+  617 gau     29.20    29.20    +0.00%   0/10     +0.00 ns TIE              96.69    98.70    +1.06%  +7/10     +1.03 ns TIE         
+ 1001 gau     28.84    28.84    +0.00%   0/10     +0.00 ns TIE              98.52    98.62    +0.75%  +6/10     +0.73 ns TIE         
+ 1024 gau     24.01    23.96    -0.21% -10/10     -0.05 ns TIE              93.86    93.75    +1.71%  +6/10     +1.60 ns TIE         
+ 1234 gau     29.19    29.19    +0.00%   0/10     +0.00 ns TIE              99.37    99.71    +0.21%  +6/10     +0.21 ns TIE         
+ 1777 gau     29.05    29.05    +0.00%   0/10     +0.00 ns TIE             109.38   111.02    +1.64%  +7/10     +1.77 ns TIE         
+ 2048 gau     28.67    28.66    -0.03%  -6/10     -0.01 ns TIE             111.87   112.59    +0.70%  +6/10     +0.78 ns TIE         
+ 2999 gau     29.27    29.27    +0.00%   0/10     +0.00 ns TIE             127.09   126.36    -0.28%  -5/10     -0.36 ns TIE         
+ 3967 gau     29.32    29.31    -0.03%  -7/10     -0.01 ns TIE             126.28   126.36    +0.12%  +5/10     +0.15 ns TIE         
+ 4096 gau     28.88    28.87    -0.03%  -9/10     -0.01 ns TIE             123.41   125.47    +2.03%  +8/10     +2.52 ns TIE         
+  verdicts: warm: WIN(np) 2, WIN(shipped) 1, TIE 15; cold: WIN(np) 1, WIN(shipped) 0, TIE 17
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 2, WIN(shipped) 1, TIE 15; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 1, WIN(shipped) 0, TIE 17
+
+====================================================================================================
+paired: intel_spine_1024  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+ 1024 gau     18.80    18.80    +0.00%   0/10     +0.00 ns TIE              56.32    57.47    +0.20%  +5/10     +0.10 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 1; cold: WIN(np) 0, WIN(shipped) 0, TIE 1
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1
+
+====================================================================================================
+paired: intel_spine_2048  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+ 2048 gau     20.16    20.16    +0.00%   0/10     +0.00 ns TIE              64.25    65.00    +1.75%  +6/10     +1.12 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 1; cold: WIN(np) 0, WIN(shipped) 0, TIE 1
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1
+
+====================================================================================================
+paired: intel_spine_4096  (delta = np/shipped - 1 per run; negative = np faster)
+cell = median shipped ns, median np ns, median delta %, sign count ('-k/n' = np faster in k of n paired runs, '+k/n' = np slower), median ns delta, verdict
+effect cell at: none: identical-code gauge at every size  (column 'set': eff = the factor can reach it, gau = identical-code gauge)
+====================================================================================================
+    n set                               warm                                                            cold                             
+ 4096 gau     21.52    21.52    +0.00%   0/10     +0.00 ns TIE              81.92    81.13    -0.66%  -7/10     -0.54 ns TIE         
+  verdicts: warm: WIN(np) 0, WIN(shipped) 0, TIE 1; cold: WIN(np) 0, WIN(shipped) 0, TIE 1
+  of which:  warm: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1; cold: effect WIN(np) 0, WIN(shipped) 0, TIE 0 | gauge WIN(np) 0, WIN(shipped) 0, TIE 1
+
+generated 2026-10-13T12:08:38 by compute_bench_ab.py cfl_runs/rebench_flushed_pfab_run*.txt cfl_runs/rebench_flushed_pfab_np_run*.txt --host cfl --labels shipped,np --effect intel:>=128,intelA:>=128 --factor the plain kernel's in-loop _mm_prefetch removed (cfl_runs/prefetch_ab_variant.diff)

@@ -1,0 +1,23 @@
+pfab campaign start 2026-10-13T09:00:32-07:00 on mb2019, g++ (GCC) 17.0.0 20260824 (experimental)
+no_turbo=1; cpu15 scaling_max_freq=2400000
+pair 1 done 2026-10-13T09:08:51-07:00 temp=45000
+pair 2 done 2026-10-13T09:17:09-07:00 temp=45000
+pair 3 done 2026-10-13T09:21:18-07:00 temp=45000
+pair 4 done 2026-10-13T09:25:27-07:00 temp=46000
+pair 5 done 2026-10-13T09:29:36-07:00 temp=45000
+pair 6 done 2026-10-13T09:33:45-07:00 temp=46000
+pair 7 done 2026-10-13T09:37:53-07:00 temp=46000
+pair 8 done 2026-10-13T09:46:12-07:00 temp=46000
+pair 9 done 2026-10-13T09:54:30-07:00 temp=46000
+pair 10 done 2026-10-13T10:02:49-07:00 temp=51000
+pfab runs done 2026-10-13T10:02:49-07:00
+turbo restored: no_turbo=0 at 2026-10-13T10:02:49-07:00
+pfab2 start 2026-10-13T10:02:58-07:00: pairs 11-15; broken A runs moved: rebench_flushed_pfab_run3.txt rebench_flushed_pfab_run4.txt rebench_flushed_pfab_run5.txt rebench_flushed_pfab_run6.txt rebench_flushed_pfab_run7.txt 
+no_turbo=1
+pair 11 done 2026-10-13T10:11:17-07:00 temp=48000
+pair 12 done 2026-10-13T10:19:35-07:00 temp=48000
+pair 13 done 2026-10-13T10:27:54-07:00 temp=52000
+pair 14 done 2026-10-13T10:36:12-07:00 temp=46000
+pair 15 done 2026-10-13T10:44:31-07:00 temp=46000
+pfab2 runs done 2026-10-13T10:44:31-07:00
+turbo restored: no_turbo=0 at 2026-10-13T10:44:31-07:00

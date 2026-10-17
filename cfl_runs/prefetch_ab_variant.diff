@@ -1,0 +1,12 @@
+--- simd_quad_intel.c (shipped, blob as recorded in the run headers)
++++ simd_quad_intel_np.c (variant np: the plain kernel's in-loop _mm_prefetch removed)
+@@ -126,8 +126,7 @@
+         // consistent 4-13% warm and up to 18% cold speedup when removed, and
+         // Ice Lake/Sapphire/Granite share that uarch family. VBMI2 is our
+         // proxy for "Ice Lake-SP or newer", same split as the zmm gate below.
+-        _mm_prefetch((const char *)(carr + (base + (n >> 1)) * gap),
+-                     _MM_HINT_T0);
++        /* in-loop prefetch removed for the Coffee Lake A/B of 2026-10-13 (variant 'np') */
+ #endif
+     }
+     while (n > 1) {

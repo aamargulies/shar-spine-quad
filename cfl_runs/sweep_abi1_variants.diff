@@ -1,0 +1,206 @@
+# Kernel variants of the Intel kernel A/B (bench_ab_intel.cpp), derived from simd_quad_intel.c (git blob 418fd3a865893b84b0245c4436fd7cb9f3fb3af6) by gen_intel_ab_variants.py
+# base = the kernel itself (#included directly by ab_tu_base.cpp)
+# np   = the plain kernel's in-loop _mm_prefetch replaced by a comment (= cfl_runs/prefetch_ab_variant.diff)
+# tail = the scalar sweep of the partial last block replaced by a vector membership test of the last 32 elements, in the plain, spine and padded-spine kernels
+
+--- simd_quad_intel.c
++++ intel_ab_np.c
+@@ -126,8 +126,7 @@
+         // consistent 4-13% warm and up to 18% cold speedup when removed, and
+         // Ice Lake/Sapphire/Granite share that uarch family. VBMI2 is our
+         // proxy for "Ice Lake-SP or newer", same split as the zmm gate below.
+-        _mm_prefetch((const char *)(carr + (base + (n >> 1)) * gap),
+-                     _MM_HINT_T0);
++        /* in-loop prefetch removed for the Coffee Lake A/B of 2026-10-13 (variant 'np') */
+ #endif
+     }
+     while (n > 1) {
+
+--- simd_quad_intel.c
++++ intel_ab_tail.c
+@@ -154,11 +154,56 @@
+ #endif
+     }
+ 
+-    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+-        uint16_t v = carr[j];
+-        if (v >= pos) return v == pos;
+-    }
+-    return false;
++    // Tail variant (gen_intel_ab_variants.py, 'tail', 2026-10-13): the partial
++    // last block is checked with the block check's vector membership test over
++    // the last gap elements of the array instead of the scalar sweep
++    //     for (j = num_blocks * gap; j < cardinality; j++) { v = carr[j]; if (v >= pos) return v == pos; }
++    //     return false;
++    // Why this returns exactly what the sweep returned:
++    //   - We are here because the descent ended at lo == num_blocks (every
++    //     lo < num_blocks returned from the block check above) and because
++    //     cardinality >= gap (cardinality < gap took the small-size paths), so
++    //     tl = carr + cardinality - gap >= carr and the window [tl, tl + gap)
++    //     lies inside the array: the loads below read only the array's own
++    //     last 64 bytes.
++    //   - The window ends where the array ends, so it holds the whole tail
++    //     [num_blocks * gap, cardinality) -- fewer than gap elements -- and,
++    //     before it, the last gap - (cardinality % gap) elements of block
++    //     num_blocks - 1, the last full block.
++    //   - lo == num_blocks means the descent compared the last full block's
++    //     maximum carr[num_blocks * gap - 1] (the last spine entry) with pos
++    //     and found it < pos: the final lo pick `(key < pos) ? base + 1 : base`
++    //     (plain kernel, general-n spine) returns num_blocks only from base ==
++    //     num_blocks - 1 with that key < pos, and the padded spine's 3-probe
++    //     finish only when the entries base..num_blocks - 1 are all < pos (the
++    //     spine is sorted and the two 0xFFFF sentinels never compare < pos).
++    //     carr is sorted, so every element of the last full block is <= that
++    //     maximum < pos and none of the window's extra elements can equal pos.
++    //     Hence: a match in the window is a match in the tail, and a match in
++    //     the tail is a match in the window (the tail is inside it).
++    //   - When the tail is empty (cardinality % gap == 0) the window is the
++    //     last full block itself, which cannot match for the same reason, and
++    //     the result is false, as the empty sweep's was.
++    // Cost: two unaligned 256-bit loads (one 512-bit load on the zmm path) of
++    // the array's last 64 bytes and no data-dependent loop; the window contains
++    // the element carr[num_blocks * gap - 1] the descent has just read, so it
++    // touches at most one line the sweep would not have.
++    {
++        const uint16_t *tl = carr + cardinality - gap;
++#if defined(__AVX512VBMI2__)
++        __m512i needle = _mm512_set1_epi16((short)pos);
++        __m512i v = _mm512_loadu_si512((const void *)tl);
++        __mmask32 m = _mm512_cmpeq_epi16_mask(v, needle);
++        return m != 0;
++#else
++        __m256i needle = _mm256_set1_epi16((short)pos);
++        __m256i v0 = _mm256_loadu_si256((const __m256i *)tl);
++        __m256i v1 = _mm256_loadu_si256((const __m256i *)(tl + 16));
++        __m256i eq = _mm256_or_si256(_mm256_cmpeq_epi16(v0, needle),
++                                     _mm256_cmpeq_epi16(v1, needle));
++        return _mm256_movemask_epi8(eq) != 0;
++#endif
++    }
+ }
+ 
+ /*
+@@ -264,11 +309,56 @@
+ #endif
+     }
+ 
+-    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+-        uint16_t v = carr[j];
+-        if (v >= pos) return v == pos;
+-    }
+-    return false;
++    // Tail variant (gen_intel_ab_variants.py, 'tail', 2026-10-13): the partial
++    // last block is checked with the block check's vector membership test over
++    // the last gap elements of the array instead of the scalar sweep
++    //     for (j = num_blocks * gap; j < cardinality; j++) { v = carr[j]; if (v >= pos) return v == pos; }
++    //     return false;
++    // Why this returns exactly what the sweep returned:
++    //   - We are here because the descent ended at lo == num_blocks (every
++    //     lo < num_blocks returned from the block check above) and because
++    //     cardinality >= gap (cardinality < gap took the small-size paths), so
++    //     tl = carr + cardinality - gap >= carr and the window [tl, tl + gap)
++    //     lies inside the array: the loads below read only the array's own
++    //     last 64 bytes.
++    //   - The window ends where the array ends, so it holds the whole tail
++    //     [num_blocks * gap, cardinality) -- fewer than gap elements -- and,
++    //     before it, the last gap - (cardinality % gap) elements of block
++    //     num_blocks - 1, the last full block.
++    //   - lo == num_blocks means the descent compared the last full block's
++    //     maximum carr[num_blocks * gap - 1] (the last spine entry) with pos
++    //     and found it < pos: the final lo pick `(key < pos) ? base + 1 : base`
++    //     (plain kernel, general-n spine) returns num_blocks only from base ==
++    //     num_blocks - 1 with that key < pos, and the padded spine's 3-probe
++    //     finish only when the entries base..num_blocks - 1 are all < pos (the
++    //     spine is sorted and the two 0xFFFF sentinels never compare < pos).
++    //     carr is sorted, so every element of the last full block is <= that
++    //     maximum < pos and none of the window's extra elements can equal pos.
++    //     Hence: a match in the window is a match in the tail, and a match in
++    //     the tail is a match in the window (the tail is inside it).
++    //   - When the tail is empty (cardinality % gap == 0) the window is the
++    //     last full block itself, which cannot match for the same reason, and
++    //     the result is false, as the empty sweep's was.
++    // Cost: two unaligned 256-bit loads (one 512-bit load on the zmm path) of
++    // the array's last 64 bytes and no data-dependent loop; the window contains
++    // the element carr[num_blocks * gap - 1] the descent has just read, so it
++    // touches at most one line the sweep would not have.
++    {
++        const uint16_t *tl = carr + cardinality - gap;
++#if defined(__AVX512VBMI2__)
++        __m512i needle = _mm512_set1_epi16((short)pos);
++        __m512i v = _mm512_loadu_si512((const void *)tl);
++        __mmask32 m = _mm512_cmpeq_epi16_mask(v, needle);
++        return m != 0;
++#else
++        __m256i needle = _mm256_set1_epi16((short)pos);
++        __m256i v0 = _mm256_loadu_si256((const __m256i *)tl);
++        __m256i v1 = _mm256_loadu_si256((const __m256i *)(tl + 16));
++        __m256i eq = _mm256_or_si256(_mm256_cmpeq_epi16(v0, needle),
++                                     _mm256_cmpeq_epi16(v1, needle));
++        return _mm256_movemask_epi8(eq) != 0;
++#endif
++    }
+ }
+ 
+ // Build the spine for a given carr. Caller allocates cardinality/32 u16s.
+@@ -402,11 +492,56 @@
+ #endif
+     }
+ 
+-    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+-        uint16_t v = carr[j];
+-        if (v >= pos) return v == pos;
+-    }
+-    return false;
++    // Tail variant (gen_intel_ab_variants.py, 'tail', 2026-10-13): the partial
++    // last block is checked with the block check's vector membership test over
++    // the last gap elements of the array instead of the scalar sweep
++    //     for (j = num_blocks * gap; j < cardinality; j++) { v = carr[j]; if (v >= pos) return v == pos; }
++    //     return false;
++    // Why this returns exactly what the sweep returned:
++    //   - We are here because the descent ended at lo == num_blocks (every
++    //     lo < num_blocks returned from the block check above) and because
++    //     cardinality >= gap (cardinality < gap took the small-size paths), so
++    //     tl = carr + cardinality - gap >= carr and the window [tl, tl + gap)
++    //     lies inside the array: the loads below read only the array's own
++    //     last 64 bytes.
++    //   - The window ends where the array ends, so it holds the whole tail
++    //     [num_blocks * gap, cardinality) -- fewer than gap elements -- and,
++    //     before it, the last gap - (cardinality % gap) elements of block
++    //     num_blocks - 1, the last full block.
++    //   - lo == num_blocks means the descent compared the last full block's
++    //     maximum carr[num_blocks * gap - 1] (the last spine entry) with pos
++    //     and found it < pos: the final lo pick `(key < pos) ? base + 1 : base`
++    //     (plain kernel, general-n spine) returns num_blocks only from base ==
++    //     num_blocks - 1 with that key < pos, and the padded spine's 3-probe
++    //     finish only when the entries base..num_blocks - 1 are all < pos (the
++    //     spine is sorted and the two 0xFFFF sentinels never compare < pos).
++    //     carr is sorted, so every element of the last full block is <= that
++    //     maximum < pos and none of the window's extra elements can equal pos.
++    //     Hence: a match in the window is a match in the tail, and a match in
++    //     the tail is a match in the window (the tail is inside it).
++    //   - When the tail is empty (cardinality % gap == 0) the window is the
++    //     last full block itself, which cannot match for the same reason, and
++    //     the result is false, as the empty sweep's was.
++    // Cost: two unaligned 256-bit loads (one 512-bit load on the zmm path) of
++    // the array's last 64 bytes and no data-dependent loop; the window contains
++    // the element carr[num_blocks * gap - 1] the descent has just read, so it
++    // touches at most one line the sweep would not have.
++    {
++        const uint16_t *tl = carr + cardinality - gap;
++#if defined(__AVX512VBMI2__)
++        __m512i needle = _mm512_set1_epi16((short)pos);
++        __m512i v = _mm512_loadu_si512((const void *)tl);
++        __mmask32 m = _mm512_cmpeq_epi16_mask(v, needle);
++        return m != 0;
++#else
++        __m256i needle = _mm256_set1_epi16((short)pos);
++        __m256i v0 = _mm256_loadu_si256((const __m256i *)tl);
++        __m256i v1 = _mm256_loadu_si256((const __m256i *)(tl + 16));
++        __m256i eq = _mm256_or_si256(_mm256_cmpeq_epi16(v0, needle),
++                                     _mm256_cmpeq_epi16(v1, needle));
++        return _mm256_movemask_epi8(eq) != 0;
++#endif
++    }
+ }
+ 
+ // Build a padded spine. Caller allocates cardinality/32 + 2 u16s. Writes
